@@ -2,6 +2,8 @@ name: CI Production
 
 on:
   release:
+    types:
+      - published
     
 jobs:
 
