@@ -1,0 +1,91 @@
+name: CI Production
+
+on:
+  push:
+    tags:
+      - "releases/[0-9]*.[0-9]*.[0-9]*"
+    
+jobs:
+
+  test:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.8]
+
+    steps:
+    
+    - name: Checkout repositry
+      uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      uses: Gr1N/setup-poetry@v2
+      
+    - name: Setup cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.python-version }}-
+    
+    - name: Install dependencies
+      run: poetry install
+    
+    - name: Run black formatter
+      run: poetry run black --check .
+
+    - name: Lint with flake8
+      run: poetry run flake8 --config .flake8 --statistics
+
+    - name: Run Pytest
+      run: poetry run pytest
+
+    - name: Build package
+      run: poetry build
+
+  release:
+    needs: test
+
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    
+    runs-on: ubuntu-latest
+    env:
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+    steps:
+    
+      - name: Checkout repositry
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install Poetry and setup cache
+        uses: Gr1N/setup-poetry@v2
+      
+      - name: Setup cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-3.8-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-3.8-
+      
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Build
+        run: poetry build
+      
+      - name: Release
+        run: poetry publish -u __token__ -p "${PYPI_TOKEN}"
