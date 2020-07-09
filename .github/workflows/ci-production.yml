@@ -50,7 +50,7 @@ jobs:
 
     - name: Code Coverage
       uses: codecov/codecov-action@v1
-      if: matrix.python == 3.8
+      if: matrix.python-version == 3.8
       with:
         file: ./coverage.xml
         flags: unittests
