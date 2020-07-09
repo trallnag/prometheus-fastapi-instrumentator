@@ -34,9 +34,9 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+        key: ${{ runner.os }}-python-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
         restore-keys: |
-          ${{ runner.os }}-${{ matrix.python-version }}-
+          ${{ runner.os }}-python-${{ matrix.python-version }}-poetry-
     
     - name: Install dependencies
       run: poetry install
@@ -89,9 +89,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-3.8-${{ hashFiles('poetry.lock') }}
+          key: ${{ runner.os }}-python-3.8-poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-3.8-
+            ${{ runner.os }}-python-3.8-poetry-
       
       - name: Install dependencies
         run: poetry install
