@@ -66,8 +66,7 @@ jobs:
   release:
     needs: test
 
-    if: "github.tag != '' "
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') && github.tag != ''"
     
     runs-on: ubuntu-latest
     env:
