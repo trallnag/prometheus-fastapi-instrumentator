@@ -1,5 +1,11 @@
 # Prometheus FastAPI Exporter
 
+![Version](https://img.shields.io/github/v/release/trallnag/prometheus-fastapi-instrumentator?label=Release)
+![CI Development](https://github.com/trallnag/prometheus_fastapi_exporter/workflows/CI%20Development/badge.svg)
+![CI Production](https://github.com/trallnag/prometheus_fastapi_exporter/workflows/CI%20Production/badge.svg)
+[![Code style: black](https://img.shields.io/badge/Code%20Style-black-000000.svg)](https://github.com/psf/black)
+
+
 Instruments your FastAPI and adds the metrics endpoint to it. Install with:
 
     pip install prometheus-fastapi-exporter
