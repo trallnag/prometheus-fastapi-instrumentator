@@ -1,9 +1,10 @@
 # Prometheus FastAPI Exporter
 
-![CI Development](https://github.com/trallnag/prometheus_fastapi_exporter/workflows/CI%20Development/badge.svg)
-![CI Production](https://github.com/trallnag/prometheus_fastapi_exporter/workflows/CI%20Production/badge.svg)
+[![CI Development](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/CI%20Development/badge.svg)](https://github.com/trallnag/prometheus-fastapi-exporter)
+[![CI Production](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/CI%20Production/badge.svg)](https://github.com/trallnag/prometheus-fastapi-exporter)
 [![Code style: black](https://img.shields.io/badge/Code%20Style-black-000000.svg)](https://github.com/psf/black)
-![Release](https://img.shields.io/github/v/release/trallnag/prometheus-fastapi-instrumentator?label=Release)
+[![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-exporter/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-exporter)
+[![Release](https://img.shields.io/github/v/release/trallnag/prometheus-fastapi-instrumentator?label=Release)](https://github.com/trallnag/prometheus-fastapi-exporter)
 
 Instruments your FastAPI and adds the metrics endpoint to it. Install with:
 
