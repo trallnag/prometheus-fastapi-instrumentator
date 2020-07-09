@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "prometheus-fastapi-exporter"
-version = "20.07.3"
+version = "20.07.4"
 description = "Exporter for your FastAPI"
 authors = ["Tim Schwenke <tim.schwenke@bayer.com>"]
 license = "MIT"
