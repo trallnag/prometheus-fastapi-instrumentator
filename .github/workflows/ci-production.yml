@@ -1,15 +1,13 @@
 name: CI Production
 
 on:
-  push:
-    tags:
-      - "releases/[0-9]*.[0-9]*.[0-9]*"
+  release:
+    types:
+      - published
     
 jobs:
 
-  test:
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    
+  test:    
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -27,14 +25,6 @@ jobs:
 
     - name: Install Poetry
       uses: Gr1N/setup-poetry@v2
-      
-    - name: Setup cache
-      uses: actions/cache@v1
-      with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.python-version }}-
     
     - name: Install dependencies
       run: poetry install
@@ -50,7 +40,7 @@ jobs:
 
     - name: Code Coverage
       uses: codecov/codecov-action@v1
-      if: matrix.python == 3.8
+      if: matrix.python-version == 3.8
       with:
         file: ./coverage.xml
         flags: unittests
@@ -63,8 +53,6 @@ jobs:
 
   release:
     needs: test
-
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
     
     runs-on: ubuntu-latest
     env:
@@ -82,14 +70,6 @@ jobs:
 
       - name: Install Poetry and setup cache
         uses: Gr1N/setup-poetry@v2
-      
-      - name: Setup cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-3.8-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-3.8-
       
       - name: Install dependencies
         run: poetry install
