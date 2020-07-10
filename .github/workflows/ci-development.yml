@@ -47,7 +47,17 @@ jobs:
       run: poetry run flake8 --config .flake8 --statistics
 
     - name: Run Pytest
-      run: poetry run pytest
+      run: poetry run pytest --cov=./ --cov-report=xml
+
+    - name: Code Coverage
+      uses: codecov/codecov-action@v1
+      if: matrix.python-version == 3.8
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        env_vars: OS,PYTHON
+        name: codecov-umbrella
+        fail_ci_if_error: true     
 
     - name: Build package
       run: poetry build
