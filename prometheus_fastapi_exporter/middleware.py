@@ -72,7 +72,7 @@ class PrometheusFastApiExporter:
         if buckets[-1] == float("inf"):
             self.buckets = buckets
         else:
-            self.buckets = buckets + float("inf")
+            self.buckets = buckets + (float("inf"),)
 
         self.histogram = Histogram(
             name=metric_name,
