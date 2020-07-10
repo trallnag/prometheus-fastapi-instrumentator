@@ -49,5 +49,15 @@ jobs:
     - name: Run Pytest
       run: poetry run pytest
 
+      - name: Code Coverage
+      uses: codecov/codecov-action@v1
+      if: matrix.python-version == 3.8
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        env_vars: OS,PYTHON
+        name: codecov-umbrella
+        fail_ci_if_error: true     
+
     - name: Build package
       run: poetry build
