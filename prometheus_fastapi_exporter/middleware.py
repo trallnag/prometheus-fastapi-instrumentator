@@ -85,7 +85,7 @@ class PrometheusFastApiExporter:
             documentation="Duration of HTTP requests in seconds",
             labelnames=label_names,
             buckets=buckets,
-            registry=self.registry
+            registry=self.registry,
         )
 
     def instrument(self) -> None:
@@ -192,4 +192,6 @@ class PrometheusFastApiExporter:
 
         @self.app.get(self.metrics_endpoint)
         def metrics(request: Request) -> Response:
-            return Response(generate_latest(self.registry), media_type=CONTENT_TYPE_LATEST)
+            return Response(
+                generate_latest(self.registry), media_type=CONTENT_TYPE_LATEST
+            )

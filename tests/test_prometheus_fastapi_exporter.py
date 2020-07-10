@@ -271,7 +271,7 @@ def test_dont_ignore_method():
 def test_excluded_handlers_none():
     app = create_app()
     exporter = PrometheusFastApiExporter(app=app, excluded_handlers=None)
-    
+
     assert len(exporter.excluded_handlers) == 0
     assert isinstance(exporter.excluded_handlers, list)
     assert exporter.excluded_handlers is not None
@@ -289,7 +289,7 @@ def test_bucket_without_inf():
     get_response(client, "/")
 
     response = get_response(client, "/metrics")
-    assert b'http_request_duration_seconds' in response.content
+    assert b"http_request_duration_seconds" in response.content
 
 
 # ------------------------------------------------------------------------------
@@ -297,7 +297,7 @@ def test_bucket_without_inf():
 
 
 def test_multiprocess_reg(monkeypatch, tmp_path):
-    monkeypatch.setenv('prometheus_multiproc_dir', str(tmp_path))
+    monkeypatch.setenv("prometheus_multiproc_dir", str(tmp_path))
 
     app = create_app()
     PrometheusFastApiExporter(app=app, buckets=(1, 2, 3,)).instrument()
@@ -306,5 +306,5 @@ def test_multiprocess_reg(monkeypatch, tmp_path):
     get_response(client, "/")
 
     response = get_response(client, "/metrics")
-    assert b'http_request_duration_seconds' in response.content
-    assert b'process' not in response.content
+    assert b"http_request_duration_seconds" in response.content
+    assert b"process" not in response.content
