@@ -2,6 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/prometheus-fastapi-exporter.svg)](https://pypi.python.org/pypi/prometheus-fastapi-exporter/)
 [![Maintenance](https://img.shields.io/badge/maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+[![downloads](https://img.shields.io/pypi/dm/prometheus-fastapi-exporter)](https://pypi.org/project/prometheus-fastapi-exporter/)
 
 [![CI sas](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/CI%20Development/badge.svg)](https://github.com/trallnag/prometheus-fastapi-exporter)
 [![CI Production](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/CI%20Production/badge.svg)](https://github.com/trallnag/prometheus-fastapi-exporter)
