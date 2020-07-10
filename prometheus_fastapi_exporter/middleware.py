@@ -74,11 +74,18 @@ class PrometheusFastApiExporter:
         else:
             self.buckets = buckets + (float("inf"),)
 
+        if "prometheus_multiproc_dir" in os.environ:
+            self.registry = CollectorRegistry()
+            MultiProcessCollector(self.registry)
+        else:
+            self.registry = REGISTRY
+
         self.histogram = Histogram(
             name=metric_name,
             documentation="Duration of HTTP requests in seconds",
             labelnames=label_names,
             buckets=buckets,
+            registry=self.registry
         )
 
     def instrument(self) -> None:
@@ -185,10 +192,4 @@ class PrometheusFastApiExporter:
 
         @self.app.get(self.metrics_endpoint)
         def metrics(request: Request) -> Response:
-            if "prometheus_multiproc_dir" in os.environ:
-                registry = CollectorRegistry()
-                MultiProcessCollector(registry)
-            else:
-                registry = REGISTRY
-
-            return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
+            return Response(generate_latest(self.registry), media_type=CONTENT_TYPE_LATEST)
