@@ -227,12 +227,12 @@ def test_custom_label_names():
     get_response(client, "/")
 
     response = get_response(client, "/metrics")
-    assert b'a=' in response.content
-    assert b'b=' in response.content
-    assert b'c=' in response.content
-    assert b'method=' not in response.content
-    assert b'handler=' not in response.content
-    assert b'status=' not in response.content
+    assert b"a=" in response.content
+    assert b"b=" in response.content
+    assert b"c=" in response.content
+    assert b"method=" not in response.content
+    assert b"handler=" not in response.content
+    assert b"status=" not in response.content
 
 
 # ------------------------------------------------------------------------------
