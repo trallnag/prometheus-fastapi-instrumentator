@@ -1,5 +1,3 @@
-import pytest
-
 from typing import Optional
 from fastapi import FastAPI, HTTPException
 from starlette.testclient import TestClient
