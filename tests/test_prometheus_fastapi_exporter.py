@@ -1,5 +1,6 @@
-from typing import Optional
+import pytest
 
+from typing import Optional
 from fastapi import FastAPI, HTTPException
 from starlette.testclient import TestClient
 from starlette.responses import Response
@@ -261,3 +262,49 @@ def test_dont_ignore_method():
     response = get_response(client, "/metrics")
     assert b'method="ignored"' not in response.content
     assert b'method="GET"' in response.content
+
+
+# ------------------------------------------------------------------------------
+# Test None excluded handlers.
+
+
+def test_excluded_handlers_none():
+    app = create_app()
+    exporter = PrometheusFastApiExporter(app=app, excluded_handlers=None)
+    
+    assert len(exporter.excluded_handlers) == 0
+    assert isinstance(exporter.excluded_handlers, list)
+    assert exporter.excluded_handlers is not None
+
+
+# ------------------------------------------------------------------------------
+# Test bucket without infinity.
+
+
+def test_bucket_without_inf():
+    app = create_app()
+    PrometheusFastApiExporter(app=app, buckets=(1, 2, 3,)).instrument()
+    client = TestClient(app)
+
+    get_response(client, "/")
+
+    response = get_response(client, "/metrics")
+    assert b'http_request_duration_seconds' in response.content
+
+
+# ------------------------------------------------------------------------------
+# Test with multiprocess reg.
+
+
+def test_multiprocess_reg(monkeypatch, tmp_path):
+    monkeypatch.setenv('prometheus_multiproc_dir', str(tmp_path))
+
+    app = create_app()
+    PrometheusFastApiExporter(app=app, buckets=(1, 2, 3,)).instrument()
+    client = TestClient(app)
+
+    get_response(client, "/")
+
+    response = get_response(client, "/metrics")
+    assert b'http_request_duration_seconds' in response.content
+    assert b'process' not in response.content
