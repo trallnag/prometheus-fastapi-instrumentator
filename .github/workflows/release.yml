@@ -1,4 +1,4 @@
-name: CI Production
+name: release
 
 on:
   release:

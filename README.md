@@ -4,8 +4,8 @@
 [![Maintenance](https://img.shields.io/badge/maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
 [![downloads](https://img.shields.io/pypi/dm/prometheus-fastapi-exporter)](https://pypi.org/project/prometheus-fastapi-exporter/)
 
-[![CI sas](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/CI%20Development/badge.svg)](https://github.com/trallnag/prometheus-fastapi-exporter)
-[![CI Production](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/CI%20Production/badge.svg)](https://github.com/trallnag/prometheus-fastapi-exporter)
+[![release](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/release/badge.svg)](https://github.com/trallnag/prometheus-fastapi-exporter)
+[![test branches](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/test%20branches/badge.svg)](https://github.com/trallnag/prometheus-fastapi-exporter)
 [![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-exporter/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-exporter)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
