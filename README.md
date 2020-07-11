@@ -27,7 +27,7 @@ With this single line the API is instrumented and metrics are exposed at
 
 With the time series included in this metric you can get everything from total 
 requests to the average latency. Here are distinct features of this 
-metric, all of them can be configured and deactivated if you wish:
+metric, all of them can be **configured and deactivated** if you wish:
 
 * Status codes are grouped into `2xx`, `3xx` and so on. This reduces 
     cardinality. 
