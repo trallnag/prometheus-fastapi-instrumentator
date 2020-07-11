@@ -1,9 +1,10 @@
-name: CI Development
+name: test branches
 
 on:
   push:
     branches: 
       - dev
+      - master
 
 jobs:
 
