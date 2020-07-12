@@ -235,34 +235,6 @@ def test_custom_label_names():
 
 
 # ------------------------------------------------------------------------------
-# Test ignore method.
-
-
-def test_ignore_method():
-    app = create_app()
-    PrometheusFastApiExporter(app=app).instrument()
-    client = TestClient(app)
-
-    get_response(client, "/")
-
-    response = get_response(client, "/metrics")
-    assert b'method="ignored"' in response.content
-    assert b'method="GET"' not in response.content
-
-
-def test_dont_ignore_method():
-    app = create_app()
-    PrometheusFastApiExporter(app=app, should_ignore_method=False).instrument()
-    client = TestClient(app)
-
-    get_response(client, "/")
-
-    response = get_response(client, "/metrics")
-    assert b'method="ignored"' not in response.content
-    assert b'method="GET"' in response.content
-
-
-# ------------------------------------------------------------------------------
 # Test None excluded handlers.
 
 

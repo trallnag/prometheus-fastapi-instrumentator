@@ -34,7 +34,6 @@ metric, all of them can be **configured and deactivated** if you wish:
 * Requests without a matching template are grouped into the handler `none`.
 * If exceptions occur during request processing and no status code was returned 
     it will default to a `500` server error.
-* By default, methods (`GET`, `POST`, etc.) are ignored.
 
 ## Prerequesites
 
@@ -53,7 +52,6 @@ PrometheusFastApiExporter(
     should_group_status_codes=False,
     should_ignore_untemplated=True,
     should_group_untemplated=False,
-    should_ignore_method=False,
     excluded_handlers=["/metrics", "/admin"],
     buckets=[1, 2, 3, 4, 5],
     metric_name="my_custom_metric_name",
