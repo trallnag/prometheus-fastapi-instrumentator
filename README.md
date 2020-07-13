@@ -59,6 +59,35 @@ PrometheusFastApiExporter(
 ).instrument()
 ```
 
+## Multiprocess Mode
+
+Remember that additional configuration is necessary if the instrumented FastAPI 
+is run with a pre-fork server like Gunicorn. See the official guideline for 
+this [here](https://github.com/prometheus/client_python). I recommend have 
+something along this in your gunicorn config module:
+
+```python
+def on_starting(server):
+    """Called just before the master process is initialized."""
+
+    prometheus_multiproc_dir = os.environ.get("prometheus_multiproc_dir")
+
+    if prometheus_multiproc_dir is None:
+        raise OSError("Environment variable 'prometheus_multiproc_dir' must be set.")
+    
+    log.info("Prepare Prometheus for Gunicorn usage. Wipe registry directory.")
+    subprocess.run(["rm", "-rf", prometheus_multiproc_dir])
+    subprocess.run(["mkdir", "-p", prometheus_multiproc_dir])
+
+    log.info(f"Prometheus multiprocess registry at {prometheus_multiproc_dir}.")
+
+def child_exit(server, worker):
+    multiprocess.mark_process_dead(worker.pid)
+```
+
+While it is possible to set the environment variable from within code, it is 
+not recommended. In some setups it will work fine, in others it will not.
+
 ## Development
 
 Developing and building this package on a local machine requires 
