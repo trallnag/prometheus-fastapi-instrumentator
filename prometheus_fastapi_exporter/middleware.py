@@ -2,6 +2,7 @@ from typing import Tuple
 from timeit import default_timer
 import os
 import re
+import logging
 
 from prometheus_client import Histogram
 from prometheus_client import CollectorRegistry, generate_latest
@@ -13,6 +14,9 @@ from starlette.responses import Response
 from starlette.routing import Match
 
 
+log = logging.getLogger(__name__)
+
+
 class PrometheusFastApiExporter:
     def __init__(
         self,
@@ -21,7 +25,6 @@ class PrometheusFastApiExporter:
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
-        should_ignore_method: bool = True,
         excluded_handlers: list = ["/metrics"],
         buckets: tuple = Histogram.DEFAULT_BUCKETS,
         metric_name: str = "http_request_duration_seconds",
@@ -42,9 +45,6 @@ class PrometheusFastApiExporter:
         :param should_group_untemplated: Should requests without a matching 
         template be grouped to handler None? Defaults to True.
 
-        :param should_ignore_method: Should methods (GET, POST, etc.) be ignored? 
-        If true, the label value will always be "ignored". Defaults to True.
-
         :param excluded_handlers: Handlers that should be ignored. List of 
         strings is turned into regex patterns. Defaults to ["/metrics"].
 
@@ -62,7 +62,6 @@ class PrometheusFastApiExporter:
         self.should_group_status_codes = should_group_status_codes
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
-        self.should_ignore_method = should_ignore_method
 
         if excluded_handlers:
             self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
@@ -77,6 +76,7 @@ class PrometheusFastApiExporter:
         if "prometheus_multiproc_dir" in os.environ:
             self.registry = CollectorRegistry()
             MultiProcessCollector(self.registry)
+            log.info("Prometheus multiprocess mode activated.")
         else:
             self.registry = REGISTRY
 
@@ -97,10 +97,7 @@ class PrometheusFastApiExporter:
         async def dispatch_middleware(request: Request, call_next) -> Response:
             start_time = default_timer()
 
-            if self.should_ignore_method:
-                method = "ignored"
-            else:
-                method = request.method
+            method = request.method
 
             handler, is_templated = self._get_handler(request)
 
