@@ -59,7 +59,7 @@ to the given FastAPI. Supports multiprocess mode.
 ## Prerequesites
 
 * `python = "^3.6"` (tested with 3.6 and 3.8)
-* `fastapi = ">=0.38.1, <=1.0.0"` (tested with 3.8.1 and 0.58.1)
+* `fastapi = ">=0.38.1, <=1.0.0"` (tested with 0.38.1 and 0.58.1)
 * `prometheus-client = "^0.8.0"` (tested with 0.8.0)
 
 ## Development
