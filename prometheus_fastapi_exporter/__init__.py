@@ -1,3 +1,3 @@
-from . import middleware
+from . import exporter
 
-PrometheusFastApiExporter = middleware.PrometheusFastApiExporter
+PrometheusFastApiExporter = exporter.PrometheusFastApiExporter
