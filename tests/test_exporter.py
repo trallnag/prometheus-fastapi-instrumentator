@@ -17,7 +17,6 @@ CUSTOM_METRICS = ["http_request_duration_seconds"]
 
 
 def create_app() -> FastAPI:
-
     app = FastAPI()
 
     # Unregister all collectors.
