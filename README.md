@@ -47,7 +47,6 @@ You can also check the `pyproject.toml` for detailed requirements.
 
 ```python
 PrometheusFastApiExporter(
-    metrics_endpoint="/prometheus/metrics",
     should_group_status_codes=False,
     should_ignore_untemplated=True,
     should_group_untemplated=False,
