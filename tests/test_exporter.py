@@ -396,16 +396,16 @@ def is_prometheus_multiproc_set():
 # The environment variable MUST be set before anything regarding Prometheus is
 # imported. That is why we cannot simply use `tempfile` or the fixtures
 # provided by pytest. Test with:
-#       mkdir -p /tmp/test_multiproc; 
-#       export prometheus_multiproc_dir=/tmp/test_multiproc; 
-#       pytest -k test_multiprocess_reg; 
-#       rm -rf /tmp/test_multiproc; 
+#       mkdir -p /tmp/test_multiproc;
+#       export prometheus_multiproc_dir=/tmp/test_multiproc;
+#       pytest -k test_multiprocess_reg;
+#       rm -rf /tmp/test_multiproc;
 #       unset prometheus_multiproc_dir
 
 
 @pytest.mark.skipif(
-    is_prometheus_multiproc_set() is False, 
-    reason="Environment variable must be set before starting Python process."
+    is_prometheus_multiproc_set() is False,
+    reason="Environment variable must be set before starting Python process.",
 )
 def test_multiprocess_reg():
     app = create_app()
@@ -421,9 +421,7 @@ def test_multiprocess_reg():
     assert b"http_request_duration_seconds" in response.content
 
 
-@pytest.mark.skipif(
-    is_prometheus_multiproc_set() is True, reason="Will never work."
-)
+@pytest.mark.skipif(is_prometheus_multiproc_set() is True, reason="Will never work.")
 def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
     monkeypatch.setenv("prometheus_multiproc_dir", str(tmp_path))
 
