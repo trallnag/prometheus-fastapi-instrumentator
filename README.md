@@ -35,12 +35,6 @@ options include:
 See the *Example with all parameters* for all possible options or check 
 out the documentation itself.
 
-## Prerequesites
-
-* `python = "^3.6"` (tested with 3.6 and 3.8)
-* `fastapi = ">=0.38.1, <=1.0.0"` (tested with 3.8.1 and 0.58.1)
-* `prometheus-client = "^0.8.0"` (tested with 0.8.0)
-
 ## Example with all parameters
 
 ```python
@@ -60,7 +54,13 @@ the constructur of the exporter class.
 
 `expose`: Completely separate from `instrument` and not necessary for 
 instrumentation. Just a simple option to expose metrics by adding an endpoint 
-to the given FastAPI. Supports multiprocess mode. 
+to the given FastAPI. Supports multiprocess mode.
+
+## Prerequesites
+
+* `python = "^3.6"` (tested with 3.6 and 3.8)
+* `fastapi = ">=0.38.1, <=1.0.0"` (tested with 3.8.1 and 0.58.1)
+* `prometheus-client = "^0.8.0"` (tested with 0.8.0)
 
 ## Development
 
