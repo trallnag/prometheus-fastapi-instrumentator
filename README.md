@@ -21,7 +21,7 @@ PrometheusFastApiExporter().instrument(app).expose(app)
 ```
 
 With this single line FastAPI is instrumented and all Prometheus metrics used 
-in the FastAPI app can be exported via ethe endpoint `/metrics`. 
+in the FastAPI app can be exported via the `/metrics` endpoint. 
 
 The exporter includes the single metric `http_request_duration_seconds`. 
 Basically everything around it can be configured and deactivated. These 
@@ -29,6 +29,8 @@ options include:
 
 * Status codes are grouped into `2xx`, `3xx` and so on.
 * Requests without a matching template are grouped into the handler `none`.
+* Renaming of labels and the metric.
+* Regex patterns to ignore certain routes.
 
 See the *Example with all parameters* for all possible options or check 
 out the documentation itself.
