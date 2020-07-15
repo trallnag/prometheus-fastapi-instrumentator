@@ -438,8 +438,7 @@ def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
 
 
 @pytest.mark.skipif(
-    is_prometheus_multiproc_set() is True, 
-    reason="Just test handling of env detection."
+    is_prometheus_multiproc_set() is True, reason="Just test handling of env detection."
 )
 def test_multiprocess_env_folder(monkeypatch, tmp_path):
     monkeypatch.setenv("prometheus_multiproc_dir", "DOES/NOT/EXIST")
