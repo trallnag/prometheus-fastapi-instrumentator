@@ -9,7 +9,7 @@
 [![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-exporter/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-exporter)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Instruments your FastAPI and adds the metrics endpoint to it. Install with:
+Instruments your FastAPI. Install with:
 
     pip install prometheus-fastapi-exporter
 
@@ -17,11 +17,11 @@ Instruments your FastAPI and adds the metrics endpoint to it. Install with:
 
 ```python
 from prometheus_fastapi_exporter import PrometheusFastApiExporter
-PrometheusFastApiExporter(your_fastapi_app).instrument()
+PrometheusFastApiExporter().instrument(app).expose(app)
 ```
 
 With this single line the API is instrumented and metrics are exposed at 
-`/metrics`. The exporter includes a single metric only:
+`/metrics`. The exporter includes a single metric:
 
 `http_request_duration_seconds{handler, method, status}`
 
@@ -47,7 +47,6 @@ You can also check the `pyproject.toml` for detailed requirements.
 
 ```python
 PrometheusFastApiExporter(
-    app=app,
     metrics_endpoint="/prometheus/metrics",
     should_group_status_codes=False,
     should_ignore_untemplated=True,
@@ -56,8 +55,15 @@ PrometheusFastApiExporter(
     buckets=[1, 2, 3, 4, 5],
     metric_name="my_custom_metric_name",
     label_names=("method_type", "path", "status_code",),
-).instrument()
+).instrument(app).expose(endpoint="/prometheus_metrics")
 ```
+
+`instrument`: Instruments the given FastAPI based on the configuration based in 
+the constructur of the exporter class.
+
+`expose`: Completely separate from `instrument` and not necessary for 
+instrumentation. Just a simple option to expose metrics by adding an endpoint 
+to the given FastAPI. Supports multiprocess mode. 
 
 ## Multiprocess Mode
 
@@ -86,7 +92,8 @@ def child_exit(server, worker):
 ```
 
 While it is possible to set the environment variable from within code, it is 
-not recommended. In some setups it will work fine, in others it will not.
+not recommended. In some setups it will work fine, in others it will not. The 
+environment variable MUST be set before any import of Prometheus stuff occures.
 
 ## Development
 
