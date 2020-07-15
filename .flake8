@@ -1,5 +1,5 @@
 [flake8]
 exclude = .git
-ignore = E501,E203,W291,W293
+ignore = E501,E203,W291,W293,F821,W503
 max-complexity = 10
 max-line-length = 90
