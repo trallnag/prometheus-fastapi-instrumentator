@@ -49,7 +49,7 @@ PrometheusFastApiExporter(
 ).instrument(app).expose(endpoint="/prometheus_metrics")
 ```
 
-`instrument`: Instruments the given FastAPI based on the configuration based in 
+`instrument`: Instruments the given FastAPI based on the configuration in 
 the constructur of the exporter class.
 
 `expose`: Completely separate from `instrument` and not necessary for 
