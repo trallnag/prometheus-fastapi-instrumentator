@@ -435,3 +435,15 @@ def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
     response = get_response(client, "/metrics")
     assert response.status_code == 200
     assert b"" == response.content
+
+
+@pytest.mark.skipif(
+    is_prometheus_multiproc_set() is True, 
+    reason="Just test handling of env detection."
+)
+def test_multiprocess_env_folder(monkeypatch, tmp_path):
+    monkeypatch.setenv("prometheus_multiproc_dir", "DOES/NOT/EXIST")
+
+    app = create_app()
+    with pytest.raises(Exception):
+        PrometheusFastApiExporter(buckets=(1, 2, 3,)).instrument(app).expose(app)
