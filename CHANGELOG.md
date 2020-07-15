@@ -30,3 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Exposition of metrics endpoint from `ìnstrument()` call.
 * Contribution document. No need for it.
+
+## [20.7.8] [YANKED]
+
+## [20.7.7] [YANKED]
+
+## ... [YANKED]
