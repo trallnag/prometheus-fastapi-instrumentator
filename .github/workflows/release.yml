@@ -58,10 +58,11 @@ jobs:
 
     - name: Recommit black format
       uses: stefanzweifel/git-auto-commit-action@v4
-      commit_message: Apply black format
-      file_pattern: ./*.py
-      commit_user_name: My GitHub Actions Bot
-      commit_user_email: tim.schwenke+github@protonmail.ch
+      with:
+        commit_message: Apply black format
+        file_pattern: ./*.py
+        commit_user_name: My GitHub Actions Bot
+        commit_user_email: tim.schwenke+github@protonmail.ch
 
     - name: Build package
       run: poetry build
