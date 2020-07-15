@@ -40,9 +40,6 @@ jobs:
     
     - name: Install dependencies
       run: poetry install
-    
-    - name: Run black formatter
-      run: poetry run black --check .
 
     - name: Lint with flake8
       run: poetry run flake8 --config .flake8 --statistics
@@ -66,7 +63,16 @@ jobs:
         flags: unittests
         env_vars: OS,PYTHON
         name: codecov-umbrella
-        fail_ci_if_error: false     
+        fail_ci_if_error: false
+
+    - name: Run black formatter
+      run: poetry run black .
+  
+    - name: Recommit black format
+      commit_message: Apply black format
+      file_pattern: ./*.py
+      commit_user_name: My GitHub Actions Bot
+      commit_user_email: tim.schwenke+github@protonmail.ch
 
     - name: Build package
       run: poetry build
