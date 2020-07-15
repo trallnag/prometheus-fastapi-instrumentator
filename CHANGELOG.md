@@ -3,13 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Calendar Versioning](https://calver.org/).
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
 * Nothing
 
-## [20.7.9]
+## [1.0.0] 2020-07-15
 
 ### Added
 
@@ -18,6 +18,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/).
 
 ### Changed
 
+* Switch to SemVer versioning.
 * Split instrumentation and exposition into two parts. Why? There exist many 
     ways to expose metrics. Now this package enables the instrumentation of 
     FastAPI without enforcing a certain method of exposition. It is still 
@@ -29,4 +30,3 @@ and this project adheres to [Calendar Versioning](https://calver.org/).
 
 * Exposition of metrics endpoint from `ìnstrument()` call.
 * Contribution document. No need for it.
-
