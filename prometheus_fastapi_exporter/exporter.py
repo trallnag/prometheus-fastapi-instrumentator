@@ -3,7 +3,7 @@ from timeit import default_timer
 import re
 import os
 
-from prometheus_client import Histogram, REGISTRY
+from prometheus_client import Histogram
 from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import Response
@@ -120,7 +120,7 @@ class PrometheusFastApiExporter:
         :param return: self.
         """
 
-        from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+        from prometheus_client import REGISTRY, CONTENT_TYPE_LATEST, generate_latest
         from prometheus_client import multiprocess, CollectorRegistry
 
         if "prometheus_multiproc_dir" in os.environ:
