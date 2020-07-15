@@ -20,24 +20,20 @@ from prometheus_fastapi_exporter import PrometheusFastApiExporter
 PrometheusFastApiExporter().instrument(app).expose(app)
 ```
 
-With this single line the API is instrumented and metrics are exposed at 
-`/metrics`. The exporter includes a single metric:
+With this single line FastAPI is instrumented and all Prometheus metrics used 
+in the FastAPI app can be exported via ethe endpoint `/metrics`. 
 
-`http_request_duration_seconds{handler, method, status}`
+The exporter includes the single metric `http_request_duration_seconds`. 
+Basically everything around it can be configured and deactivated. These 
+options include:
 
-With the time series included in this metric you can get everything from total 
-requests to the average latency. Here are distinct features of this 
-metric, all of them can be **configured and deactivated** if you wish:
-
-* Status codes are grouped into `2xx`, `3xx` and so on. This reduces 
-    cardinality. 
+* Status codes are grouped into `2xx`, `3xx` and so on.
 * Requests without a matching template are grouped into the handler `none`.
-* If exceptions occur during request processing and no status code was returned 
-    it will default to a `500` server error.
+
+See the *Example with all parameters* for all possible options or check 
+out the documentation itself.
 
 ## Prerequesites
-
-You can also check the `pyproject.toml` for detailed requirements.
 
 * `python = "^3.6"` (tested with 3.6 and 3.8)
 * `fastapi = ">=0.38.1, <=1.0.0"` (tested with 3.8.1 and 0.58.1)
@@ -63,36 +59,6 @@ the constructur of the exporter class.
 `expose`: Completely separate from `instrument` and not necessary for 
 instrumentation. Just a simple option to expose metrics by adding an endpoint 
 to the given FastAPI. Supports multiprocess mode. 
-
-## Multiprocess Mode
-
-Remember that additional configuration is necessary if the instrumented FastAPI 
-is run with a pre-fork server like Gunicorn. See the official guideline for 
-this [here](https://github.com/prometheus/client_python). I recommend have 
-something along this in your gunicorn config module:
-
-```python
-def on_starting(server):
-    """Called just before the master process is initialized."""
-
-    prometheus_multiproc_dir = os.environ.get("prometheus_multiproc_dir")
-
-    if prometheus_multiproc_dir is None:
-        raise OSError("Environment variable 'prometheus_multiproc_dir' must be set.")
-    
-    log.info("Prepare Prometheus for Gunicorn usage. Wipe registry directory.")
-    subprocess.run(["rm", "-rf", prometheus_multiproc_dir])
-    subprocess.run(["mkdir", "-p", prometheus_multiproc_dir])
-
-    log.info(f"Prometheus multiprocess registry at {prometheus_multiproc_dir}.")
-
-def child_exit(server, worker):
-    multiprocess.mark_process_dead(worker.pid)
-```
-
-While it is possible to set the environment variable from within code, it is 
-not recommended. In some setups it will work fine, in others it will not. The 
-environment variable MUST be set before any import of Prometheus stuff occures.
 
 ## Development
 
