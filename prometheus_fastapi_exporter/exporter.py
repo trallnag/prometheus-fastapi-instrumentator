@@ -1,27 +1,18 @@
 from typing import Tuple
 from timeit import default_timer
-import os
 import re
-import logging
+import os
 
-from prometheus_client import Histogram
-from prometheus_client import CollectorRegistry, generate_latest
-from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY
-from prometheus_client.multiprocess import MultiProcessCollector
+from prometheus_client import Histogram, REGISTRY
 from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Match
 
 
-log = logging.getLogger(__name__)
-
-
 class PrometheusFastApiExporter:
     def __init__(
         self,
-        app: FastAPI,
-        metrics_endpoint: str = "/metrics",
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
@@ -31,34 +22,28 @@ class PrometheusFastApiExporter:
         label_names: tuple = ("method", "handler", "status",),
     ):
         """
-
-        :param app: FastAPI app to be instrumented.
-
-        :param metrics_endpoint: path to serve metrics at, defaults to "/metrics".
-
         :param should_group_status_codes: Should status codes be grouped into 
-        2xx, 3xx and so on? Defaults to True.
+            2xx, 3xx and so on? Defaults to True.
 
         :param should_ignore_untemplated: Should requests without a matching 
-        template be ignored? Defaults to False.
+            template be ignored? Defaults to False.
 
         :param should_group_untemplated: Should requests without a matching 
-        template be grouped to handler None? Defaults to True.
+            template be grouped to handler None? Defaults to True.
 
         :param excluded_handlers: Handlers that should be ignored. List of 
-        strings is turned into regex patterns. Defaults to ["/metrics"].
+            strings is turned into regex patterns. Defaults to ["/metrics"].
 
         :param buckets: Buckets for the histogram. Defaults to Prometheus default.
 
         :param metric_name: Name of the latency metric. Defaults to 
-        "http_request_duration_seconds".
+            "http_request_duration_seconds".
 
         :param label_names: Names of the three labels used for the metric. Does 
-        not influence the label values. Defaults to ("method", "handler", "status",).
+            not influence the label values. Defaults to ("method", "handler", 
+            "status",).
         """
 
-        self.app = app
-        self.metrics_endpoint = metrics_endpoint
         self.should_group_status_codes = should_group_status_codes
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
@@ -73,27 +58,23 @@ class PrometheusFastApiExporter:
         else:
             self.buckets = buckets + (float("inf"),)
 
-        if "prometheus_multiproc_dir" in os.environ:
-            self.registry = CollectorRegistry()
-            MultiProcessCollector(self.registry)
-            log.info("Prometheus multiprocess mode activated.")
-        else:
-            self.registry = REGISTRY
+        self.label_names = label_names
 
         self.histogram = Histogram(
             name=metric_name,
             documentation="Duration of HTTP requests in seconds",
-            labelnames=label_names,
-            buckets=buckets,
-            registry=self.registry,
+            labelnames=self.label_names,
+            buckets=self.buckets,
         )
 
-    def instrument(self) -> None:
-        """Performs the instrumentation by adding middleware and endpoint."""
+    def instrument(self, app: FastAPI) -> "self":
+        """Performs the instrumentation by adding middleware and endpoint.
+        
+        :param app: FastAPI app to be instrumented.
+        :param return: self.
+        """
 
-        self._add_metrics_endpoint()
-
-        @self.app.middleware("http")
+        @app.middleware("http")
         async def dispatch_middleware(request: Request, call_next) -> Response:
             start_time = default_timer()
 
@@ -125,19 +106,51 @@ class PrometheusFastApiExporter:
 
             return response
 
+        return self
+
+    def expose(self, app: FastAPI, endpoint: str = "/metrics") -> "self":
+        """Exposes Prometheus metrics by adding endpoint to the given app.
+
+        **Important**: There are many different ways to expose metrics. This is 
+        just one of them, suited for both multiprocess and singleprocess mode. 
+        Refer to the Prometheus Python client documentation for more information.
+
+        :param app: FastAPI where the endpoint should be added to.
+        :param endpoint: Route of the endpoint. Defaults to "/metrics".
+        :param return: self.
+        """
+
+        from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+        from prometheus_client import multiprocess, CollectorRegistry
+
+        if "prometheus_multiproc_dir" in os.environ:
+            pmd = os.environ["prometheus_multiproc_dir"]
+            if os.path.isdir(pmd):
+                registry = CollectorRegistry()
+                multiprocess.MultiProcessCollector(registry)
+            else:
+                raise ValueError(
+                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
+                )
+        else:
+            registry = REGISTRY
+
+        @app.get("/metrics")
+        def metrics():
+            return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
+
+        return self
+
     def _create_label_tuple(
         self, method: str, handler: str, code: int
     ) -> Tuple[str, str, str]:
         """Processes label values based on config.
 
         :param method: Method used for the request, for example `GET`.
-
         :param handler: Identifier for entity that handled / should handle the 
-        request.
-
+            request.
         :param code: Status code of the response. If error / exception occured 
-        this should be `500`.
-
+            this should be `500`.
         :return: Processed values.
         """
 
@@ -171,24 +184,3 @@ class PrometheusFastApiExporter:
             return True
 
         return False
-
-    def _add_metrics_endpoint(self) -> None:
-        """Adds Prometheus metrics endpoint.
-
-        Is done simply by adding another route, not with a distinct app that is 
-        mounted to the given FastAPI app like this:
-
-        ``` python
-        prometheus_app = make_asgi_app()
-        app.mount("/metrics", prometheus_app)
-        ```
-
-        It is simpler, but the disadvantage is that the `/metrics` endpoint or 
-        more concrete the subapp will not be visible in the Swagger UI.
-        """
-
-        @self.app.get(self.metrics_endpoint)
-        def metrics(request: Request) -> Response:
-            return Response(
-                generate_latest(self.registry), media_type=CONTENT_TYPE_LATEST
-            )
