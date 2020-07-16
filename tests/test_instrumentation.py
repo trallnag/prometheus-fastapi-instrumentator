@@ -4,7 +4,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from starlette.testclient import TestClient
 from starlette.responses import Response
-from prometheus_fastapi_exporter import PrometheusFastApiExporter
+from prometheus_fastapi_instrumentator import Instrumentator
 from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
 import pytest
 
@@ -150,7 +150,7 @@ def test_app():
 
 def test_metrics_endpoint_availability():
     app = create_app()
-    PrometheusFastApiExporter().instrument(app)
+    Instrumentator().instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -168,7 +168,7 @@ def test_metrics_endpoint_availability():
 
 def test_default_metric_name():
     app = create_app()
-    PrometheusFastApiExporter().instrument(app)
+    Instrumentator().instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -182,7 +182,7 @@ def test_default_metric_name():
 
 def test_custom_metric_name():
     app = create_app()
-    PrometheusFastApiExporter(metric_name="fastapi_latency").instrument(app)
+    Instrumentator(metric_name="fastapi_latency").instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -201,7 +201,7 @@ def test_custom_metric_name():
 
 def test_grouped_status_codes():
     app = create_app()
-    PrometheusFastApiExporter().instrument(app)
+    Instrumentator().instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -216,7 +216,7 @@ def test_grouped_status_codes():
 
 def test_ungrouped_status_codes():
     app = create_app()
-    PrometheusFastApiExporter(should_group_status_codes=False).instrument(app)
+    Instrumentator(should_group_status_codes=False).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -235,7 +235,7 @@ def test_ungrouped_status_codes():
 
 def test_ignore_untemplated():
     app = create_app()
-    PrometheusFastApiExporter(should_ignore_untemplated=True).instrument(app)
+    Instrumentator(should_ignore_untemplated=True).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -252,7 +252,7 @@ def test_ignore_untemplated():
 
 def test_dont_ignore_untemplated_ungrouped():
     app = create_app()
-    PrometheusFastApiExporter(
+    Instrumentator(
         should_ignore_untemplated=False, should_group_untemplated=False
     ).instrument(app)
     expose_metrics(app)
@@ -272,7 +272,7 @@ def test_dont_ignore_untemplated_ungrouped():
 
 def test_grouping_untemplated():
     app = create_app()
-    PrometheusFastApiExporter().instrument(app)
+    Instrumentator().instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -289,7 +289,7 @@ def test_grouping_untemplated():
 
 def test_excluding_handlers():
     app = create_app()
-    PrometheusFastApiExporter(excluded_handlers=["fefefwefwe"]).instrument(app)
+    Instrumentator(excluded_handlers=["fefefwefwe"]).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -311,7 +311,7 @@ def test_excluding_handlers():
 
 def test_default_label_names():
     app = create_app()
-    PrometheusFastApiExporter().instrument(app)
+    Instrumentator().instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -327,7 +327,7 @@ def test_default_label_names():
 
 def test_custom_label_names():
     app = create_app()
-    PrometheusFastApiExporter(label_names=("a", "b", "c",)).instrument(app)
+    Instrumentator(label_names=("a", "b", "c",)).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -355,7 +355,7 @@ def test_custom_label_names():
 
 def test_excluded_handlers_none():
     app = create_app()
-    exporter = PrometheusFastApiExporter(excluded_handlers=None).instrument(app)
+    exporter = Instrumentator(excluded_handlers=None).instrument(app)
     expose_metrics(app)
 
     assert len(exporter.excluded_handlers) == 0
@@ -369,7 +369,7 @@ def test_excluded_handlers_none():
 
 def test_bucket_without_inf():
     app = create_app()
-    PrometheusFastApiExporter(buckets=(1, 2, 3,)).instrument(app).expose(app)
+    Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -408,7 +408,7 @@ def is_prometheus_multiproc_set():
 )
 def test_multiprocess_reg():
     app = create_app()
-    PrometheusFastApiExporter(buckets=(1, 2, 3,)).instrument(app).expose(app)
+    Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -425,7 +425,7 @@ def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
     monkeypatch.setenv("prometheus_multiproc_dir", str(tmp_path))
 
     app = create_app()
-    PrometheusFastApiExporter(buckets=(1, 2, 3,)).instrument(app).expose(app)
+    Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
 
     client = TestClient(app)
 
@@ -444,4 +444,4 @@ def test_multiprocess_env_folder(monkeypatch, tmp_path):
 
     app = create_app()
     with pytest.raises(Exception):
-        PrometheusFastApiExporter(buckets=(1, 2, 3,)).instrument(app).expose(app)
+        Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)

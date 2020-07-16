@@ -10,7 +10,7 @@ from starlette.responses import Response
 from starlette.routing import Match
 
 
-class PrometheusFastApiExporter:
+class PrometheusFastApiInstrumentator:
     def __init__(
         self,
         should_group_status_codes: bool = True,

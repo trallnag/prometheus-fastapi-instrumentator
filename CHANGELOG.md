@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing
 
+## [1.1.0] 2020-07-16
+
+### Changed
+
+* Renamed project from *Prometheus FastAPI Exporter* to 
+    *Prometheus FastAPI Instrumentator*. Reasoning behind this change: Focus of 
+    this project is the instrumentation, not exposition of metrics.
+
 ## [1.0.2] 2020-07-15
 
 ### Changed

@@ -3,14 +3,14 @@ requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
 [tool.poetry]
-name = "prometheus-fastapi-exporter"
-version = "1.0.2"
-description = "Exporter for your FastAPI"
+name = "prometheus-fastapi-instrumentator"
+version = "1.1.0"
+description = "Instrument your FastAPI with Prometheus metrics"
 authors = ["Tim Schwenke <tim.schwenke@bayer.com>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/trallnag/prometheus-fastapi-exporter"
-keywords = ["prometheus", "instrumentation", "fastapi", "monitoring", "metrics"]
+repository = "https://github.com/trallnag/prometheus-fastapi-instrumentator"
+keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
 classifiers = [
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',

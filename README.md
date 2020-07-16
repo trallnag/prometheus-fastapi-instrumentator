@@ -1,30 +1,30 @@
-# Prometheus FastAPI Exporter
+# Prometheus FastAPI Instrumentator
 
-[![PyPI version](https://badge.fury.io/py/prometheus-fastapi-exporter.svg)](https://pypi.python.org/pypi/prometheus-fastapi-exporter/)
+[![PyPI version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/)
 [![Maintenance](https://img.shields.io/badge/maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
-[![downloads](https://img.shields.io/pypi/dm/prometheus-fastapi-exporter)](https://pypi.org/project/prometheus-fastapi-exporter/)
+[![downloads](https://img.shields.io/pypi/dm/prometheus-fastapi-instrumentator)](https://pypi.org/project/prometheus-fastapi-instrumentator/)
 
-![release](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/release/badge.svg)
-![test branches](https://github.com/trallnag/prometheus-fastapi-exporter/workflows/test%20branches/badge.svg)
-[![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-exporter/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-exporter)
+![release](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/release/badge.svg)
+![test branches](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/test%20branches/badge.svg)
+[![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Instruments your FastAPI. Install with:
+Instruments your FastAPI with Prometheus metrics. Install with:
 
-    pip install prometheus-fastapi-exporter
+    pip install prometheus-fastapi-instrumentator
 
 ## Fast Track
 
 ```python
-from prometheus_fastapi_exporter import PrometheusFastApiExporter
-PrometheusFastApiExporter().instrument(app).expose(app)
+from prometheus_fastapi_instrumentator import Instrumentator
+Instrumentator().instrument(app).expose(app)
 ```
 
 With this single line FastAPI is instrumented and all Prometheus metrics used 
-in the FastAPI app can be exported via the `/metrics` endpoint. 
+in the FastAPI app can be scraped via the added `/metrics` endpoint. 
 
 The exporter includes the single metric `http_request_duration_seconds`. 
-Basically everything around it can be configured and deactivated. These 
+Everything around it can be configured and deactivated. These 
 options include:
 
 * Status codes are grouped into `2xx`, `3xx` and so on.
@@ -38,7 +38,8 @@ out the documentation itself.
 ## Example with all parameters
 
 ```python
-PrometheusFastApiExporter(
+from prometheus_fastapi_instrumentator import PrometheusFastApiInstrumentator
+PrometheusFastApiInstrumentator(
     should_group_status_codes=False,
     should_ignore_untemplated=True,
     should_group_untemplated=False,
@@ -46,7 +47,7 @@ PrometheusFastApiExporter(
     buckets=[1, 2, 3, 4, 5],
     metric_name="my_custom_metric_name",
     label_names=("method_type", "path", "status_code",),
-).instrument(app).expose(endpoint="/prometheus_metrics")
+).instrument(app).expose(app, "/prometheus_metrics")
 ```
 
 `instrument`: Instruments the given FastAPI based on the configuration in 
@@ -59,7 +60,7 @@ to the given FastAPI. Supports multiprocess mode.
 ## Prerequesites
 
 * `python = "^3.6"` (tested with 3.6 and 3.8)
-* `fastapi = ">=0.38.1, <=1.0.0"` (tested with 0.38.1 and 0.58.1)
+* `fastapi = ">=0.38.1, <=1.0.0"` (tested with 0.38.1 and 0.59.0)
 * `prometheus-client = "^0.8.0"` (tested with 0.8.0)
 
 ## Development
