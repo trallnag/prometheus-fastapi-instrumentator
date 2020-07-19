@@ -56,7 +56,7 @@ jobs:
         unset prometheus_multiproc_dir
 
     - name: Code Coverage
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v1.0.11
       if: matrix.python-version == 3.8
       with:
         file: ./coverage.xml
