@@ -1,11 +1,11 @@
 name: release
 
-on:
-  release:
-    types:
-      - published
+on: 
+  workflow_dispatch:
     
 jobs:
+
+  # ============================================================================
 
   test:    
     runs-on: ubuntu-latest
@@ -54,12 +54,18 @@ jobs:
         fail_ci_if_error: false
     
     - name: Run black formatter
+      if: matrix.python-version == 3.8
       run: poetry run black .
 
-    - name: Recommit black format
+    - name: Run isort
+      if: matrix.python-version == 3.8
+      run: poetry run isort .
+
+    - name: Recommit
+      if: matrix.python-version == 3.8
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: Apply black format [skip ci]
+        commit_message: Apply auto-formatting [skip ci]
         file_pattern: ./*.py
         commit_user_name: My GitHub Actions Bot
         commit_user_email: tim.schwenke+github@protonmail.ch
@@ -67,12 +73,12 @@ jobs:
     - name: Build package
       run: poetry build
 
-  release:
+  # ============================================================================
+
+  release-to-pypi:
     needs: test
     
     runs-on: ubuntu-latest
-    env:
-      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
     steps:
     
@@ -94,4 +100,36 @@ jobs:
         run: poetry build
       
       - name: Release
-        run: poetry publish -u __token__ -p "${PYPI_TOKEN}"
+        run: poetry publish -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+
+  # ============================================================================
+
+  create-github-release:
+    needs: release-to-dockerhub
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repositry
+        uses: actions/checkout@v2
+
+      - name: Retrieve version
+        run: echo ::set-env name=PROJECT_VERSION::$(awk '/^version/{print $NF}' pyproject.toml | tr -d '"' | tr -d "'")
+
+      - name: Retrieve change
+        run: echo ::set-env name=CHANGE::$(awk '/\[${{ env.PROJECT_VERSION }}\]/{flag=1; next} /\[.*\]/{flag=0} flag' CHANGELOG.md)
+
+      - name: Retrieve date
+        run: echo "::set-env name=NOW::$(date +'%Y-%m-%d')"
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.PROJECT_VERSION }}
+          release_name: "[${{ env.PROJECT_VERSION }}] ${{ env.NOW }}"
+          body: ${{ env.CHANGE }}
+          draft: false
+          prerelease: false
