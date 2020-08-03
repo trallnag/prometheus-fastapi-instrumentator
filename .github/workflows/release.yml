@@ -18,6 +18,20 @@ jobs:
     - name: Checkout repositry
       uses: actions/checkout@v2
 
+    - name: Retrieve version from pyproject.toml
+      run: echo ::set-env name=PROJECT_VERSION::$(awk '/^version/{print $NF}' pyproject.toml | tr -d '"' | tr -d "'")
+
+    - name: tag-exists-action
+      uses: mukunku/tag-exists-action@v1.0.0
+      id: checkTag
+      with: 
+        tag: releases/${{ env.PROJECT_VERSION }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Check if version tag exists
+      run: if ${{ steps.checkTag.outputs.exists }} == true; then exit 1; fi
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
