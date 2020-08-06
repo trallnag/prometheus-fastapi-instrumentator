@@ -382,6 +382,20 @@ def test_bucket_without_inf():
 # Test decimal rounding.
 
 
+def calc_entropy(decimal_str: str):
+    decimals = [int(x) for x in decimal_str]
+    print(decimals)
+    entropy = 0
+    for i in range(len(decimals)):
+        if i != 0:
+            entropy += abs(decimals[i] - decimals[i - 1])
+    return entropy
+
+
+def test_entropy():
+    assert calc_entropy([1, 0, 0, 4, 0]) == 9
+
+
 def test_default_no_rounding():
     app = create_app()
     Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
@@ -398,7 +412,9 @@ def test_default_no_rounding():
         {"handler": "/", "method": "GET", "status": "2xx"},
     )
 
-    assert len(str(result)) >= 10
+    entropy = calc_entropy(str(result).split(".")[1][4:])
+
+    assert entropy > 15
 
 
 def test_rounding():
@@ -419,7 +435,9 @@ def test_rounding():
         {"handler": "/", "method": "GET", "status": "2xx"},
     )
 
-    assert len(str(result).strip("0")) <= 8
+    entropy = calc_entropy(str(result).split(".")[1][4:])
+
+    assert entropy < 10
 
 
 # ------------------------------------------------------------------------------
