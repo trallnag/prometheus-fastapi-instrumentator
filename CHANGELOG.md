@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-* Nothing
+### Added
+
+* The observed latency values can now be rounded to a certain number of 
+    decimals as an opt-in feature. This can improve bytes per sample required in 
+    storage solutions like VictoriaMetrics.
 
 ## [1.1.1] 2020-07-19
 

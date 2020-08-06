@@ -31,6 +31,7 @@ options include:
 * Requests without a matching template are grouped into the handler `none`.
 * Renaming of labels and the metric.
 * Regex patterns to ignore certain routes.
+* Rounding of latencies.
 
 See the *Example with all parameters* for all possible options or check 
 out the documentation itself.
@@ -43,10 +44,12 @@ PrometheusFastApiInstrumentator(
     should_group_status_codes=False,
     should_ignore_untemplated=True,
     should_group_untemplated=False,
+    should_round_latency_decimals=True,
     excluded_handlers=["/metrics", "/admin"],
     buckets=[1, 2, 3, 4, 5],
     metric_name="my_custom_metric_name",
     label_names=("method_type", "path", "status_code",),
+    round_latency_decimals=3,
 ).instrument(app).expose(app, "/prometheus_metrics")
 ```
 

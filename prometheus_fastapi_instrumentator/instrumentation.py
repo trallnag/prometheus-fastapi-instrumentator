@@ -16,37 +16,48 @@ class PrometheusFastApiInstrumentator:
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
+        should_round_latency_decimals: bool = False,
         excluded_handlers: list = ["/metrics"],
         buckets: tuple = Histogram.DEFAULT_BUCKETS,
         metric_name: str = "http_request_duration_seconds",
         label_names: tuple = ("method", "handler", "status",),
+        round_latency_decimals: int = 4,
     ):
         """
         :param should_group_status_codes: Should status codes be grouped into 
-            2xx, 3xx and so on? Defaults to True.
+            2xx, 3xx and so on?
 
         :param should_ignore_untemplated: Should requests without a matching 
-            template be ignored? Defaults to False.
+            template be ignored?
 
         :param should_group_untemplated: Should requests without a matching 
-            template be grouped to handler None? Defaults to True.
+            template be grouped to handler None?
+
+        :param should_round_latency_decimals: Should recorded latencies be 
+            rounded to a certain number of decimals?
 
         :param excluded_handlers: Handlers that should be ignored. List of 
-            strings is turned into regex patterns. Defaults to ["/metrics"].
+            strings is turned into regex patterns.
 
         :param buckets: Buckets for the histogram. Defaults to Prometheus default.
 
-        :param metric_name: Name of the latency metric. Defaults to 
-            "http_request_duration_seconds".
+        :param metric_name: Name of the latency metric.
 
         :param label_names: Names of the three labels used for the metric. Does 
             not influence the label values. Defaults to ("method", "handler", 
             "status",).
+
+        :param round_latency_decimals: Number of decimals latencies should be 
+            rounded to, provided `should_round_latency_decimals` is `True`.
         """
 
         self.should_group_status_codes = should_group_status_codes
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
+        self.should_round_latency_decimals = should_round_latency_decimals
+
+        self.round_latency_decimals = round_latency_decimals
+        self.label_names = label_names
 
         if excluded_handlers:
             self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
@@ -57,8 +68,6 @@ class PrometheusFastApiInstrumentator:
             self.buckets = buckets
         else:
             self.buckets = buckets + (float("inf"),)
-
-        self.label_names = label_names
 
         self.histogram = Histogram(
             name=metric_name,
@@ -99,6 +108,9 @@ class PrometheusFastApiInstrumentator:
                 handler = "none"
 
             duration = max(default_timer() - start_time, 0)
+
+            if self.should_round_latency_decimals:
+                duration = round(duration, self.round_latency_decimals)
 
             self.histogram.labels(
                 *self._create_label_tuple(method, handler, status)
