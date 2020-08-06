@@ -66,12 +66,18 @@ jobs:
         fail_ci_if_error: false
 
     - name: Run black formatter
+      if: matrix.python-version == 3.8
       run: poetry run black .
+
+    - name: Run isort
+      if: matrix.python-version == 3.8
+      run: poetry run isort .
   
-    - name: Recommit black format
+    - name: Recommit
+      if: matrix.python-version == 3.8
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: Apply black format [skip ci]
+        commit_message: Apply auto-formatting [skip ci]
         file_pattern: ./*.py
         commit_user_name: My GitHub Actions Bot
         commit_user_email: tim.schwenke+github@protonmail.ch
