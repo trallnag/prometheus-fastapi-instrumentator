@@ -1,13 +1,13 @@
-from typing import Optional
 import os
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException
-from starlette.testclient import TestClient
-from starlette.responses import Response
-from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
 import pytest
+from fastapi import FastAPI, HTTPException
+from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
+from starlette.responses import Response
+from starlette.testclient import TestClient
 
+from prometheus_fastapi_instrumentator import Instrumentator
 
 # ==============================================================================
 # Setup
@@ -27,9 +27,8 @@ def create_app() -> FastAPI:
     print(f"after unregister collectors={list(REGISTRY._collector_to_names.keys())}")
 
     # Import default collectors.
-    from prometheus_client import platform_collector
-    from prometheus_client import process_collector
-    from prometheus_client import gc_collector
+    from prometheus_client import (gc_collector, platform_collector,
+                                   process_collector)
 
     # Re-register default collectors.
     process_collector.ProcessCollector()
@@ -67,7 +66,7 @@ def expose_metrics(app: FastAPI) -> None:
         print(f"Env var prometheus_multiproc_dir='{pmd}' detected.")
         if os.path.isdir(pmd):
             print(f"Env var prometheus_multiproc_dir='{pmd}' is a dir.")
-            from prometheus_client import multiprocess, CollectorRegistry
+            from prometheus_client import CollectorRegistry, multiprocess
 
             registry = CollectorRegistry()
             multiprocess.MultiProcessCollector(registry)

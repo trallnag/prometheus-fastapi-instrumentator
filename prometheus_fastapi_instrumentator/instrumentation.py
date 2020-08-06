@@ -1,10 +1,10 @@
-from typing import Tuple
-from timeit import default_timer
-import re
 import os
+import re
+from timeit import default_timer
+from typing import Tuple
 
-from prometheus_client import Histogram
 from fastapi import FastAPI
+from prometheus_client import Histogram
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Match
@@ -132,8 +132,9 @@ class PrometheusFastApiInstrumentator:
         :param return: self.
         """
 
-        from prometheus_client import REGISTRY, CONTENT_TYPE_LATEST, generate_latest
-        from prometheus_client import multiprocess, CollectorRegistry
+        from prometheus_client import (CONTENT_TYPE_LATEST, REGISTRY,
+                                       CollectorRegistry, generate_latest,
+                                       multiprocess)
 
         if "prometheus_multiproc_dir" in os.environ:
             pmd = os.environ["prometheus_multiproc_dir"]
