@@ -380,6 +380,46 @@ def test_bucket_without_inf():
 
 
 # ------------------------------------------------------------------------------
+# Test decimal rounding.
+
+
+def test_default_no_rounding():
+    app = create_app()
+    Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
+    client = TestClient(app)
+
+    get_response(client, "/")
+    get_response(client, "/")
+    get_response(client, "/")
+
+    _ = get_response(client, "/metrics")
+
+    result = REGISTRY.get_sample_value(
+        "http_request_duration_seconds_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+    )
+
+    assert len(str(result)) >= 10 
+
+
+def test_rounding():
+    app = create_app()
+    Instrumentator(buckets=(1, 2, 3,), should_round_latency_decimals=True).instrument(app).expose(app)
+    client = TestClient(app)
+
+    get_response(client, "/")
+    get_response(client, "/")
+    get_response(client, "/")
+
+    _ = get_response(client, "/metrics")
+
+    result = REGISTRY.get_sample_value(
+        "http_request_duration_seconds_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+    )
+
+    assert len(str(result).strip("0")) <= 8 
+
+
+# ------------------------------------------------------------------------------
 # Test with multiprocess reg.
 
 
