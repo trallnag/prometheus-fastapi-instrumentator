@@ -27,8 +27,7 @@ def create_app() -> FastAPI:
     print(f"after unregister collectors={list(REGISTRY._collector_to_names.keys())}")
 
     # Import default collectors.
-    from prometheus_client import (gc_collector, platform_collector,
-                                   process_collector)
+    from prometheus_client import gc_collector, platform_collector, process_collector
 
     # Re-register default collectors.
     process_collector.ProcessCollector()
@@ -376,6 +375,33 @@ def test_bucket_without_inf():
     response = get_response(client, "/metrics")
     assert_is_not_multiprocess(response)
     assert b"http_request_duration_seconds" in response.content
+
+
+# ------------------------------------------------------------------------------
+# Test env var option.
+
+
+def test_should_respect_env_var_existence_exists():
+    app = create_app()
+    Instrumentator(should_respect_env_var_existence=True, env_var_name="eoioerwjioGFIUONEIO").instrument(app).expose(app)
+    client = TestClient(app)
+
+    get_response(client, "/")
+
+    response = get_response(client, "/metrics")
+    assert response.status_code == 404
+
+
+def test_should_respect_env_var_existence_not_exists():
+    app = create_app()
+    os.environ["eoioerwjioGFIUONEIO"] = "does not matter"
+    Instrumentator(should_respect_env_var_existence=True, env_var_name="eoioerwjioGFIUONEIO").instrument(app).expose(app)
+    client = TestClient(app)
+
+    get_response(client, "/")
+
+    response = get_response(client, "/metrics")
+    assert response.status_code == 200
 
 
 # ------------------------------------------------------------------------------
