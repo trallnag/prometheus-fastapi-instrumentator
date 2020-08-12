@@ -152,13 +152,9 @@ class PrometheusFastApiInstrumentator:
         if self.should_respect_env_var_existence and self.env_var_name not in os.environ:
             return self
 
-        from prometheus_client import (
-            CONTENT_TYPE_LATEST,
-            REGISTRY,
-            CollectorRegistry,
-            generate_latest,
-            multiprocess,
-        )
+        from prometheus_client import (CONTENT_TYPE_LATEST, REGISTRY,
+                                       CollectorRegistry, generate_latest,
+                                       multiprocess)
 
         if "prometheus_multiproc_dir" in os.environ:
             pmd = os.environ["prometheus_multiproc_dir"]
