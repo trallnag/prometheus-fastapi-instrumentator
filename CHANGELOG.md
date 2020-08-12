@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing.
 
+## [1.3.0] 2020-08-12
+
+### Added
+
+* Option `should_respect_env_var_existence`. 
+    * This makes it possible to only instrument and expose your FastAPI if a 
+        given environment variable is set. 
+    * Usecase: A base FastAPI app that is used by multiple distinct apps. The 
+        apps only have to set the variable to be instrumented.
+    * Deactivated by default and the default env var is `PROMETHEUS`.
+
 ## [1.2.0] 2020-08-06
 
 ### Added
