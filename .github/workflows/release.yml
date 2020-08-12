@@ -119,7 +119,7 @@ jobs:
   # ============================================================================
 
   create-github-release:
-    needs: release-to-dockerhub
+    needs: release-to-pypi
 
     runs-on: ubuntu-latest
 
