@@ -119,7 +119,7 @@ jobs:
   # ============================================================================
 
   create-github-release:
-    needs: release-to-pypi
+    needs: release-to-dockerhub
 
     runs-on: ubuntu-latest
 
@@ -129,15 +129,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Retrieve version
-        run: |
-          export PROJECT_VERSION=$(awk '/^version/{print $NF}' pyproject.toml | tr -d '"' | tr -d "'")
-          echo ::set-env name=PROJECT_VERSION::"${PROJECT_VERSION}"
+        run: echo ::set-env name=PROJECT_VERSION::$(awk '/^version/{print $NF}' pyproject.toml | tr -d '"' | tr -d "'")
 
       - name: Retrieve change
-        run: |
-          export CHANGE_BODY=$(awk "/\[${{ env.PROJECT_VERSION }}\]/{flag=1; next} /\[.*\]/{flag=0} flag" CHANGELOG.md | sed 's+\n+%0A+g')
-          echo ::set-env name=CHANGE_BODY::"${CHANGE_BODY}"
-          echo ${{ env.CHANGE }}
+        run: awk '/\[${{ env.PROJECT_VERSION }}\]/{flag=1; next} /\[.*\]/{flag=0} flag' CHANGELOG.md > github-release-body.md
 
       - name: Retrieve date
         run: echo "::set-env name=NOW::$(date +'%Y-%m-%d')"
@@ -147,8 +142,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.PROJECT_VERSION }}
+          tag_name: releases/${{ env.PROJECT_VERSION }}
           release_name: "[${{ env.PROJECT_VERSION }}] ${{ env.NOW }}"
-          body: ${{ env.CHANGE_BODY }}
+          body_path: github-release-body.md
           draft: false
           prerelease: false
