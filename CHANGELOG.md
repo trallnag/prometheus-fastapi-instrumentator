@@ -11,9 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.0] 2020-08-14
 
+A lot of breaking changes in this release. Prometheus FastAPI Instrumentator 
+is now more modular than before and there are multiple different metrics 
+one can choose from out of the box or add custom metrics that will be 
+automatically applied to the FastAPI.
+
 ### Changed
 
-
+* If you just use the default instrumentator without setting any parameters, 
+    nothing changes. The defaults stay the same.
+* If you use any of the paramters that were available in the Instrumentator 
+    constructor you have to check if they are still available or not. Some of 
+    them have been moved to the corresponding `metric` closure / function. I 
+    recommend to go through the updated documentation.
 
 ## [2.0.1] 2020-08-14
 
