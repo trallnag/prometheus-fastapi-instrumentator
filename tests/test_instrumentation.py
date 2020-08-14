@@ -27,8 +27,7 @@ def create_app() -> FastAPI:
     print(f"after unregister collectors={list(REGISTRY._collector_to_names.keys())}")
 
     # Import default collectors.
-    from prometheus_client import (gc_collector, platform_collector,
-                                   process_collector)
+    from prometheus_client import gc_collector, platform_collector, process_collector
 
     # Re-register default collectors.
     process_collector.ProcessCollector()
@@ -384,7 +383,9 @@ def test_bucket_without_inf():
 
 def test_should_respect_env_var_existence_exists():
     app = create_app()
-    Instrumentator(should_respect_env_var=True, env_var_name="eoioerwjioGFIUONEIO").instrument(app).expose(app)
+    Instrumentator(
+        should_respect_env_var=True, env_var_name="eoioerwjioGFIUONEIO"
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -396,7 +397,9 @@ def test_should_respect_env_var_existence_exists():
 def test_should_respect_env_var_existence_not_exists():
     app = create_app()
     os.environ["eoioerwjioGFIUONEIO"] = "true"
-    Instrumentator(should_respect_env_var=True, env_var_name="eoioerwjioGFIUONEIO").instrument(app).expose(app)
+    Instrumentator(
+        should_respect_env_var=True, env_var_name="eoioerwjioGFIUONEIO"
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")

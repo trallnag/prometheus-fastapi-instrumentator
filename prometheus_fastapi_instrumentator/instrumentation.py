@@ -140,7 +140,9 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    def expose(self, app: FastAPI, endpoint: str = "/metrics", include_in_schema: bool = True) -> "self":
+    def expose(
+        self, app: FastAPI, endpoint: str = "/metrics", include_in_schema: bool = True
+    ) -> "self":
         """Exposes Prometheus metrics by adding endpoint to the given app.
 
         **Important**: There are many different ways to expose metrics. This is 
@@ -159,9 +161,13 @@ class PrometheusFastApiInstrumentator:
         ):
             return self
 
-        from prometheus_client import (CONTENT_TYPE_LATEST, REGISTRY,
-                                       CollectorRegistry, generate_latest,
-                                       multiprocess)
+        from prometheus_client import (
+            CONTENT_TYPE_LATEST,
+            REGISTRY,
+            CollectorRegistry,
+            generate_latest,
+            multiprocess,
+        )
 
         if "prometheus_multiproc_dir" in os.environ:
             pmd = os.environ["prometheus_multiproc_dir"]
