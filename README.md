@@ -47,6 +47,7 @@ See the *Example with all parameters* for all possible options.
 
 ```python
 from prometheus_fastapi_instrumentator import PrometheusFastApiInstrumentator
+
 PrometheusFastApiInstrumentator(
     should_group_status_codes=False,
     should_ignore_untemplated=True,
