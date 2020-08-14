@@ -7,7 +7,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
-from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_fastapi_instrumentator import Instrumentator, metrics
 
 # ==============================================================================
 # Setup
@@ -27,8 +27,7 @@ def create_app() -> FastAPI:
     print(f"after unregister collectors={list(REGISTRY._collector_to_names.keys())}")
 
     # Import default collectors.
-    from prometheus_client import (gc_collector, platform_collector,
-                                   process_collector)
+    from prometheus_client import gc_collector, platform_collector, process_collector
 
     # Re-register default collectors.
     process_collector.ProcessCollector()
@@ -149,7 +148,7 @@ def test_app():
 
 def test_metrics_endpoint_availability():
     app = create_app()
-    Instrumentator().instrument(app)
+    Instrumentator().add(metrics.http_request_duration_seconds()).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -167,6 +166,20 @@ def test_metrics_endpoint_availability():
 
 def test_default_metric_name():
     app = create_app()
+    Instrumentator().add(metrics.http_request_duration_seconds()).instrument(app)
+    expose_metrics(app)
+    client = TestClient(app)
+
+    get_response(client, "/")
+
+    response = get_response(client, "/metrics")
+    assert_is_not_multiprocess(response)
+    assert_request_count(1)
+    assert b"http_request_duration_seconds" in response.content
+
+
+def test_default_without_add():
+    app = create_app()
     Instrumentator().instrument(app)
     expose_metrics(app)
     client = TestClient(app)
@@ -181,7 +194,9 @@ def test_default_metric_name():
 
 def test_custom_metric_name():
     app = create_app()
-    Instrumentator(metric_name="fastapi_latency").instrument(app)
+    Instrumentator().add(
+        metrics.http_request_duration_seconds(metric_name="fastapi_latency")
+    ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -326,7 +341,9 @@ def test_default_label_names():
 
 def test_custom_label_names():
     app = create_app()
-    Instrumentator(label_names=("a", "b", "c",)).instrument(app)
+    Instrumentator().add(
+        metrics.http_request_duration_seconds(label_names=("a", "b", "c",))
+    ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -368,7 +385,9 @@ def test_excluded_handlers_none():
 
 def test_bucket_without_inf():
     app = create_app()
-    Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
+    Instrumentator().add(
+        metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -429,7 +448,9 @@ def test_entropy():
 
 def test_default_no_rounding():
     app = create_app()
-    Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
+    Instrumentator().add(
+        metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -450,9 +471,9 @@ def test_default_no_rounding():
 
 def test_rounding():
     app = create_app()
-    Instrumentator(buckets=(1, 2, 3,), should_round_latency_decimals=True).instrument(
-        app
-    ).expose(app)
+    Instrumentator(should_round_latency_decimals=True).add(
+        metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -500,7 +521,9 @@ def is_prometheus_multiproc_set():
 )
 def test_multiprocess_reg():
     app = create_app()
-    Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
+    Instrumentator().add(
+        metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -517,7 +540,7 @@ def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
     monkeypatch.setenv("prometheus_multiproc_dir", str(tmp_path))
 
     app = create_app()
-    Instrumentator(buckets=(1, 2, 3,)).instrument(app).expose(app)
+    Instrumentator().instrument(app).expose(app)
 
     client = TestClient(app)
 
