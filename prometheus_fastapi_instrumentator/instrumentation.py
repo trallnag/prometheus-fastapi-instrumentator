@@ -140,7 +140,7 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    def expose(self, app: FastAPI, endpoint: str = "/metrics") -> "self":
+    def expose(self, app: FastAPI, endpoint: str = "/metrics", include_in_schema: bool = True) -> "self":
         """Exposes Prometheus metrics by adding endpoint to the given app.
 
         **Important**: There are many different ways to expose metrics. This is 
@@ -149,6 +149,7 @@ class PrometheusFastApiInstrumentator:
 
         :param app: FastAPI where the endpoint should be added to.
         :param endpoint: Route of the endpoint. Defaults to "/metrics".
+        :param include_in_schema: Should the endpoint be included in schema?
         :param return: self.
         """
 
@@ -178,7 +179,7 @@ class PrometheusFastApiInstrumentator:
         else:
             registry = REGISTRY
 
-        @app.get("/metrics")
+        @app.get("/metrics", include_in_schema=include_in_schema)
         def metrics():
             return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
 

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] 2020-08-14
 
+### Added
+
+* Option to exclude optional `/metrics` endpoint from schema.
+
 ### Changed
 
 * Renamed `should_respect_env_var_existence` to `should_respect_env_var`.

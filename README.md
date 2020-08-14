@@ -41,7 +41,6 @@ configurable and has few handy features.
     * Completely ignore untemplated routes.
     * Renaming of labels and the metric.
 
-
 See the *Example with all parameters* for all possible options.
 
 ## Example with all parameters
@@ -59,8 +58,14 @@ PrometheusFastApiInstrumentator(
     metric_name="my_custom_metric_name",
     label_names=("method_type", "path", "status_code",),
     round_latency_decimals=3,
-    env_var_name="PROMETHEUS",
-).instrument(app).expose(app, "/prometheus_metrics")
+    env_var_name="ENABLE_METRICS",
+).instrument(
+    app
+).expose(
+    app, 
+    endpoint="/prometheus_metrics", 
+    include_in_schema=False
+)
 ```
 
 `instrument`: Instruments the given FastAPI based on the configuration in 
