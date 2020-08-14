@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing.
 
+## [2.0.0] 2020-08-14
+
+### Changed
+
+* Renamed `should_respect_env_var_existence` to `should_respect_env_var`.
+* If `should_respect_env_var` is `True`, the respective env var must be `true` 
+    and not just any random value.
+* Renamed default env var if `should_respect_env_var` from `PROMETHEUS` to 
+    `ENABLE_METRICS`.
+
 ## [1.3.0] 2020-08-12
 
 ### Added

@@ -17,13 +17,13 @@ class PrometheusFastApiInstrumentator:
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
         should_round_latency_decimals: bool = False,
-        should_respect_env_var_existence: bool = False,
+        should_respect_env_var: bool = False,
         excluded_handlers: list = ["/metrics"],
         buckets: tuple = Histogram.DEFAULT_BUCKETS,
         metric_name: str = "http_request_duration_seconds",
         label_names: tuple = ("method", "handler", "status",),
         round_latency_decimals: int = 4,
-        env_var_name: str = "PROMETHEUS",
+        env_var_name: str = "ENABLE_METRICS",
     ):
         """
         :param should_group_status_codes: Should status codes be grouped into 
@@ -38,11 +38,11 @@ class PrometheusFastApiInstrumentator:
         :param should_round_latency_decimals: Should recorded latencies be 
             rounded to a certain number of decimals?
 
-        :param should_respect_env_var_existence: Should the instrumentator only 
+        :param should_respect_env_var: Should the instrumentator only 
             work - for example the methods `instrument()` and `expose()` - if 
-            a certain environment variable is set? Usecase: A base FastAPI app 
-            that is used by multiple distinct apps. The apps only have to set 
-            the variable to be instrumented.
+            a certain environment variable is set to `true`? Usecase: A base 
+            FastAPI app that is used by multiple distinct apps. The apps only 
+            have to set the variable to be instrumented.
 
         :param excluded_handlers: Handlers that should be ignored. List of 
             strings is turned into regex patterns.
@@ -67,7 +67,7 @@ class PrometheusFastApiInstrumentator:
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
         self.should_round_latency_decimals = should_round_latency_decimals
-        self.should_respect_env_var_existence = should_respect_env_var_existence
+        self.should_respect_env_var = should_respect_env_var
 
         self.round_latency_decimals = round_latency_decimals
         self.label_names = label_names
@@ -97,7 +97,10 @@ class PrometheusFastApiInstrumentator:
         :param return: self.
         """
 
-        if self.should_respect_env_var_existence and self.env_var_name not in os.environ:
+        if (
+            self.should_respect_env_var
+            and os.environ.get(self.env_var_name, "false") != "true"
+        ):
             return self
 
         @app.middleware("http")
@@ -149,7 +152,10 @@ class PrometheusFastApiInstrumentator:
         :param return: self.
         """
 
-        if self.should_respect_env_var_existence and self.env_var_name not in os.environ:
+        if (
+            self.should_respect_env_var
+            and os.environ.get(self.env_var_name, "false") != "true"
+        ):
             return self
 
         from prometheus_client import (
