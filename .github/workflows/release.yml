@@ -43,19 +43,11 @@ jobs:
     - name: Install dependencies
       run: poetry install
     
-    - name: Lint with flake8
-      run: poetry run flake8 --config .flake8 --statistics
+    - name: Lint
+      run: make lint
 
-    - name: Run Pytest
-      run: poetry run pytest --cov=./ --cov-report=xml
-
-    - name: Run Pytest multiprocess
-      run: |
-        mkdir -p /tmp/test_multiproc
-        export prometheus_multiproc_dir=/tmp/test_multiproc
-        poetry run pytest -k test_multiprocess_reg --cov-append --cov=./ --cov-report=xml
-        rm -rf /tmp/test_multiproc
-        unset prometheus_multiproc_dir
+    - name: Test
+      run: make test
 
     - name: Code Coverage
       uses: codecov/codecov-action@v1.0.11
@@ -67,13 +59,13 @@ jobs:
         name: codecov-umbrella
         fail_ci_if_error: false
     
-    - name: Run black formatter
+    - name: Format code style
       if: matrix.python-version == 3.8
-      run: poetry run black .
+      run: make format_style
 
-    - name: Run isort
+    - name: Format imports
       if: matrix.python-version == 3.8
-      run: poetry run isort .
+      run: make format_imports
 
     - name: Recommit
       if: matrix.python-version == 3.8
