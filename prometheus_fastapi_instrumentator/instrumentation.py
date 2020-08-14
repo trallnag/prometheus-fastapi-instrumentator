@@ -159,13 +159,9 @@ class PrometheusFastApiInstrumentator:
         ):
             return self
 
-        from prometheus_client import (
-            CONTENT_TYPE_LATEST,
-            REGISTRY,
-            CollectorRegistry,
-            generate_latest,
-            multiprocess,
-        )
+        from prometheus_client import (CONTENT_TYPE_LATEST, REGISTRY,
+                                       CollectorRegistry, generate_latest,
+                                       multiprocess)
 
         if "prometheus_multiproc_dir" in os.environ:
             pmd = os.environ["prometheus_multiproc_dir"]
