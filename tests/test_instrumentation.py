@@ -152,7 +152,7 @@ def test_app():
 
 def test_metrics_endpoint_availability():
     app = create_app()
-    Instrumentator().add(metrics.http_request_duration_seconds()).instrument(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_request_duration_seconds()).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -170,7 +170,7 @@ def test_metrics_endpoint_availability():
 
 def test_default_metric_name():
     app = create_app()
-    Instrumentator().add(metrics.http_request_duration_seconds()).instrument(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_request_duration_seconds()).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -184,7 +184,7 @@ def test_default_metric_name():
 
 def test_default_without_add():
     app = create_app()
-    Instrumentator().instrument(app)
+    Instrumentator(excluded_handlers=["/metrics"]).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -198,7 +198,7 @@ def test_default_without_add():
 
 def test_custom_metric_name():
     app = create_app()
-    Instrumentator().add(
+    Instrumentator(excluded_handlers=["/metrics"]).add(
         metrics.http_request_duration_seconds(metric_name="fastapi_latency")
     ).instrument(app)
     expose_metrics(app)
@@ -219,7 +219,7 @@ def test_custom_metric_name():
 
 def test_grouped_status_codes():
     app = create_app()
-    Instrumentator().instrument(app)
+    Instrumentator(excluded_handlers=["/metrics"]).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -290,7 +290,7 @@ def test_dont_ignore_untemplated_ungrouped():
 
 def test_grouping_untemplated():
     app = create_app()
-    Instrumentator().instrument(app)
+    Instrumentator(excluded_handlers=["/metrics"]).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -329,7 +329,7 @@ def test_excluding_handlers():
 
 def test_default_label_names():
     app = create_app()
-    Instrumentator().instrument(app)
+    Instrumentator(excluded_handlers=["/metrics"]).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -345,7 +345,7 @@ def test_default_label_names():
 
 def test_custom_label_names():
     app = create_app()
-    Instrumentator().add(
+    Instrumentator(excluded_handlers=["/metrics"]).add(
         metrics.http_request_duration_seconds(label_names=("a", "b", "c",))
     ).instrument(app)
     expose_metrics(app)
@@ -389,7 +389,7 @@ def test_excluded_handlers_none():
 
 def test_bucket_without_inf():
     app = create_app()
-    Instrumentator().add(
+    Instrumentator(excluded_handlers=["/metrics"]).add(
         metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
     ).instrument(app).expose(app)
     client = TestClient(app)
@@ -452,7 +452,7 @@ def test_entropy():
 
 def test_default_no_rounding():
     app = create_app()
-    Instrumentator().add(
+    Instrumentator(excluded_handlers=["/metrics"]).add(
         metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
     ).instrument(app).expose(app)
     client = TestClient(app)
@@ -525,7 +525,7 @@ def is_prometheus_multiproc_set():
 )
 def test_multiprocess_reg():
     app = create_app()
-    Instrumentator().add(
+    Instrumentator(excluded_handlers=["/metrics"]).add(
         metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
     ).instrument(app).expose(app)
     client = TestClient(app)
@@ -544,7 +544,7 @@ def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
     monkeypatch.setenv("prometheus_multiproc_dir", str(tmp_path))
 
     app = create_app()
-    Instrumentator().instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(app)
 
     client = TestClient(app)
 

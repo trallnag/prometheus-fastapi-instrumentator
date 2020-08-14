@@ -19,7 +19,7 @@ class PrometheusFastApiInstrumentator:
         should_group_untemplated: bool = True,
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
-        excluded_handlers: list = ["/metrics"],
+        excluded_handlers: list = [],
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
     ):

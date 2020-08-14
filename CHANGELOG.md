@@ -24,6 +24,7 @@ automatically applied to the FastAPI.
     constructor you have to check if they are still available or not. Some of 
     them have been moved to the corresponding `metric` closure / function. I 
     recommend to go through the updated documentation.
+* Endpoint `/metrics` is not excluded by default anymore.
 
 ## [2.0.1] 2020-08-14
 
