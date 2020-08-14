@@ -53,7 +53,7 @@ PrometheusFastApiInstrumentator(
     should_ignore_untemplated=True,
     should_group_untemplated=False,
     should_round_latency_decimals=True,
-    should_respect_env_var_existence=True,
+    should_respect_env_var=True,
     excluded_handlers=["/metrics", "/admin"],
     buckets=[1, 2, 3, 4, 5],
     metric_name="my_custom_metric_name",
