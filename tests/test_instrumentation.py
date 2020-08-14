@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional
 
 import pytest
 from fastapi import FastAPI, HTTPException
