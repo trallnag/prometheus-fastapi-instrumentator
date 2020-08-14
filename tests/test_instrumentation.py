@@ -27,7 +27,8 @@ def create_app() -> FastAPI:
     print(f"after unregister collectors={list(REGISTRY._collector_to_names.keys())}")
 
     # Import default collectors.
-    from prometheus_client import gc_collector, platform_collector, process_collector
+    from prometheus_client import (gc_collector, platform_collector,
+                                   process_collector)
 
     # Re-register default collectors.
     process_collector.ProcessCollector()
