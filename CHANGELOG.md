@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing.
 
+## [2.0.1] 2020-08-14
+
+### Changed
+
+* Fixed wrong var name in `README.md`.
+
 ## [2.0.0] 2020-08-14
 
 ### Added
