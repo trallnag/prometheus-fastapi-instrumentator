@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional
 
 import pytest
 from fastapi import FastAPI, HTTPException
@@ -27,8 +27,7 @@ def create_app() -> FastAPI:
     print(f"after unregister collectors={list(REGISTRY._collector_to_names.keys())}")
 
     # Import default collectors.
-    from prometheus_client import (gc_collector, platform_collector,
-                                   process_collector)
+    from prometheus_client import gc_collector, platform_collector, process_collector
 
     # Re-register default collectors.
     process_collector.ProcessCollector()
@@ -495,185 +494,6 @@ def test_rounding():
     entropy = calc_entropy(str(result).split(".")[1][4:])
 
     assert entropy < 10
-
-
-# ------------------------------------------------------------------------------
-# http_request_content_length_bytes
-
-
-def test_http_request_content_length_bytes_with_handler():
-    app = create_app()
-    Instrumentator().add(metrics.http_request_content_length_bytes()).instrument(
-        app
-    ).expose(app)
-    client = TestClient(app)
-
-    client.get("/", data="some data")
-
-    response = get_response(client, "/metrics")
-
-    assert b"http_request_content_bytes" in response.content
-    assert b"http_request_content_bytes_count{" in response.content
-
-
-def test_http_request_content_length_bytes_without_handler():
-    app = create_app()
-    Instrumentator().add(
-        metrics.http_request_content_length_bytes(should_drop_handler=True)
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    client.get("/", data="some data")
-
-    _ = get_response(client, "/metrics")
-
-    assert (
-        REGISTRY.get_sample_value(
-            "http_request_content_bytes_sum", {"method": "GET", "status": "2xx"}
-        )
-        == 9
-    )
-
-
-def test_http_request_content_length_bytes_no_cl():
-    app = create_app()
-    Instrumentator().add(metrics.http_request_content_length_bytes()).instrument(
-        app
-    ).expose(app)
-    client = TestClient(app)
-
-    client.get("/")
-
-    response = get_response(client, "/metrics")
-
-    assert b"http_request_content_bytes" in response.content
-    assert b"http_request_content_bytes_count{" not in response.content
-
-
-# ------------------------------------------------------------------------------
-# http_response_content_length_bytes
-
-
-def test_http_response_content_length_bytes_with_handler():
-    app = create_app()
-    Instrumentator().add(metrics.http_response_content_length_bytes()).instrument(
-        app
-    ).expose(app)
-    client = TestClient(app)
-
-    get_response(client, "/")
-    get_response(client, "/")
-    get_response(client, "/")
-
-    response = get_response(client, "/metrics")
-
-    assert b"http_response_content_bytes_count{" in response.content
-    assert (
-        REGISTRY.get_sample_value(
-            "http_response_content_bytes_sum",
-            {"handler": "/", "method": "GET", "status": "2xx"},
-        )
-        == 42
-    )
-    assert (
-        REGISTRY.get_sample_value(
-            "http_response_content_bytes_count",
-            {"handler": "/", "method": "GET", "status": "2xx"},
-        )
-        == 3
-    )
-
-
-def test_http_response_content_length_bytes_without_handler():
-    app = create_app()
-    Instrumentator().add(
-        metrics.http_response_content_length_bytes(should_drop_handler=True)
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    get_response(client, "/")
-    get_response(client, "/")
-    get_response(client, "/")
-    get_response(client, "/ignore")
-
-    response = get_response(client, "/metrics")
-
-    assert b"http_response_content_bytes_count{" in response.content
-    assert (
-        REGISTRY.get_sample_value(
-            "http_response_content_bytes_sum", {"method": "GET", "status": "2xx"}
-        )
-        == 61
-    )
-    assert (
-        REGISTRY.get_sample_value(
-            "http_response_content_bytes_count", {"method": "GET", "status": "2xx"}
-        )
-        == 4
-    )
-
-
-# ------------------------------------------------------------------------------
-# http_content_length_bytes
-
-
-def test_http_content_length_bytes_with_handler_and_data():
-    app = create_app()
-    Instrumentator().add(metrics.http_content_length_bytes()).instrument(app).expose(app)
-    client = TestClient(app)
-
-    client.get("/", data="some data")
-    client.get("/", data="some data")
-    client.get("/", data="some data")
-
-    _ = get_response(client, "/metrics")
-
-    assert (
-        REGISTRY.get_sample_value(
-            "http_content_length_bytes_sum",
-            {"handler": "/", "method": "GET", "status": "2xx"},
-        )
-        == 69
-    )
-
-
-def test_http_content_length_bytes_with_handler_no_data():
-    app = create_app()
-    Instrumentator().add(metrics.http_content_length_bytes()).instrument(app).expose(app)
-    client = TestClient(app)
-
-    client.get("/")
-    client.get("/")
-    client.get("/")
-
-    _ = get_response(client, "/metrics")
-
-    assert (
-        REGISTRY.get_sample_value(
-            "http_content_length_bytes_sum",
-            {"handler": "/", "method": "GET", "status": "2xx"},
-        )
-        == 42
-    )
-
-
-def test_http_content_length_bytes_without_handler():
-    app = create_app()
-    Instrumentator().add(
-        metrics.http_content_length_bytes(should_drop_handler=True)
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    client.get("/", data="some data")
-
-    _ = get_response(client, "/metrics")
-
-    assert (
-        REGISTRY.get_sample_value(
-            "http_content_length_bytes_sum", {"method": "GET", "status": "2xx"}
-        )
-        == 23
-    )
 
 
 # ------------------------------------------------------------------------------
