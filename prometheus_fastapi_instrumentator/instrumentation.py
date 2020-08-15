@@ -47,7 +47,7 @@ class PrometheusFastApiInstrumentator:
 
         :param env_var_name: Any valid os environment variable name that 
             will be checked for existence before instrumentation. Ignored 
-            unless `should_respect_env_var_existence` is `True`.
+            unless `should_respect_env_var` is `True`.
         """
 
         self.should_group_status_codes = should_group_status_codes

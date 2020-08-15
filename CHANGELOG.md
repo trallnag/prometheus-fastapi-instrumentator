@@ -1,3 +1,5 @@
+.. include:: ../README.rst
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -25,6 +27,7 @@ automatically applied to the FastAPI.
     them have been moved to the corresponding `metric` closure / function. I 
     recommend to go through the updated documentation.
 * Endpoint `/metrics` is not excluded by default anymore.
+* Updated `README.md`.
 
 ## [2.0.1] 2020-08-14
 
