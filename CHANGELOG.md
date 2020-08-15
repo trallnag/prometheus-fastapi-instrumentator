@@ -1,5 +1,3 @@
-.. include:: ../README.rst
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -11,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing.
 
-## [3.0.0] 2020-08-14
+## [3.0.0] 2020-08-15
 
 A lot of breaking changes in this release. Prometheus FastAPI Instrumentator 
 is now more modular than before and there are multiple different metrics 
