@@ -153,7 +153,7 @@ def test_app():
 def test_metrics_endpoint_availability():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.http_request_duration_seconds()
+        metrics.latency()
     ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
@@ -173,7 +173,7 @@ def test_metrics_endpoint_availability():
 def test_default_metric_name():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.http_request_duration_seconds()
+        metrics.latency()
     ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
@@ -203,7 +203,7 @@ def test_default_without_add():
 def test_custom_metric_name():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.http_request_duration_seconds(metric_name="fastapi_latency")
+        metrics.latency(metric_name="fastapi_latency")
     ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
@@ -350,7 +350,7 @@ def test_default_label_names():
 def test_custom_label_names():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.http_request_duration_seconds(label_names=("a", "b", "c",))
+        metrics.latency(label_names=("a", "b", "c",))
     ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
@@ -394,7 +394,7 @@ def test_excluded_handlers_none():
 def test_bucket_without_inf():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+        metrics.latency(buckets=(1, 2, 3,))
     ).instrument(app).expose(app)
     client = TestClient(app)
 
@@ -457,7 +457,7 @@ def test_entropy():
 def test_default_no_rounding():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+        metrics.latency(buckets=(1, 2, 3,))
     ).instrument(app).expose(app)
     client = TestClient(app)
 
@@ -480,7 +480,7 @@ def test_default_no_rounding():
 def test_rounding():
     app = create_app()
     Instrumentator(should_round_latency_decimals=True).add(
-        metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+        metrics.latency(buckets=(1, 2, 3,))
     ).instrument(app).expose(app)
     client = TestClient(app)
 
@@ -530,7 +530,7 @@ def is_prometheus_multiproc_set():
 def test_multiprocess_reg():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+        metrics.latency(buckets=(1, 2, 3,))
     ).instrument(app).expose(app)
     client = TestClient(app)
 

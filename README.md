@@ -98,11 +98,11 @@ within.
 
 ```python
 instrumentator.add(
-    metrics.http_request_duration_seconds(buckets=(1, 2, 3,))
+    metrics.latency(buckets=(1, 2, 3,))
 ).add(
-    metrics.http_request_content_length_bytes(should_drop_handler=True)
+    metrics.request_size(should_drop_handler=True)
 ).add(
-    metrics.http_response_content_length_bytes(should_drop_handler=True)
+    metrics.response_size(should_drop_handler=True)
 )
 ```
 

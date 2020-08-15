@@ -36,7 +36,7 @@ class Info:
         self.modified_duration = modified_duration
 
 
-def http_request_duration_seconds(
+def latency(
     metric_name: str = "http_request_duration_seconds",
     buckets: tuple = Histogram.DEFAULT_BUCKETS,
     label_names: tuple = ("method", "handler", "status",),
@@ -71,7 +71,7 @@ def http_request_duration_seconds(
     return instrumentation
 
 
-def http_request_content_length_bytes(
+def request_size(
     should_drop_handler: bool = False,
 ) -> Callable[[Info], None]:
     """Record the content length of incoming requests.
@@ -109,7 +109,7 @@ def http_request_content_length_bytes(
     return instrumentation
 
 
-def http_response_content_length_bytes(
+def response_size(
     should_drop_handler: bool = False,
 ) -> Callable[[Info], None]:
     """Record the content length of outgoing responses.
@@ -147,7 +147,7 @@ def http_response_content_length_bytes(
     return instrumentation
 
 
-def http_content_length_bytes(
+def combined_size(
     should_drop_handler: bool = False,
 ) -> Callable[[Info], None]:
     """Record the combined content length of requests and responses.

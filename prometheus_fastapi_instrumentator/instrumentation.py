@@ -80,7 +80,7 @@ class PrometheusFastApiInstrumentator:
             return self
 
         if len(self.instrumentations) == 0:
-            self.instrumentations.append(metrics.http_request_duration_seconds())
+            self.instrumentations.append(metrics.latency())
 
         @app.middleware("http")
         async def dispatch_middleware(request: Request, call_next) -> Response:
