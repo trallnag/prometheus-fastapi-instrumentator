@@ -144,7 +144,8 @@ def test_request_size_all_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_request_size_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+            "http_request_size_bytes_sum",
+            {"handler": "/", "method": "GET", "status": "2xx"},
         )
         == 9
     )
@@ -152,21 +153,18 @@ def test_request_size_all_labels():
 
 def test_request_size_no_labels():
     app = create_app()
-    Instrumentator().add(metrics.request_size(
-        should_include_handler=False,
-        should_include_method=False,
-        should_include_status=False,
-    )).instrument(app)
+    Instrumentator().add(
+        metrics.request_size(
+            should_include_handler=False,
+            should_include_method=False,
+            should_include_status=False,
+        )
+    ).instrument(app)
     client = TestClient(app)
 
     client.get("/", data="some data")
 
-    assert (
-        REGISTRY.get_sample_value(
-            "http_request_size_bytes_sum", {}
-        )
-        == 9
-    )
+    assert REGISTRY.get_sample_value("http_request_size_bytes_sum", {}) == 9
 
 
 def test_request_size_no_cl():
@@ -199,7 +197,8 @@ def test_response_size_all_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_response_size_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+            "http_response_size_bytes_sum",
+            {"handler": "/", "method": "GET", "status": "2xx"},
         )
         == 14
     )
@@ -207,23 +206,20 @@ def test_response_size_all_labels():
 
 def test_response_size_no_labels():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.response_size(
-        should_include_handler=False,
-        should_include_method=False,
-        should_include_status=False,
-    )).instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.response_size(
+            should_include_handler=False,
+            should_include_method=False,
+            should_include_status=False,
+        )
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/")
 
     _ = get_response(client, "/metrics")
 
-    assert (
-        REGISTRY.get_sample_value(
-            "http_response_size_bytes_sum", {}
-        )
-        == 14
-    )
+    assert REGISTRY.get_sample_value("http_response_size_bytes_sum", {}) == 14
 
 
 # ------------------------------------------------------------------------------
@@ -241,7 +237,8 @@ def test_combined_size_all_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_combined_size_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+            "http_combined_size_bytes_sum",
+            {"handler": "/", "method": "GET", "status": "2xx"},
         )
         == 14
     )
@@ -258,7 +255,8 @@ def test_combined_size_all_labels_with_data():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_combined_size_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+            "http_combined_size_bytes_sum",
+            {"handler": "/", "method": "GET", "status": "2xx"},
         )
         == 24
     )
@@ -266,19 +264,15 @@ def test_combined_size_all_labels_with_data():
 
 def test_combined_size_no_labels():
     app = create_app()
-    Instrumentator().add(metrics.combined_size(
-        should_include_handler=False,
-        should_include_method=False,
-        should_include_status=False,
-    )).instrument(app)
+    Instrumentator().add(
+        metrics.combined_size(
+            should_include_handler=False,
+            should_include_method=False,
+            should_include_status=False,
+        )
+    ).instrument(app)
     client = TestClient(app)
 
     client.get("/")
 
-    assert (
-        REGISTRY.get_sample_value(
-            "http_combined_size_bytes_sum", {}
-        )
-        == 14
-    )
-
+    assert REGISTRY.get_sample_value("http_combined_size_bytes_sum", {}) == 14
