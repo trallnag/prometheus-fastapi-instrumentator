@@ -144,7 +144,7 @@ def test_request_size_all_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_request_content_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+            "http_request_size_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
         )
         == 9
     )
@@ -163,7 +163,7 @@ def test_request_size_no_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_request_content_bytes_sum", {}
+            "http_request_size_bytes_sum", {}
         )
         == 9
     )
@@ -180,8 +180,8 @@ def test_request_size_no_cl():
 
     response = get_response(client, "/metrics")
 
-    assert b"http_request_content_bytes" in response.content
-    assert b"http_request_content_bytes_count{" not in response.content
+    assert b"http_request_size_bytes" in response.content
+    assert b"http_request_size_bytes_count{" not in response.content
 
 
 # ------------------------------------------------------------------------------
@@ -199,7 +199,7 @@ def test_response_size_all_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_response_content_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+            "http_response_size_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
         )
         == 14
     )
@@ -220,7 +220,7 @@ def test_response_size_no_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_response_content_bytes_sum", {}
+            "http_response_size_bytes_sum", {}
         )
         == 14
     )
@@ -241,7 +241,7 @@ def test_combined_size_all_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_content_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+            "http_combined_size_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
         )
         == 14
     )
@@ -258,7 +258,7 @@ def test_combined_size_all_labels_with_data():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_content_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+            "http_combined_size_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
         )
         == 24
     )
@@ -277,74 +277,8 @@ def test_combined_size_no_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_content_bytes_sum", {}
+            "http_combined_size_bytes_sum", {}
         )
         == 14
     )
 
-
-# ------------------------------------------------------------------------------
-# http_content_length_bytes
-
-
-def test_http_content_length_bytes_with_handler_and_data():
-    app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.combined_size()
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    client.get("/", data="some data")
-    client.get("/", data="some data")
-    client.get("/", data="some data")
-
-    _ = get_response(client, "/metrics")
-
-    assert (
-        REGISTRY.get_sample_value(
-            "http_content_length_bytes_sum",
-            {"handler": "/", "method": "GET", "status": "2xx"},
-        )
-        == 69
-    )
-
-
-def test_http_content_length_bytes_with_handler_no_data():
-    app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.combined_size()
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    client.get("/")
-    client.get("/")
-    client.get("/")
-
-    _ = get_response(client, "/metrics")
-
-    assert (
-        REGISTRY.get_sample_value(
-            "http_content_length_bytes_sum",
-            {"handler": "/", "method": "GET", "status": "2xx"},
-        )
-        == 42
-    )
-
-
-def test_http_content_length_bytes_without_handler():
-    app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.combined_size(should_drop_handler=True)
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    client.get("/", data="some data")
-
-    _ = get_response(client, "/metrics")
-
-    assert (
-        REGISTRY.get_sample_value(
-            "http_content_length_bytes_sum", {"method": "GET", "status": "2xx"}
-        )
-        == 23
-    )
