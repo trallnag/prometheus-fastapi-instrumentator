@@ -30,6 +30,7 @@ black = "^19.10b0"
 requests = "^2.24.0"
 pytest-cov = "^2.10.0"
 isort = "^5.2.2"
+pdoc3 = "^0.8.4"
 
 [tool.black]
 line-length = 90
