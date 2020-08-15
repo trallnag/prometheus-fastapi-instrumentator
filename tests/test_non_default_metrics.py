@@ -130,9 +130,9 @@ def assert_request_count(
 
 def test_http_request_content_length_bytes_with_handler():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_request_content_length_bytes()).instrument(
-        app
-    ).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.http_request_content_length_bytes()
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/", data="some data")
@@ -164,9 +164,9 @@ def test_http_request_content_length_bytes_without_handler():
 
 def test_http_request_content_length_bytes_no_cl():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_request_content_length_bytes()).instrument(
-        app
-    ).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.http_request_content_length_bytes()
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/")
@@ -183,9 +183,9 @@ def test_http_request_content_length_bytes_no_cl():
 
 def test_http_response_content_length_bytes_with_handler():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_response_content_length_bytes()).instrument(
-        app
-    ).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.http_response_content_length_bytes()
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -246,7 +246,9 @@ def test_http_response_content_length_bytes_without_handler():
 
 def test_http_content_length_bytes_with_handler_and_data():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_content_length_bytes()).instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.http_content_length_bytes()
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/", data="some data")
@@ -266,7 +268,9 @@ def test_http_content_length_bytes_with_handler_and_data():
 
 def test_http_content_length_bytes_with_handler_no_data():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_content_length_bytes()).instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.http_content_length_bytes()
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/")

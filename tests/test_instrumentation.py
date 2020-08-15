@@ -152,7 +152,9 @@ def test_app():
 
 def test_metrics_endpoint_availability():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_request_duration_seconds()).instrument(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.http_request_duration_seconds()
+    ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -170,7 +172,9 @@ def test_metrics_endpoint_availability():
 
 def test_default_metric_name():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.http_request_duration_seconds()).instrument(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.http_request_duration_seconds()
+    ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
