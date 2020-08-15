@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Tuple
 
 from prometheus_client import Histogram, Summary
 from starlette.requests import Request
@@ -10,6 +10,7 @@ class Info:
         self,
         request: Request,
         response: Response or None,
+        method: str,
         modified_handler: str,
         modified_status: str,
         modified_duration: float,
@@ -18,6 +19,8 @@ class Info:
         :param request: Request object.
 
         :param response: Response object or `None` (just like returned by FastAPI).
+
+        :param method: Method of the request.
 
         :param modified_handler: Handler representation after processing by 
             instrumentator. For example grouped to `none` if not templated.
@@ -31,9 +34,33 @@ class Info:
 
         self.request = request
         self.response = response
+        self.method = method
         self.modified_handler = modified_handler
         self.modified_status = modified_status
         self.modified_duration = modified_duration
+
+
+def _build_label_attribute_names(
+    should_include_handler: bool,
+    should_include_method: bool,
+    should_include_status: bool,
+) -> Tuple[list, list]:
+    label_names = []
+    info_attribute_names = []
+
+    if should_include_handler:
+        label_names.append("handler")
+        info_attribute_names.append("modified_handler")
+
+    if should_include_method:
+        label_names.append("method")
+        info_attribute_names.append("method")
+
+    if should_include_status:
+        label_names.append("status")
+        info_attribute_names.append("modified_status")
+
+    return label_names, info_attribute_names
 
 
 def latency(
@@ -72,103 +99,95 @@ def latency(
 
 
 def request_size(
-    should_drop_handler: bool = False,
+    metric_name: str = "http_request_size_bytes",
+    metric_doc: str = "Content bytes of requests.",
+    should_include_handler: bool = True,
+    should_include_method: bool = True,
+    should_include_status: bool = True,
 ) -> Callable[[Info], None]:
     """Record the content length of incoming requests.
 
     Requests / Responses with missing `Content-Length` will be skipped.
-
-    :param metric_name: Name of the latency metric.
     """
 
-    if should_drop_handler:
-        METRIC = Summary(
-            "http_request_content_bytes",
-            "Content bytes of requests.",
-            labelnames=("method", "status",),
-        )
+    label_names, info_attribute_names = _build_label_attribute_names(
+        should_include_handler, should_include_method, should_include_status
+    )
+
+    if label_names:
+        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
     else:
-        METRIC = Summary(
-            "http_request_content_bytes",
-            "Content bytes of requests.",
-            labelnames=("method", "handler", "status",),
-        )
+        METRIC = Summary(metric_name, metric_doc)
 
     def instrumentation(info: Info) -> None:
         content_length = info.request.headers.get("Content-Length", None)
         if content_length is not None:
-            if should_drop_handler:
-                METRIC.labels(info.request.method, info.modified_status).observe(
-                    int(content_length)
-                )
+            if label_names:
+                label_values = []
+                for attribute_name in info_attribute_names:
+                    label_values.append(getattr(info, attribute_name))
+                METRIC.labels(*label_values).observe(int(content_length))
             else:
-                METRIC.labels(
-                    info.request.method, info.modified_handler, info.modified_status
-                ).observe(int(content_length))
+                METRIC.observe(int(content_length))
 
     return instrumentation
 
 
 def response_size(
-    should_drop_handler: bool = False,
+    metric_name: str = "http_response_size_bytes",
+    metric_doc: str = "Content bytes of responses.",
+    should_include_handler: bool = True,
+    should_include_method: bool = True,
+    should_include_status: bool = True,
 ) -> Callable[[Info], None]:
     """Record the content length of outgoing responses.
 
     Responses with missing `Content-Length` will be skipped.
-
-    :param metric_name: Name of the latency metric.
     """
 
-    if should_drop_handler:
-        METRIC = Summary(
-            "http_response_content_bytes",
-            "Content bytes of responses.",
-            labelnames=("method", "status",),
-        )
+    label_names, info_attribute_names = _build_label_attribute_names(
+        should_include_handler, should_include_method, should_include_status
+    )
+
+    if label_names:
+        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
     else:
-        METRIC = Summary(
-            "http_response_content_bytes",
-            "Content bytes of responses.",
-            labelnames=("method", "handler", "status",),
-        )
+        METRIC = Summary(metric_name, metric_doc)
 
     def instrumentation(info: Info) -> None:
         content_length = info.response.headers.get("Content-Length", None)
         if content_length is not None:
-            if should_drop_handler:
-                METRIC.labels(info.request.method, info.modified_status).observe(
-                    int(content_length)
-                )
+            if label_names:
+                label_values = []
+                for attribute_name in info_attribute_names:
+                    label_values.append(getattr(info, attribute_name))
+                METRIC.labels(*label_values).observe(int(content_length))
             else:
-                METRIC.labels(
-                    info.request.method, info.modified_handler, info.modified_status
-                ).observe(int(content_length))
+                METRIC.observe(int(content_length))
 
     return instrumentation
 
 
 def combined_size(
-    should_drop_handler: bool = False,
+    metric_name: str = "http_combined_size_bytes",
+    metric_doc: str = "Content bytes of requests and responses.",
+    should_include_handler: bool = True,
+    should_include_method: bool = True,
+    should_include_status: bool = True,
 ) -> Callable[[Info], None]:
     """Record the combined content length of requests and responses.
 
     Requests / Responses with missing `Content-Length` will be skipped.
-
-    :param metric_name: Name of the latency metric.
     """
 
-    if should_drop_handler:
-        METRIC = Summary(
-            "http_content_length_bytes",
-            "Content bytes of requests and responses.",
-            labelnames=("method", "status",),
-        )
+    label_names, info_attribute_names = _build_label_attribute_names(
+        should_include_handler, should_include_method, should_include_status
+    )
+
+    if label_names:
+        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
     else:
-        METRIC = Summary(
-            "http_content_length_bytes",
-            "Content bytes of requests and responses.",
-            labelnames=("method", "handler", "status",),
-        )
+        METRIC = Summary(metric_name, metric_doc)
 
     def instrumentation(info: Info) -> None:
         request_cl = info.request.headers.get("Content-Length", None)
@@ -184,13 +203,12 @@ def combined_size(
             content_length = None
 
         if content_length is not None:
-            if should_drop_handler:
-                METRIC.labels(info.request.method, info.modified_status).observe(
-                    content_length
-                )
+            if label_names:
+                label_values = []
+                for attribute_name in info_attribute_names:
+                    label_values.append(getattr(info, attribute_name))
+                METRIC.labels(*label_values).observe(int(content_length))
             else:
-                METRIC.labels(
-                    info.request.method, info.modified_handler, info.modified_status
-                ).observe(content_length)
+                METRIC.observe(int(content_length))
 
     return instrumentation

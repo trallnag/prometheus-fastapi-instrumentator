@@ -32,6 +32,20 @@ The sensible defaults give you the following:
 * Status codes are grouped into `2xx`, `3xx` and so on.
 * Requests without a matching template are grouped into the handler `none`.
 
+---
+
+Contents: **[Features](#features)** |
+**[Advanced Usage](#advanced-usage)** | 
+[Creating the Instrumentator](#creating-the-instrumentator) |
+[Adding metrics](#adding-metrics) |
+[Creating new metrics](#creating-new-metrics) |
+[Perform instrumentation](#perform-instrumentation) |
+[Exposing endpoint](#exposing-endpoint) |
+**[Prerequesites](#prerequesites)** |
+**[Development](#development)**
+
+---
+
 ## Features
 
 Beyond the fast track, this instrumentator is **highly configurable**. Here is 
@@ -72,7 +86,7 @@ instrumentator = Instrumentator(
     should_group_status_codes=False,
     should_ignore_untemplated=True,
     should_respect_env_var=True,
-    excluded_handlers=[".*admin.*"],
+    excluded_handlers=[".*admin.*", "/metrics"],
     env_var_name="ENABLE_METRICS",
 )
 ```
@@ -82,7 +96,7 @@ only take place if the environment variable `ENABLE_METRICS` is `true` at
 run-time. This can be helpful in larger deployments with multiple services
 depending on the same base FastAPI.
 
-### Adding existing metrics
+### Adding metrics
 
 Let's say we also want to instrument the size of requests and responses. For 
 this we use the `add()` method. This method does nothing more than taking a
@@ -97,14 +111,30 @@ Closures come in handy here because it allows us to configure the functions
 within.
 
 ```python
+instrumentator.add(metrics.latency(buckets=(1, 2, 3,)))
+```
+
+This simply adds the metric you also get in the fast track example with a 
+modified buckets argument. But we would also like to record the size of 
+all requests and responses. 
+
+```python
 instrumentator.add(
-    metrics.latency(buckets=(1, 2, 3,))
+    metrics.request_size(
+        should_include_handler=False,
+        should_include_method=False,
+        should_include_status=False,
+    )
 ).add(
-    metrics.request_size(should_drop_handler=True)
-).add(
-    metrics.response_size(should_drop_handler=True)
+    metrics.response_size(
+        should_include_handler=False,
+        should_include_method=False,
+        should_include_status=False,
+    )
 )
 ```
+
+You can add as many metrics you like to the instrumentator.
 
 ### Creating new metrics
 
@@ -145,7 +175,7 @@ To use it, we hand over the closure to the instrumentator object.
 instrumentator.add(http_requested_languages_total())
 ```
 
-### Perform the instrumentation
+### Perform instrumentation
 
 Up to this point, the FastAPI has not been touched at all. Everything has been 
 stored in the `instrumentator` only. To actually register the instrumentation 
@@ -159,7 +189,7 @@ Notice that this will to nothing if `should_respect_env_var` has been set
 during construction of the instrumentator object and the respective env var 
 is not found.
 
-### Exposing metrics endpoint
+### Exposing endpoint
 
 To expose an endpoint for the metrics either follow 
 [Prometheus Python Client](https://github.com/prometheus/client_python) and 
@@ -174,6 +204,8 @@ instrumentator.expose(app, include_in_schema=False)
 Notice that this will to nothing if `should_respect_env_var` has been set 
 during construction of the instrumentator object and the respective env var 
 is not found.
+
+## API Documentation
 
 ## Prerequesites
 

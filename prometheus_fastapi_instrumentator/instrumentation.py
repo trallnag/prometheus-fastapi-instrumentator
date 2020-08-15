@@ -112,6 +112,7 @@ class PrometheusFastApiInstrumentator:
                     info = metrics.Info(
                         request=request,
                         response=response,
+                        method=request.method,
                         modified_handler=handler,
                         modified_status=status,
                         modified_duration=duration,

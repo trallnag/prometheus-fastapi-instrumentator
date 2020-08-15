@@ -62,28 +62,6 @@ def create_app() -> FastAPI:
     return app
 
 
-def expose_metrics(app: FastAPI) -> None:
-    if "prometheus_multiproc_dir" in os.environ:
-        pmd = os.environ["prometheus_multiproc_dir"]
-        print(f"Env var prometheus_multiproc_dir='{pmd}' detected.")
-        if os.path.isdir(pmd):
-            print(f"Env var prometheus_multiproc_dir='{pmd}' is a dir.")
-            from prometheus_client import CollectorRegistry, multiprocess
-
-            registry = CollectorRegistry()
-            multiprocess.MultiProcessCollector(registry)
-        else:
-            raise ValueError(f"Env var prometheus_multiproc_dir='{pmd}' not a directory.")
-    else:
-        registry = REGISTRY
-
-    @app.get("/metrics")
-    def metrics():
-        return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
-
-    return registry
-
-
 def get_response(client: TestClient, path: str) -> Response:
     response = client.get(path)
 
@@ -94,79 +72,108 @@ def get_response(client: TestClient, path: str) -> Response:
     return response
 
 
-def assert_is_not_multiprocess(response: Response) -> None:
-    assert response.status_code == 200
-    assert b"Multiprocess" not in response.content
-    assert b"# HELP process_cpu_seconds_total" in response.content
+# ==============================================================================
+# Test helpers / misc
 
 
-def assert_request_count(
-    expected: float,
-    name: str = "http_request_duration_seconds_count",
-    handler: str = "/",
-    method: str = "GET",
-    status: str = "2xx",
-) -> None:
-    result = REGISTRY.get_sample_value(
-        name, {"handler": handler, "method": method, "status": status}
+def test_existence_of_attributes():
+    info = metrics.Info(
+        request=None,
+        response=None,
+        method=None,
+        modified_duration=None,
+        modified_status=None,
+        modified_handler=None,
     )
-    print(
-        (
-            f"{name} handler={handler} method={method} status={status} "
-            f"result={result} expected={expected}"
-        )
+    assert info.request is None
+    assert info.response is None
+    assert info.method is None
+    assert info.modified_duration is None
+    assert info.modified_status is None
+    assert info.modified_handler is None
+
+
+def test_build_label_attribute_names_all_false():
+    label_names, info_attribute_names = metrics._build_label_attribute_names(
+        should_include_handler=False,
+        should_include_method=False,
+        should_include_status=False,
     )
-    assert result == expected
-    assert result + 1.0 != expected
+    assert label_names == []
+    assert info_attribute_names == []
+
+
+def test_build_label_attribute_names_all_true():
+    label_names, info_attribute_names = metrics._build_label_attribute_names(
+        should_include_handler=True,
+        should_include_method=True,
+        should_include_status=True,
+    )
+    assert label_names == ["handler", "method", "status"]
+    assert info_attribute_names == [
+        "modified_handler",
+        "method",
+        "modified_status",
+    ]
+
+
+def test_build_label_attribute_names_mixed():
+    label_names, info_attribute_names = metrics._build_label_attribute_names(
+        should_include_handler=True,
+        should_include_method=False,
+        should_include_status=True,
+    )
+    assert label_names == ["handler", "status"]
+    assert info_attribute_names == ["modified_handler", "modified_status"]
 
 
 # ==============================================================================
-# Tests
+# Tests for metrics / metric function builders
 
 
 # ------------------------------------------------------------------------------
-# http_request_content_length_bytes
+# request_size
 
 
-def test_http_request_content_length_bytes_with_handler():
+def test_request_size_all_labels():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.request_size()
-    ).instrument(app).expose(app)
+    Instrumentator().add(metrics.request_size()).instrument(app)
     client = TestClient(app)
 
     client.get("/", data="some data")
-
-    response = get_response(client, "/metrics")
-
-    assert b"http_request_content_bytes" in response.content
-    assert b"http_request_content_bytes_count{" in response.content
-
-
-def test_http_request_content_length_bytes_without_handler():
-    app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.request_size(should_drop_handler=True)
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    client.get("/", data="some data")
-
-    _ = get_response(client, "/metrics")
 
     assert (
         REGISTRY.get_sample_value(
-            "http_request_content_bytes_sum", {"method": "GET", "status": "2xx"}
+            "http_request_content_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
         )
         == 9
     )
 
 
-def test_http_request_content_length_bytes_no_cl():
+def test_request_size_no_labels():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.request_size()
-    ).instrument(app).expose(app)
+    Instrumentator().add(metrics.request_size(
+        should_include_handler=False,
+        should_include_method=False,
+        should_include_status=False,
+    )).instrument(app)
+    client = TestClient(app)
+
+    client.get("/", data="some data")
+
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_content_bytes_sum", {}
+        )
+        == 9
+    )
+
+
+def test_request_size_no_cl():
+    app = create_app()
+    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.request_size()).instrument(
+        app
+    ).expose(app)
     client = TestClient(app)
 
     client.get("/")
@@ -178,65 +185,101 @@ def test_http_request_content_length_bytes_no_cl():
 
 
 # ------------------------------------------------------------------------------
-# http_response_content_length_bytes
+# response_size
 
 
-def test_http_response_content_length_bytes_with_handler():
+def test_response_size_all_labels():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.response_size()
-    ).instrument(app).expose(app)
+    Instrumentator().add(metrics.response_size()).instrument(app).expose(app)
     client = TestClient(app)
 
-    get_response(client, "/")
-    get_response(client, "/")
-    get_response(client, "/")
+    client.get("/")
 
-    response = get_response(client, "/metrics")
+    _ = get_response(client, "/metrics")
 
-    assert b"http_response_content_bytes_count{" in response.content
     assert (
         REGISTRY.get_sample_value(
-            "http_response_content_bytes_sum",
-            {"handler": "/", "method": "GET", "status": "2xx"},
+            "http_response_content_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
         )
-        == 42
-    )
-    assert (
-        REGISTRY.get_sample_value(
-            "http_response_content_bytes_count",
-            {"handler": "/", "method": "GET", "status": "2xx"},
-        )
-        == 3
+        == 14
     )
 
 
-def test_http_response_content_length_bytes_without_handler():
+def test_response_size_no_labels():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.response_size(should_drop_handler=True)
-    ).instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.response_size(
+        should_include_handler=False,
+        should_include_method=False,
+        should_include_status=False,
+    )).instrument(app).expose(app)
     client = TestClient(app)
 
-    get_response(client, "/")
-    get_response(client, "/")
-    get_response(client, "/")
-    get_response(client, "/ignore")
+    client.get("/")
 
-    response = get_response(client, "/metrics")
+    _ = get_response(client, "/metrics")
 
-    assert b"http_response_content_bytes_count{" in response.content
     assert (
         REGISTRY.get_sample_value(
-            "http_response_content_bytes_sum", {"method": "GET", "status": "2xx"}
+            "http_response_content_bytes_sum", {}
         )
-        == 61
+        == 14
     )
+
+
+# ------------------------------------------------------------------------------
+# combined_size
+
+
+def test_combined_size_all_labels():
+    app = create_app()
+    Instrumentator().add(metrics.combined_size()).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    _ = get_response(client, "/metrics")
+
     assert (
         REGISTRY.get_sample_value(
-            "http_response_content_bytes_count", {"method": "GET", "status": "2xx"}
+            "http_content_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
         )
-        == 4
+        == 14
+    )
+
+
+def test_combined_size_all_labels_with_data():
+    app = create_app()
+    Instrumentator().add(metrics.combined_size()).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/", data="fegfgeegeg")
+
+    _ = get_response(client, "/metrics")
+
+    assert (
+        REGISTRY.get_sample_value(
+            "http_content_bytes_sum", {"handler": "/", "method": "GET", "status": "2xx"}
+        )
+        == 24
+    )
+
+
+def test_combined_size_no_labels():
+    app = create_app()
+    Instrumentator().add(metrics.combined_size(
+        should_include_handler=False,
+        should_include_method=False,
+        should_include_status=False,
+    )).instrument(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    assert (
+        REGISTRY.get_sample_value(
+            "http_content_bytes_sum", {}
+        )
+        == 14
     )
 
 
