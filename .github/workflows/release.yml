@@ -75,7 +75,7 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Apply auto-formatting [skip ci]
-        file_pattern: ./*.py
+        file_pattern: ./*.py requirements.txt
         commit_user_name: My GitHub Actions Bot
         commit_user_email: tim.schwenke+github@protonmail.ch
 
