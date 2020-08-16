@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Refactored available metrics. Made them more modular while improving 
     code structure.
+* Switched the default fast track metric to a more advanced one.
+* Added proper documentation.
 
 ## [3.0.0] 2020-08-15
 
