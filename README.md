@@ -2,7 +2,8 @@
 
 [![PyPI version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/)
 [![Maintenance](https://img.shields.io/badge/maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
-[![downloads](https://img.shields.io/pypi/dm/prometheus-fastapi-instrumentator)](https://pypi.org/project/prometheus-fastapi-instrumentator/)
+[![downloads](https://pepy.tech/badge/prometheus-fastapi-instrumentator/month)](https://pepy.tech/project/prometheus-fastapi-instrumentator/month)
+[![docs](https://img.shields.io/badge/docs-here-blue)](https://trallnag.github.io/prometheus-fastapi-instrumentator/)
 
 ![release](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/release/badge.svg)
 ![test branches](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/test%20branches/badge.svg)
@@ -66,13 +67,14 @@ a list of some of these options you may opt-in to:
 It also features a **modular approach to metrics** that should instrument all 
 FastAPI endpoints. You can either choose from a set of already existing metrics 
 or create your own. And every metric function by itself can be configured as 
-well.
+well. You can see ready to use metrics [here](https://trallnag.github.io/prometheus-fastapi-instrumentator/metrics.html).
 
 ## Advanced Usage
 
 This chapter contains an example on the advanced usage of the Prometheus 
 FastAPI Instrumentator to showcase most of it's features. Fore more concrete 
-info check out the automatically generated documentation.
+info check out the 
+[automatically generated documentation](https://trallnag.github.io/prometheus-fastapi-instrumentator/).
 
 ### Creating the Instrumentator
 
