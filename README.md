@@ -9,11 +9,10 @@
 [![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A configurable and modular Prometheus Instrumentator for your FastAPI. Install with:
-
-    pip install prometheus-fastapi-instrumentator
-
-## Fast Track
+A configurable and modular Prometheus Instrumentator for your FastAPI. Install 
+`prometheus-fastapi-instrumentator` from 
+[PyPI](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/). Here 
+is the fast track to get started with a sensible preconfigured instrumentator:
 
 ```python
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -24,12 +23,20 @@ Instrumentator().instrument(app).expose(app)
 With this, your FastAPI is instrumented and the metrics are exposed. The 
 sensible defaults give you the following metrics:
 
-* 
+* `http_requests_total` with the total number of requests.
+* `http_in_bytes_total` with the total content length of requests.
+* `http_out_bytes_total` with the total content length of responses.
+* `http_highr_request_duration_seconds`, a histogram with 20 buckets.
+* `http_lowr_request_duration_seconds`, a histogram with only a few buckets but 
+    the labels `handler`, `status` and `method`.
 
-fe
+In addition, following behaviour is active:
 
 * Status codes are grouped into `2xx`, `3xx` and so on.
 * Requests without a matching template are grouped into the handler `none`.
+
+If one of these does presets does not suit your needs you can simply tweak 
+the instrumentator with one of the many parameters or roll your own metrics.
 
 ---
 
@@ -58,20 +65,14 @@ a list of some of these options you may opt-in to:
 
 It also features a **modular approach to metrics** that should instrument all 
 FastAPI endpoints. You can either choose from a set of already existing metrics 
-or create your own. Ready-to-use are:
-
-* Track content length of all requests.
-* Track content length of all responses.
-* Track content length of all requests / responses combined.
-
-To find out how to configure the instrumentator, add additional metrics or 
-create and add your own instrumentation code check out the next chapter.
+or create your own. And every metric function by itself can be configured as 
+well.
 
 ## Advanced Usage
 
 This chapter contains an example on the advanced usage of the Prometheus 
 FastAPI Instrumentator to showcase most of it's features. Fore more concrete 
-documentation check out the docstrings / type hints.
+info check out the automatically generated documentation.
 
 ### Creating the Instrumentator
 
