@@ -9,6 +9,8 @@ jobs:
   docs:    
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout repositry
+      uses: actions/checkout@v2
     - name: Build docs
       run: make docs
 
