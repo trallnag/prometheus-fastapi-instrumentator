@@ -30,7 +30,10 @@ test_multiproc:
 
 .PHONY: docs
 docs:
-	rm -rf html/*; pdoc --html prometheus_fastapi_instrumentator
+	rm -rf docs/*; \
+	mkdir -p docs; \
+	pdoc --output-dir /tmp/pfi_docs --html prometheus_fastapi_instrumentator; \
+	mv /tmp/pfi_docs/* docs/; 
 
 .PHONY: requirements
 requirements:
