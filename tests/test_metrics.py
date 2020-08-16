@@ -342,9 +342,7 @@ def test_latency_with_bucket_no_inf():
 
 def test_full():
     app = create_app()
-    Instrumentator().add(
-        metrics.full()
-    ).instrument(app).expose(app)
+    Instrumentator().add(metrics.full()).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/", data="fefeef")
@@ -356,4 +354,10 @@ def test_full():
     assert REGISTRY.get_sample_value("http_in_bytes_total", {},) > 0
     assert REGISTRY.get_sample_value("http_out_bytes_total", {},) > 0
     assert REGISTRY.get_sample_value("http_highr_request_duration_seconds_sum", {},) > 0
-    assert REGISTRY.get_sample_value("http_lowr_request_duration_seconds_sum", {"handler": "/", "method": "GET", "status": "2xx"},) > 0
+    assert (
+        REGISTRY.get_sample_value(
+            "http_lowr_request_duration_seconds_sum",
+            {"handler": "/", "method": "GET", "status": "2xx"},
+        )
+        > 0
+    )

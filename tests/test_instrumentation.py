@@ -270,9 +270,9 @@ def test_ignore_untemplated():
 
 def test_dont_ignore_untemplated_ungrouped():
     app = create_app()
-    Instrumentator(
-        should_ignore_untemplated=False, should_group_untemplated=False
-    ).add(metrics.latency()).instrument(app)
+    Instrumentator(should_ignore_untemplated=False, should_group_untemplated=False).add(
+        metrics.latency()
+    ).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
@@ -307,7 +307,9 @@ def test_grouping_untemplated():
 
 def test_excluding_handlers():
     app = create_app()
-    Instrumentator(excluded_handlers=["fefefwefwe"]).add(metrics.latency()).instrument(app)
+    Instrumentator(excluded_handlers=["fefefwefwe"]).add(metrics.latency()).instrument(
+        app
+    )
     expose_metrics(app)
     client = TestClient(app)
 
@@ -329,7 +331,9 @@ def test_excluding_handlers():
 
 def test_excluded_handlers_none():
     app = create_app()
-    exporter = Instrumentator(excluded_handlers=None).add(metrics.latency()).instrument(app)
+    exporter = (
+        Instrumentator(excluded_handlers=None).add(metrics.latency()).instrument(app)
+    )
     expose_metrics(app)
 
     assert len(exporter.excluded_handlers) == 0
@@ -361,9 +365,9 @@ def test_bucket_without_inf():
 
 def test_should_respect_env_var_existence_exists():
     app = create_app()
-    Instrumentator(
-        should_respect_env_var=True, env_var_name="eoioerwjioGFIUONEIO"
-    ).add(metrics.latency()).instrument(app).expose(app)
+    Instrumentator(should_respect_env_var=True, env_var_name="eoioerwjioGFIUONEIO").add(
+        metrics.latency()
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -375,9 +379,9 @@ def test_should_respect_env_var_existence_exists():
 def test_should_respect_env_var_existence_not_exists():
     app = create_app()
     os.environ["eoioerwjioGFIUONEIO"] = "true"
-    Instrumentator(
-        should_respect_env_var=True, env_var_name="eoioerwjioGFIUONEIO"
-    ).add(metrics.latency()).instrument(app).expose(app)
+    Instrumentator(should_respect_env_var=True, env_var_name="eoioerwjioGFIUONEIO").add(
+        metrics.latency()
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     get_response(client, "/")
@@ -498,7 +502,9 @@ def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
     monkeypatch.setenv("prometheus_multiproc_dir", str(tmp_path))
 
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.latency()).instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.latency()).instrument(
+        app
+    ).expose(app)
 
     client = TestClient(app)
 
@@ -517,4 +523,6 @@ def test_multiprocess_env_folder(monkeypatch, tmp_path):
 
     app = create_app()
     with pytest.raises(Exception):
-        Instrumentator(buckets=(1, 2, 3,)).add(metrics.latency()).instrument(app).expose(app)
+        Instrumentator(buckets=(1, 2, 3,)).add(metrics.latency()).instrument(app).expose(
+            app
+        )

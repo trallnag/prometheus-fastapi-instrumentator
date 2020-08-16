@@ -276,14 +276,14 @@ def combined_size(
 
 def full(
     latency_highr_buckets: tuple = (
-        .01,
-        .025,
-        .05,
-        .075,
-        .1,
-        .25,
-        .5,
-        .75,
+        0.01,
+        0.025,
+        0.05,
+        0.075,
+        0.1,
+        0.25,
+        0.5,
+        0.75,
         1,
         1.5,
         2,
@@ -294,7 +294,7 @@ def full(
         4.5,
         5,
         7.5,
-        10.,
+        10.0,
     ),
     latency_lowr_buckets: tuple = (0.1, 0.5, 1),
 ) -> Callable[[Info], None]:
