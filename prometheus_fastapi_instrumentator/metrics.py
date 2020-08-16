@@ -82,33 +82,48 @@ def _build_label_attribute_names(
 
 def latency(
     metric_name: str = "http_request_duration_seconds",
+    metric_doc: str = "Duration of HTTP requests in seconds",
+    should_include_handler: bool = True,
+    should_include_method: bool = True,
+    should_include_status: bool = True,
     buckets: tuple = Histogram.DEFAULT_BUCKETS,
-    label_names: tuple = ("method", "handler", "status",),
 ) -> Callable[[Info], None]:
     """Default metric for the Prometheus FastAPI Instrumentator.
 
-    :param metric_name: Name of the latency metric.
-    :param buckets: Buckets for the histogram. Defaults to Prometheus default.
-    :param label_names: Names of the three labels used for the metric. Does 
-        not influence the label values. Defaults to ("method", "handler", "status",).
+    Args:
+        metric_name: Name of the metric to be created. Must be unique.
+        metric_doc: Documentation of the metric.
+        should_include_handler: Should the `handler` label be part of the metric?
+        should_include_method: Should the `method` label be part of the metric?
+        should_include_status: Should the `status` label be part of the metric?
+        buckets: Buckets for the histogram. Defaults to Prometheus default.
 
-    :return: 
+    Returns:
+        Function that takes a single parameter `Info`.
     """
 
     if buckets[-1] != float("inf"):
         buckets = buckets + (float("inf"),)
 
-    METRIC = Histogram(
-        name=metric_name,
-        documentation="Duration of HTTP requests in seconds",
-        labelnames=label_names,
-        buckets=buckets,
+    label_names, info_attribute_names = _build_label_attribute_names(
+        should_include_handler, should_include_method, should_include_status
     )
 
+    if label_names:
+        METRIC = Histogram(
+            metric_name, metric_doc, labelnames=label_names, buckets=buckets
+        )
+    else:
+        METRIC = Histogram(metric_name, metric_doc, buckets=buckets)
+
     def instrumentation(info: Info) -> None:
-        METRIC.labels(
-            info.request.method, info.modified_handler, info.modified_status
-        ).observe(info.modified_duration)
+        if label_names:
+            label_values = []
+            for attribute_name in info_attribute_names:
+                label_values.append(getattr(info, attribute_name))
+            METRIC.labels(*label_values).observe(info.modified_duration)
+        else:
+            METRIC.observe(info.modified_duration)
 
     return instrumentation
 

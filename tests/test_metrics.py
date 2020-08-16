@@ -1,8 +1,7 @@
-import os
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
-from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
+from prometheus_client import REGISTRY
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
@@ -276,3 +275,62 @@ def test_combined_size_no_labels():
     client.get("/")
 
     assert REGISTRY.get_sample_value("http_combined_size_bytes_sum", {}) == 14
+
+
+# ------------------------------------------------------------------------------
+# latency
+
+
+def test_latency_all_labels():
+    app = create_app()
+    Instrumentator().add(metrics.latency()).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    _ = get_response(client, "/metrics")
+
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_duration_seconds_sum",
+            {"handler": "/", "method": "GET", "status": "2xx"},
+        )
+        > 0
+    )
+
+
+def test_latency_no_labels():
+    app = create_app()
+    Instrumentator().add(
+        metrics.latency(
+            should_include_handler=False,
+            should_include_method=False,
+            should_include_status=False,
+        )
+    ).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    _ = get_response(client, "/metrics")
+
+    assert REGISTRY.get_sample_value("http_request_duration_seconds_sum", {},) > 0
+
+
+def test_latency_with_bucket_no_inf():
+    app = create_app()
+    Instrumentator().add(
+        metrics.latency(
+            should_include_handler=False,
+            should_include_method=False,
+            should_include_status=False,
+            buckets=(1, 2, 3),
+        )
+    ).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    _ = get_response(client, "/metrics")
+
+    assert REGISTRY.get_sample_value("http_request_duration_seconds_sum", {},) > 0

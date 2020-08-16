@@ -324,52 +324,6 @@ def test_excluding_handlers():
 
 
 # ------------------------------------------------------------------------------
-# Test label names.
-
-
-def test_default_label_names():
-    app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).instrument(app)
-    expose_metrics(app)
-    client = TestClient(app)
-
-    get_response(client, "/")
-
-    response = get_response(client, "/metrics")
-    assert_is_not_multiprocess(response)
-    assert_request_count(1)
-    assert b"method=" in response.content
-    assert b"handler=" in response.content
-    assert b"status=" in response.content
-
-
-def test_custom_label_names():
-    app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.latency(label_names=("a", "b", "c",))
-    ).instrument(app)
-    expose_metrics(app)
-    client = TestClient(app)
-
-    get_response(client, "/")
-
-    response = get_response(client, "/metrics")
-    assert_is_not_multiprocess(response)
-    assert (
-        REGISTRY.get_sample_value(
-            "http_request_duration_seconds_count", {"a": "GET", "b": "/", "c": "2xx"}
-        )
-        == 1
-    )
-    assert b"a=" in response.content
-    assert b"b=" in response.content
-    assert b"c=" in response.content
-    assert b"method=" not in response.content
-    assert b"handler=" not in response.content
-    assert b"status=" not in response.content
-
-
-# ------------------------------------------------------------------------------
 # Test None excluded handlers.
 
 
