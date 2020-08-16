@@ -32,7 +32,7 @@ test_multiproc:
 docs:
 	rm -rf docs/*; \
 	mkdir -p docs; \
-	pdoc --output-dir /tmp/pfi_docs --html prometheus_fastapi_instrumentator; \
+	poetry run pdoc --output-dir /tmp/pfi_docs --html prometheus_fastapi_instrumentator; \
 	mv /tmp/pfi_docs/prometheus_fastapi_instrumentator/* docs/; 
 
 .PHONY: requirements
