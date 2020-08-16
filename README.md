@@ -21,13 +21,12 @@ from prometheus_fastapi_instrumentator import Instrumentator
 Instrumentator().instrument(app).expose(app)
 ```
 
-With this single line FastAPI is instrumented and all Prometheus metrics used 
-in the FastAPI app can be scraped via the added `/metrics` endpoint. Out of the 
-box a single histogram `http_request_duration_seconds` is exposed. A separate 
-`http_requests_total` isn't necessary as the total can be retrieved with the 
-`http_requests_total_count` series.
+With this, your FastAPI is instrumented and the metrics are exposed. The 
+sensible defaults give you the following metrics:
 
-The sensible defaults give you the following:
+* 
+
+fe
 
 * Status codes are grouped into `2xx`, `3xx` and so on.
 * Requests without a matching template are grouped into the handler `none`.
@@ -204,8 +203,6 @@ instrumentator.expose(app, include_in_schema=False)
 Notice that this will to nothing if `should_respect_env_var` has been set 
 during construction of the instrumentator object and the respective env var 
 is not found.
-
-## API Documentation
 
 ## Prerequesites
 

@@ -1,5 +1,5 @@
 .PHONY: all
-all: lint format_style format_imports test
+all: lint format_style format_imports test docs
 
 .PHONY: lint
 lint:
@@ -27,3 +27,7 @@ test_multiproc:
 	poetry run pytest -k test_multiprocess_reg --cov-append --cov=./ --cov-report=xml; \
 	rm -rf /tmp/test_multiproc; \
 	unset prometheus_multiproc_dir;
+
+.PHONY: docs
+docs:
+	rm -rf html/*; pdoc --html prometheus_fastapi_instrumentator
