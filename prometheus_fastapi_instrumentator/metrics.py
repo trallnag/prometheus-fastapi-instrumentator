@@ -15,21 +15,20 @@ class Info:
         modified_status: str,
         modified_duration: float,
     ):
-        """
-        :param request: Request object.
+        """Creates Info object that is used for instrumentation functions.
 
-        :param response: Response object or `None` (just like returned by FastAPI).
+        This is the only argument that is passed to the instrumentation functions.
 
-        :param method: Method of the request.
-
-        :param modified_handler: Handler representation after processing by 
-            instrumentator. For example grouped to `none` if not templated.
-
-        :param modified_status: Status code representation after processing by
-            instrumentator. For example grouping into `2xx`, `3xx` and so on.
-
-        :param modified_duration: Latency representation after processing by 
-            instrumentator. For example rounding of decimals. Seconds.
+        Args:
+            request: Python Requests request object.
+            response Python Requests response object.
+            method: Unmodified method of the request.
+            modified_handler: Handler representation after processing by 
+                instrumentator. For example grouped to `none` if not templated.
+            modified_status: Status code representation after processing by
+                instrumentator. For example grouping into `2xx`, `3xx` and so on.
+            modified_duration: Latency representation after processing by 
+                instrumentator. For example rounding of decimals. Seconds.
         """
 
         self.request = request
@@ -45,6 +44,21 @@ def _build_label_attribute_names(
     should_include_method: bool,
     should_include_status: bool,
 ) -> Tuple[list, list]:
+    """Builds up tuple with to be used label and attribute names.
+
+    Args:
+        should_include_handler: Should the `handler` label be part of the metric?
+        should_include_method: Should the `method` label be part of the metric?
+        should_include_status: Should the `status` label be part of the metric?
+
+    Returns:
+        Tuple with two list elements.
+
+        First element: List with all labels to be used.
+        Second element: List with all attribute names to be used from the 
+            `Info` object. Done like this to enable dynamic on / off of labels.
+    """
+
     label_names = []
     info_attribute_names = []
 
@@ -63,6 +77,9 @@ def _build_label_attribute_names(
     return label_names, info_attribute_names
 
 
+# Metrics ======================================================================
+
+
 def latency(
     metric_name: str = "http_request_duration_seconds",
     buckets: tuple = Histogram.DEFAULT_BUCKETS,
@@ -71,9 +88,7 @@ def latency(
     """Default metric for the Prometheus FastAPI Instrumentator.
 
     :param metric_name: Name of the latency metric.
-
     :param buckets: Buckets for the histogram. Defaults to Prometheus default.
-
     :param label_names: Names of the three labels used for the metric. Does 
         not influence the label values. Defaults to ("method", "handler", "status",).
 
@@ -108,6 +123,16 @@ def request_size(
     """Record the content length of incoming requests.
 
     Requests / Responses with missing `Content-Length` will be skipped.
+
+    Args:
+        metric_name: Name of the metric to be created. Must be unique.
+        metric_doc: Documentation of the metric.
+        should_include_handler: Should the `handler` label be part of the metric?
+        should_include_method: Should the `method` label be part of the metric?
+        should_include_status: Should the `status` label be part of the metric?
+
+    Returns:
+        Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
@@ -143,6 +168,16 @@ def response_size(
     """Record the content length of outgoing responses.
 
     Responses with missing `Content-Length` will be skipped.
+
+    Args:
+        metric_name: Name of the metric to be created. Must be unique.
+        metric_doc: Documentation of the metric.
+        should_include_handler: Should the `handler` label be part of the metric?
+        should_include_method: Should the `method` label be part of the metric?
+        should_include_status: Should the `status` label be part of the metric?
+
+    Returns:
+        Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
@@ -178,6 +213,16 @@ def combined_size(
     """Record the combined content length of requests and responses.
 
     Requests / Responses with missing `Content-Length` will be skipped.
+
+    Args:
+        metric_name: Name of the metric to be created. Must be unique.
+        metric_doc: Documentation of the metric.
+        should_include_handler: Should the `handler` label be part of the metric?
+        should_include_method: Should the `method` label be part of the metric?
+        should_include_status: Should the `status` label be part of the metric?
+
+    Returns:
+        Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(

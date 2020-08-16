@@ -23,31 +23,30 @@ class PrometheusFastApiInstrumentator:
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
     ):
-        """
-        :param should_group_status_codes: Should status codes be grouped into 
-            `2xx`, `3xx` and so on?
+        """Create a Prometheus FastAPI Instrumentator.
 
-        :param should_ignore_untemplated: Should requests without a matching 
-            template be ignored?
-
-        :param should_group_untemplated: Should requests without a matching 
-            template be grouped to handler `none`?
-
-        :param should_round_latency_decimals: Should recorded latencies be 
-            rounded to a certain number of decimals?
-
-        :param should_respect_env_var: Should the instrumentator only 
-            work - for example the methods `instrument()` and `expose()` - if 
-            a certain environment variable is set to `true`? Usecase: A base 
-            FastAPI app that is used by multiple distinct apps. The apps only 
-            have to set the variable to be instrumented.
-
-        :param round_latency_decimals: Number of decimals latencies should be 
-            rounded to. Ignored unless `should_round_latency_decimals` is `True`.
-
-        :param env_var_name: Any valid os environment variable name that 
-            will be checked for existence before instrumentation. Ignored 
-            unless `should_respect_env_var` is `True`.
+        Args:
+            should_group_status_codes: Should status codes be grouped into 
+                `2xx`, `3xx` and so on?
+            should_ignore_untemplated: Should requests without a matching 
+                template be ignored?
+            should_group_untemplated: Should requests without a matching 
+                template be grouped to handler `none`?
+            should_round_latency_decimals: Should recorded latencies be 
+                rounded to a certain number of decimals?
+            should_respect_env_var: Should the instrumentator only work - for 
+                example the methods `instrument()` and `expose()` - if a 
+                certain environment variable is set to `true`? Usecase: A base 
+                FastAPI app that is used by multiple distinct apps. The apps 
+                only have to set the variable to be instrumented.
+            excluded_handlers: List of strings that will be compiled to regex 
+                patterns. All matches will be skipped and not instrumented.
+            round_latency_decimals: Number of decimals latencies should be 
+                rounded to. Ignored unless `should_round_latency_decimals` is 
+                `True`.
+            env_var_name: Any valid os environment variable name that will be 
+                checked for existence before instrumentation. Ignored unless 
+                `should_respect_env_var` is `True`.
         """
 
         self.should_group_status_codes = should_group_status_codes
@@ -67,10 +66,18 @@ class PrometheusFastApiInstrumentator:
         self.instrumentations = []
 
     def instrument(self, app: FastAPI) -> "self":
-        """Performs the instrumentation by adding middleware and endpoint.
-        
-        :param app: FastAPI app to be instrumented.
-        :param return: self.
+        """Performs the instrumentation by adding middleware.
+
+        The middleware iterates through all `instrumentations` and execute them.
+
+        Args:
+            app: FastAPI app instance.
+
+        Raises:
+            e: Only raised if FastAPI itself throws an exception.
+
+        Returns:
+            self: Instrumentator. Builder Pattern.
         """
 
         if (
@@ -128,16 +135,19 @@ class PrometheusFastApiInstrumentator:
     def expose(
         self, app: FastAPI, endpoint: str = "/metrics", include_in_schema: bool = True
     ) -> "self":
-        """Exposes Prometheus metrics by adding endpoint to the given app.
+        """Exposes endpoint for metrics.
 
-        **Important**: There are many different ways to expose metrics. This is 
-        just one of them, suited for both multiprocess and singleprocess mode. 
-        Refer to the Prometheus Python client documentation for more information.
+        Args:
+            app: FastAPI app instance. Endpoint will be added to this app.
+            endpoint: Endpoint on which metrics should be exposed.
+            include_in_schema: Should the endpoint show up in the documentation?
 
-        :param app: FastAPI where the endpoint should be added to.
-        :param endpoint: Route of the endpoint. Defaults to "/metrics".
-        :param include_in_schema: Should the endpoint be included in schema?
-        :param return: self.
+        Raises:
+            ValueError: If `prometheus_multiproc_dir` env var is found but 
+                doesn't point to a valid directory.
+
+        Returns:
+            self: Instrumentator. Builder Pattern.
         """
 
         if (
@@ -173,11 +183,32 @@ class PrometheusFastApiInstrumentator:
         return self
 
     def add(self, instrumentation_function: Callable[[metrics.Info], None]) -> "self":
+        """Adds function to list of instrumentations.
+
+        Args:
+            instrumentation_function: Function that will be executed during 
+                every request handler call (if not excluded). See above for 
+                detailed information on the interface of the function.
+
+        Returns:
+            self: Instrumentator. Builder Pattern.
+        """
+
         self.instrumentations.append(instrumentation_function)
         return self
 
     def _get_handler(self, request: Request) -> Tuple[str, bool]:
-        """Extracts either template or (if no template) path."""
+        """Extracts either template or (if no template) path.
+        
+        Args:
+            request: Python Requests request object.
+
+        Returns:
+            Tuple with two elements. 
+
+            First element: Either template or if no template the path.
+            Second element: If the path is templated or not.
+        """
 
         for route in request.app.routes:
             match, child_scope = route.matches(request.scope)
@@ -187,7 +218,15 @@ class PrometheusFastApiInstrumentator:
         return request.url.path, False
 
     def _is_handler_excluded(self, handler: str, is_templated: bool) -> bool:
-        """Determines if the handler should be ignored."""
+        """Determines if the handler should be ignored.
+        
+        Args:
+            handler: Handler that handles the request.
+            is_templated: Shows if the request is templated.
+
+        Returns:
+            `True` if excluded, `False` if not.
+        """
 
         if is_templated is False and self.should_ignore_untemplated:
             return True
