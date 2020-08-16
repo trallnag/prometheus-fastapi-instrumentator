@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+* Nothing
+
+## [4.0.0] 2020-08-16
 
 * Refactored available metrics. Made them more modular while improving 
     code structure.
