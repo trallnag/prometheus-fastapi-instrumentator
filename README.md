@@ -21,7 +21,7 @@ Instrumentator().instrument(app).expose(app)
 ```
 
 With this, your FastAPI is instrumented and the metrics are exposed. The 
-sensible defaults give you the following metrics:
+sensible defaults give you:
 
 * `http_requests_total` with the total number of requests.
 * `http_in_bytes_total` with the total content length of requests.
