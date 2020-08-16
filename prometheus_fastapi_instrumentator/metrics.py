@@ -1,6 +1,6 @@
 from typing import Callable, Tuple
 
-from prometheus_client import Histogram, Summary, Counter
+from prometheus_client import Counter, Histogram, Summary
 from starlette.requests import Request
 from starlette.responses import Response
 
