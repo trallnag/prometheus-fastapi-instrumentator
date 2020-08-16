@@ -1,6 +1,6 @@
 from typing import Callable, Tuple
 
-from prometheus_client import Histogram, Summary
+from prometheus_client import Histogram, Summary, Counter
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -270,5 +270,94 @@ def combined_size(
                 METRIC.labels(*label_values).observe(int(content_length))
             else:
                 METRIC.observe(int(content_length))
+
+    return instrumentation
+
+
+def full(
+    latency_highr_buckets: tuple = (
+        .01,
+        .025,
+        .05,
+        .075,
+        .1,
+        .25,
+        .5,
+        .75,
+        1,
+        1.5,
+        2,
+        2.5,
+        3,
+        3.5,
+        4,
+        4.5,
+        5,
+        7.5,
+        10.,
+    ),
+    latency_lowr_buckets: tuple = (0.1, 0.5, 1),
+) -> Callable[[Info], None]:
+    """Contains multiple metrics to cover multiple things.
+
+    Combines several metrics into a single function. Also more efficient than 
+    multiple separate instrumentation functions that do more or less the same.
+    
+    You get the following:
+
+    * `http_requests_total` (no labels): Total number of requests.
+    * `http_in_bytes_total` (no labels): Total number of incoming content 
+        length bytes.
+    * `http_out_bytes_total` (no labels): Total number of outgoing content 
+        length bytes.
+    * `http_highr_request_duration_seconds` (no labels): High number of buckets 
+        leading to more accurate calculation of percentiles.
+    * `http_lowr_request_duration_seconds` (`handler`, `status`, `method`): 
+        Kepp the bucket count very low. Only put in SLIs.
+
+    Args:
+        latency_highr_buckets: Buckets tuple for high res histogram. Can be 
+            large because no labels are used.
+        latency_lowr_buckets: Buckets tuple for low res histogram. Should be 
+            very small as all possible labels are included.
+
+    Returns:
+        Function that takes a single parameter `Info`.
+    """
+
+    if latency_highr_buckets[-1] != float("inf"):
+        latency_highr_buckets = latency_highr_buckets + (float("inf"),)
+
+    if latency_lowr_buckets[-1] != float("inf"):
+        latency_lowr_buckets = latency_lowr_buckets + (float("inf"),)
+
+    TOTAL = Counter(
+        "http_requests_total", "Total number of requests with no API specific labels."
+    )
+
+    IN_SIZE = Counter("http_in_bytes_total", "Content length of incoming requests.")
+    OUT_SIZE = Counter("http_out_bytes_total", "Content length of incoming requests.")
+
+    LATENCY_HIGHR = Histogram(
+        "http_highr_request_duration_seconds",
+        "Latency with many buckets but no API specific labels.",
+        buckets=latency_highr_buckets,
+    )
+
+    LATENCY_LOWR = Histogram(
+        "http_lowr_request_duration_seconds",
+        "Latency with only few buckets.",
+        buckets=latency_lowr_buckets,
+        labelnames=("method", "status", "handler"),
+    )
+
+    def instrumentation(info: Info) -> None:
+        TOTAL.inc()
+        IN_SIZE.inc(int(info.request.headers.get("Content-Length", 0)))
+        OUT_SIZE.inc(int(info.response.headers.get("Content-Length", 0)))
+        LATENCY_HIGHR.observe(info.modified_duration)
+        LATENCY_LOWR.labels(
+            info.method, info.modified_status, info.modified_handler
+        ).observe(info.modified_duration)
 
     return instrumentation
