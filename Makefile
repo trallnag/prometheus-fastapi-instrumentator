@@ -1,5 +1,5 @@
 .PHONY: all
-all: lint format_style format_imports test docs
+all: lint format_style format_imports test docs requirements
 
 .PHONY: lint
 lint:
@@ -31,3 +31,7 @@ test_multiproc:
 .PHONY: docs
 docs:
 	rm -rf html/*; pdoc --html prometheus_fastapi_instrumentator
+
+.PHONY: requirements
+requirements:
+	poetry run pip freeze > requirements.txt
