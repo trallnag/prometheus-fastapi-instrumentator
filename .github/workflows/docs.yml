@@ -9,8 +9,21 @@ jobs:
   docs:    
     runs-on: ubuntu-latest
     steps:
+
     - name: Checkout repositry
       uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      uses: Gr1N/setup-poetry@v2
+    
+    - name: Install dependencies
+      run: poetry install
+      
     - name: Build docs
       run: make docs
 
