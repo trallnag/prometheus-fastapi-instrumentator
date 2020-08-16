@@ -11,5 +11,4 @@ jobs:
     steps:
     - name: Build docs
       run: make docs
-    - name: Pip freeze for used by stats
-      run: make requirements
+

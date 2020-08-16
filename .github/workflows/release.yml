@@ -67,6 +67,9 @@ jobs:
       if: matrix.python-version == 3.8
       run: make format_imports
 
+    - name: Pip freeze for used by stats
+      run: make requirements
+
     - name: Recommit
       if: matrix.python-version == 3.8
       uses: stefanzweifel/git-auto-commit-action@v4
