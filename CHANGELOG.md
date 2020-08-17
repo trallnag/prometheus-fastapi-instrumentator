@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* Nothing
+
+## [5.0.0] 2020-08-18
+
 ### Changed
 
 * Rename instrumentation `full` to `default`.
