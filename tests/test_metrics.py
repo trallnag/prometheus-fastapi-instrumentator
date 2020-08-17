@@ -337,7 +337,7 @@ def test_latency_with_bucket_no_inf():
 
 
 # ------------------------------------------------------------------------------
-# full
+# default
 
 
 def test_default():
@@ -350,14 +350,14 @@ def test_default():
 
     _ = get_response(client, "/metrics")
 
-    assert REGISTRY.get_sample_value("http_requests_total", {},) > 0
-    assert REGISTRY.get_sample_value("http_in_bytes_total", {},) > 0
-    assert REGISTRY.get_sample_value("http_out_bytes_total", {},) > 0
-    assert REGISTRY.get_sample_value("http_highr_request_duration_seconds_sum", {},) > 0
+    assert REGISTRY.get_sample_value("http_requests_total", {"handler": "/", "method": "GET", "status": "2xx"},) > 0
+    assert REGISTRY.get_sample_value("http_request_size_bytes_total", {"handler": "/"},) > 0
+    assert REGISTRY.get_sample_value("http_response_size_bytes_total", {"handler": "/"},) > 0
+    assert REGISTRY.get_sample_value("http_request_duration_highr_seconds_sum", {},) > 0
     assert (
         REGISTRY.get_sample_value(
-            "http_lowr_request_duration_seconds_sum",
-            {"handler": "/", "method": "GET", "status": "2xx"},
+            "http_request_duration_seconds_sum",
+            {"handler": "/"},
         )
         > 0
     )

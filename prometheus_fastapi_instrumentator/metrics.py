@@ -294,7 +294,9 @@ def default(
         4.5,
         5,
         7.5,
-        10.0,
+        10,
+        30,
+        60,
     ),
     latency_lowr_buckets: tuple = (0.1, 0.5, 1),
 ) -> Callable[[Info], None]:
@@ -305,12 +307,13 @@ def default(
     
     You get the following:
 
-    * `http_requests_total` (no labels): Total number of requests.
-    * `http_in_bytes_total` (no labels): Total number of incoming content 
-        length bytes.
-    * `http_out_bytes_total` (no labels): Total number of outgoing content 
-        length bytes.
-    * `http_highr_request_duration_seconds` (no labels): High number of buckets 
+    * `http_requests_total` (`handler`, `status`, `method`): Total number of 
+        requests by handler, status and method. 
+    * `http_request_size_bytes_total` (`handler`): Total number of incoming 
+        content length bytes by handler.
+    * `http_response_size_bytes_total` (`handler`): Total number of outgoing 
+        content length bytes by handler.
+    * `http_request_duration_highr_seconds` (no labels): High number of buckets 
         leading to more accurate calculation of percentiles.
     * `http_lowr_request_duration_seconds` (`handler`, `status`, `method`): 
         Kepp the bucket count very low. Only put in SLIs.
@@ -332,32 +335,55 @@ def default(
         latency_lowr_buckets = latency_lowr_buckets + (float("inf"),)
 
     TOTAL = Counter(
-        "http_requests_total", "Total number of requests with no API specific labels."
+        name="http_requests_total",
+        documentation="Total number of requests by method, status and handler.",
+        labelnames=("method", "status", "handler",),
     )
 
-    IN_SIZE = Counter("http_in_bytes_total", "Content length of incoming requests.")
-    OUT_SIZE = Counter("http_out_bytes_total", "Content length of incoming requests.")
+    IN_SIZE = Counter(
+        name="http_request_size_bytes_total",
+        documentation=(
+            "Content length of incoming requests by handler. "
+            "Only value of header is respected. Otherwise ignored. "
+            "To calculate avg per request, use 'http_requests_total'."
+        ),
+        labelnames=("handler",),
+    )
+
+    OUT_SIZE = Counter(
+        name="http_response_size_bytes_total",
+        documentation=(
+            "Content length of outgoing responses by handler. "
+            "Only value of header is respected. Otherwise ignored."
+            "To calculate avg per response, use 'http_requests_total'."
+        ),
+        labelnames=("handler",),
+    )
 
     LATENCY_HIGHR = Histogram(
-        "http_highr_request_duration_seconds",
-        "Latency with many buckets but no API specific labels.",
+        name="http_request_duration_highr_seconds",
+        documentation=(
+            "Latency with many buckets but no API specific labels. "
+            "Made for more accurate percentile calculations. "
+        ),
         buckets=latency_highr_buckets,
     )
 
     LATENCY_LOWR = Histogram(
-        "http_lowr_request_duration_seconds",
-        "Latency with only few buckets.",
+        name="http_request_duration_seconds",
+        documentation=(
+            "Latency with only few buckets by handler. "
+            "Made to be only used if aggregation by handler is important. "
+        ),
         buckets=latency_lowr_buckets,
-        labelnames=("method", "status", "handler"),
+        labelnames=("handler",),
     )
 
     def instrumentation(info: Info) -> None:
-        TOTAL.inc()
-        IN_SIZE.inc(int(info.request.headers.get("Content-Length", 0)))
-        OUT_SIZE.inc(int(info.response.headers.get("Content-Length", 0)))
+        TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+        IN_SIZE.labels(info.modified_handler).inc(int(info.request.headers.get("Content-Length", 0)))
+        OUT_SIZE.labels(info.modified_handler).inc(int(info.response.headers.get("Content-Length", 0)))
         LATENCY_HIGHR.observe(info.modified_duration)
-        LATENCY_LOWR.labels(
-            info.method, info.modified_status, info.modified_handler
-        ).observe(info.modified_duration)
+        LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
     return instrumentation

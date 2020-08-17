@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-* Nothing
+### Changed
+
+* Rename instrumentation `full` to `default`.
+* Add labels `handler`, `status`, `method` to `http_requests_total` in `default`.
+* Rename `http_in_bytes_total` to `http_request_size_bytes_total`.
+* Add label `handler` to `http_request_size_bytes_total`.
+* Rename `http_out_bytes_total` to `http_response_size_bytes_total`.
+* Add label `handler` to `http_response_size_bytes_total`.
+* Rename `http_highr_request_duration_seconds` to 
+    `http_request_duration_highr_seconds`.
+* Rename `http_lowr_request_duration_seconds` to `http_request_duration_seconds`.
+* Remove labels `method` and `status` from `http_request_duration_seconds`.
 
 ## [4.0.0] 2020-08-16
 
