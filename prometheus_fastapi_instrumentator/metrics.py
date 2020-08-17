@@ -381,8 +381,12 @@ def default(
 
     def instrumentation(info: Info) -> None:
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
-        IN_SIZE.labels(info.modified_handler).observe(int(info.request.headers.get("Content-Length", 0)))
-        OUT_SIZE.labels(info.modified_handler).observe(int(info.response.headers.get("Content-Length", 0)))
+        IN_SIZE.labels(info.modified_handler).observe(
+            int(info.request.headers.get("Content-Length", 0))
+        )
+        OUT_SIZE.labels(info.modified_handler).observe(
+            int(info.response.headers.get("Content-Length", 0))
+        )
         LATENCY_HIGHR.observe(info.modified_duration)
         LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
