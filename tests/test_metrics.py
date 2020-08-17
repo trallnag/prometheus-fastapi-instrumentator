@@ -351,8 +351,8 @@ def test_default():
     _ = get_response(client, "/metrics")
 
     assert REGISTRY.get_sample_value("http_requests_total", {"handler": "/", "method": "GET", "status": "2xx"},) > 0
-    assert REGISTRY.get_sample_value("http_request_size_bytes_total", {"handler": "/"},) > 0
-    assert REGISTRY.get_sample_value("http_response_size_bytes_total", {"handler": "/"},) > 0
+    assert REGISTRY.get_sample_value("http_request_size_bytes_sum", {"handler": "/"},) > 0
+    assert REGISTRY.get_sample_value("http_response_size_bytes_sum", {"handler": "/"},) > 0
     assert REGISTRY.get_sample_value("http_request_duration_highr_seconds_sum", {},) > 0
     assert (
         REGISTRY.get_sample_value(

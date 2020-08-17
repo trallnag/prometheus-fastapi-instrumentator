@@ -309,13 +309,13 @@ def default(
 
     * `http_requests_total` (`handler`, `status`, `method`): Total number of 
         requests by handler, status and method. 
-    * `http_request_size_bytes_total` (`handler`): Total number of incoming 
+    * `http_request_size_bytes` (`handler`): Total number of incoming 
         content length bytes by handler.
-    * `http_response_size_bytes_total` (`handler`): Total number of outgoing 
+    * `http_response_size_bytes` (`handler`): Total number of outgoing 
         content length bytes by handler.
     * `http_request_duration_highr_seconds` (no labels): High number of buckets 
         leading to more accurate calculation of percentiles.
-    * `http_lowr_request_duration_seconds` (`handler`, `status`, `method`): 
+    * `http_request_duration_seconds` (`handler`): 
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
@@ -340,22 +340,22 @@ def default(
         labelnames=("method", "status", "handler",),
     )
 
-    IN_SIZE = Counter(
-        name="http_request_size_bytes_total",
+    IN_SIZE = Summary(
+        name="http_request_size_bytes",
         documentation=(
             "Content length of incoming requests by handler. "
             "Only value of header is respected. Otherwise ignored. "
-            "To calculate avg per request, use 'http_requests_total'."
+            "No percentile calculated. "
         ),
         labelnames=("handler",),
     )
 
-    OUT_SIZE = Counter(
-        name="http_response_size_bytes_total",
+    OUT_SIZE = Summary(
+        name="http_response_size_bytes",
         documentation=(
             "Content length of outgoing responses by handler. "
-            "Only value of header is respected. Otherwise ignored."
-            "To calculate avg per response, use 'http_requests_total'."
+            "Only value of header is respected. Otherwise ignored. "
+            "No percentile calculated. "
         ),
         labelnames=("handler",),
     )
@@ -381,8 +381,8 @@ def default(
 
     def instrumentation(info: Info) -> None:
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
-        IN_SIZE.labels(info.modified_handler).inc(int(info.request.headers.get("Content-Length", 0)))
-        OUT_SIZE.labels(info.modified_handler).inc(int(info.response.headers.get("Content-Length", 0)))
+        IN_SIZE.labels(info.modified_handler).observe(int(info.request.headers.get("Content-Length", 0)))
+        OUT_SIZE.labels(info.modified_handler).observe(int(info.response.headers.get("Content-Length", 0)))
         LATENCY_HIGHR.observe(info.modified_duration)
         LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 

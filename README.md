@@ -21,15 +21,21 @@ from prometheus_fastapi_instrumentator import Instrumentator
 Instrumentator().instrument(app).expose(app)
 ```
 
-With this, your FastAPI is instrumented and the metrics are exposed. The 
+With this, your FastAPI is instrumented and metrics ready to be scraped. The 
 sensible defaults give you:
 
-* `http_requests_total` with the total number of requests.
-* `http_in_bytes_total` with the total content length of requests.
-* `http_out_bytes_total` with the total content length of responses.
-* `http_highr_request_duration_seconds`, a histogram with 20 buckets.
-* `http_lowr_request_duration_seconds`, a histogram with only a few buckets but 
-    the labels `handler`, `status` and `method`.
+* Counter `http_requests_total` with `handler`, `status` and `method`. Total 
+    number of requests.
+* Summary `http_request_size_bytes` with `handler`. Added up total of the 
+    content lengths of all incoming requests. If the request has no valid 
+    content length header it will be ignored. No percentile calculated.
+* Summary `http_response_size_bytes` with `handler`. Added up total of the 
+    content lengths of all outgoing responses. If the response has no valid 
+    content length header it will be ignored. No percentile calculated.
+* Histogram `http_request_duration_seconds` with `handler`. Only a few buckets 
+    to keep cardinality low. Uses for aggregations by handler or SLI buckets.
+* Histogram `http_request_duration_highr_seconds` without any labels. Large 
+    number of buckets (>20) for accurate percentile calculations.
 
 In addition, following behaviour is active:
 
@@ -48,6 +54,7 @@ Contents: **[Features](#features)** |
 [Creating new metrics](#creating-new-metrics) |
 [Perform instrumentation](#perform-instrumentation) |
 [Exposing endpoint](#exposing-endpoint) |
+**[Documentation](#documentation)** |
 **[Prerequesites](#prerequesites)** |
 **[Development](#development)**
 
@@ -55,7 +62,8 @@ Contents: **[Features](#features)** |
 
 ## Features
 
-Beyond the fast track, this instrumentator is **highly configurable**. Here is 
+Beyond the fast track, this instrumentator is **highly configurable** and it 
+is very easy to customize and adapt to your specific use case. Here is 
 a list of some of these options you may opt-in to:
 
 * Regex patterns to ignore certain routes.
@@ -123,15 +131,15 @@ all requests and responses.
 ```python
 instrumentator.add(
     metrics.request_size(
-        should_include_handler=False,
+        should_include_handler=True,
         should_include_method=False,
-        should_include_status=False,
+        should_include_status=True,
     )
 ).add(
     metrics.response_size(
-        should_include_handler=False,
+        should_include_handler=True,
         should_include_method=False,
-        should_include_status=False,
+        should_include_status=True,
     )
 )
 ```
@@ -206,6 +214,10 @@ instrumentator.expose(app, include_in_schema=False)
 Notice that this will to nothing if `should_respect_env_var` has been set 
 during construction of the instrumentator object and the respective env var 
 is not found.
+
+## Documentation
+
+The documentation is hosted [here](https://trallnag.github.io/prometheus-fastapi-instrumentator/).
 
 ## Prerequesites
 
