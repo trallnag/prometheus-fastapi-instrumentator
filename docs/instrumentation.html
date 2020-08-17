@@ -115,7 +115,7 @@ class PrometheusFastApiInstrumentator:
             return self
 
         if len(self.instrumentations) == 0:
-            self.instrumentations.append(metrics.full())
+            self.instrumentations.append(metrics.default())
 
         @app.middleware(&#34;http&#34;)
         async def dispatch_middleware(request: Request, call_next) -&gt; Response:
@@ -392,7 +392,7 @@ checked for existence before instrumentation. Ignored unless
             return self
 
         if len(self.instrumentations) == 0:
-            self.instrumentations.append(metrics.full())
+            self.instrumentations.append(metrics.default())
 
         @app.middleware(&#34;http&#34;)
         async def dispatch_middleware(request: Request, call_next) -&gt; Response:
@@ -707,7 +707,7 @@ doesn't point to a valid directory.</dd>
         return self
 
     if len(self.instrumentations) == 0:
-        self.instrumentations.append(metrics.full())
+        self.instrumentations.append(metrics.default())
 
     @app.middleware(&#34;http&#34;)
     async def dispatch_middleware(request: Request, call_next) -&gt; Response:

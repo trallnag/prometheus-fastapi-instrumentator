@@ -274,7 +274,7 @@ def combined_size(
     return instrumentation
 
 
-def full(
+def default(
     latency_highr_buckets: tuple = (
         0.01,
         0.025,

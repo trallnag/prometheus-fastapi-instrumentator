@@ -87,7 +87,7 @@ class PrometheusFastApiInstrumentator:
             return self
 
         if len(self.instrumentations) == 0:
-            self.instrumentations.append(metrics.full())
+            self.instrumentations.append(metrics.default())
 
         @app.middleware("http")
         async def dispatch_middleware(request: Request, call_next) -> Response:

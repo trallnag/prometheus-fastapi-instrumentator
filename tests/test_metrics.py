@@ -340,9 +340,9 @@ def test_latency_with_bucket_no_inf():
 # full
 
 
-def test_full():
+def test_default():
     app = create_app()
-    Instrumentator().add(metrics.full()).instrument(app).expose(app)
+    Instrumentator().add(metrics.default()).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/", data="fefeef")
