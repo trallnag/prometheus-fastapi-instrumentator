@@ -87,8 +87,8 @@ automatically applied to the FastAPI.
 ### Added
 
 * The observed latency values can now be rounded to a certain number of 
-    decimals as an opt-in feature. This can improve bytes per sample required in 
-    storage solutions like VictoriaMetrics.
+    decimals as an opt-in feature. This can improve bytes per sample required 
+    in storage solutions like VictoriaMetrics.
 
 ## [1.1.1] 2020-07-19
 
