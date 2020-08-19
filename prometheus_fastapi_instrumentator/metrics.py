@@ -83,6 +83,8 @@ def _build_label_attribute_names(
 def latency(
     metric_name: str = "http_request_duration_seconds",
     metric_doc: str = "Duration of HTTP requests in seconds",
+    namespace: str = "",
+    subsystem: str = "",
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -111,10 +113,21 @@ def latency(
 
     if label_names:
         METRIC = Histogram(
-            metric_name, metric_doc, labelnames=label_names, buckets=buckets
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            buckets=buckets,
+            namespace=namespace,
+            subsystem=subsystem,
         )
     else:
-        METRIC = Histogram(metric_name, metric_doc, buckets=buckets)
+        METRIC = Histogram(
+            metric_name,
+            metric_doc,
+            buckets=buckets,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -> None:
         if label_names:
@@ -131,6 +144,8 @@ def latency(
 def request_size(
     metric_name: str = "http_request_size_bytes",
     metric_doc: str = "Content bytes of requests.",
+    namespace: str = "",
+    subsystem: str = "",
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -155,9 +170,17 @@ def request_size(
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -> None:
         content_length = info.request.headers.get("Content-Length", None)
@@ -176,6 +199,8 @@ def request_size(
 def response_size(
     metric_name: str = "http_response_size_bytes",
     metric_doc: str = "Content bytes of responses.",
+    namespace: str = "",
+    subsystem: str = "",
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -200,9 +225,17 @@ def response_size(
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -> None:
         content_length = info.response.headers.get("Content-Length", None)
@@ -221,6 +254,8 @@ def response_size(
 def combined_size(
     metric_name: str = "http_combined_size_bytes",
     metric_doc: str = "Content bytes of requests and responses.",
+    namespace: str = "",
+    subsystem: str = "",
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -245,9 +280,17 @@ def combined_size(
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -> None:
         request_cl = info.request.headers.get("Content-Length", None)
@@ -275,6 +318,8 @@ def combined_size(
 
 
 def default(
+    namespace: str = "",
+    subsystem: str = "",
     latency_highr_buckets: tuple = (
         0.01,
         0.025,
@@ -338,6 +383,8 @@ def default(
         name="http_requests_total",
         documentation="Total number of requests by method, status and handler.",
         labelnames=("method", "status", "handler",),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     IN_SIZE = Summary(
@@ -348,6 +395,8 @@ def default(
             "No percentile calculated. "
         ),
         labelnames=("handler",),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     OUT_SIZE = Summary(
@@ -358,6 +407,8 @@ def default(
             "No percentile calculated. "
         ),
         labelnames=("handler",),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     LATENCY_HIGHR = Histogram(
@@ -367,6 +418,8 @@ def default(
             "Made for more accurate percentile calculations. "
         ),
         buckets=latency_highr_buckets,
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     LATENCY_LOWR = Histogram(
@@ -377,6 +430,8 @@ def default(
         ),
         buckets=latency_lowr_buckets,
         labelnames=("handler",),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     def instrumentation(info: Info) -> None:

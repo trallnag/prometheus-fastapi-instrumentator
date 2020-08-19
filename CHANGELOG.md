@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
 
 * Nothing
+
+## [5.1.0] 2020-08-19
+
+### Added
+
+* Parameters to set namespace and subsystem to all available metrics.
 
 ## [5.0.0] 2020-08-18
 
@@ -141,3 +147,7 @@ automatically applied to the FastAPI.
 ## [20.7.7] [YANKED]
 
 ## ... [YANKED]
+
+## Unreleased
+
+* Nothing

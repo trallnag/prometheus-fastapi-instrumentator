@@ -134,12 +134,16 @@ instrumentator.add(
         should_include_handler=True,
         should_include_method=False,
         should_include_status=True,
+        namespace="a",
+        subsystem="b",
     )
 ).add(
     metrics.response_size(
         should_include_handler=True,
         should_include_method=False,
         should_include_status=True,
+        namespace="namespace",
+        subsystem="subsystem",
     )
 )
 ```

@@ -166,6 +166,25 @@ def test_request_size_no_labels():
     assert REGISTRY.get_sample_value("http_request_size_bytes_sum", {}) == 9
 
 
+def test_namespace_subsystem():
+    app = create_app()
+    Instrumentator().add(
+        metrics.request_size(
+            should_include_handler=False,
+            should_include_method=False,
+            should_include_status=False,
+            namespace="namespace",
+            subsystem="subsystem",
+        )
+    ).instrument(app).expose(app)
+    client = TestClient(app)
+
+    response = get_response(client, "/metrics")
+
+    assert b" http_request_size_bytes" not in response.content
+    assert b" namespace_subsystem_http_request_size_bytes" in response.content
+
+
 def test_request_size_no_cl():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(metrics.request_size()).instrument(
