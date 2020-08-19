@@ -111,8 +111,8 @@ def _build_label_attribute_names(
 def latency(
     metric_name: str = &#34;http_request_duration_seconds&#34;,
     metric_doc: str = &#34;Duration of HTTP requests in seconds&#34;,
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -123,8 +123,8 @@ def latency(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -147,16 +147,16 @@ def latency(
             metric_doc,
             labelnames=label_names,
             buckets=buckets,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
     else:
         METRIC = Histogram(
             metric_name,
             metric_doc,
             buckets=buckets,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -&gt; None:
@@ -174,8 +174,8 @@ def latency(
 def request_size(
     metric_name: str = &#34;http_request_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of requests.&#34;,
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -187,8 +187,8 @@ def request_size(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -206,12 +206,15 @@ def request_size(
             metric_name,
             metric_doc,
             labelnames=label_names,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
     else:
         METRIC = Summary(
-            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+            metric_name,
+            metric_doc,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -&gt; None:
@@ -231,8 +234,8 @@ def request_size(
 def response_size(
     metric_name: str = &#34;http_response_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of responses.&#34;,
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -244,8 +247,8 @@ def response_size(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -263,12 +266,15 @@ def response_size(
             metric_name,
             metric_doc,
             labelnames=label_names,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
     else:
         METRIC = Summary(
-            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+            metric_name,
+            metric_doc,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -&gt; None:
@@ -288,8 +294,8 @@ def response_size(
 def combined_size(
     metric_name: str = &#34;http_combined_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of requests and responses.&#34;,
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -301,8 +307,8 @@ def combined_size(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -320,12 +326,15 @@ def combined_size(
             metric_name,
             metric_doc,
             labelnames=label_names,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
     else:
         METRIC = Summary(
-            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+            metric_name,
+            metric_doc,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -&gt; None:
@@ -354,8 +363,8 @@ def combined_size(
 
 
 def default(
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     latency_highr_buckets: tuple = (
         0.01,
         0.025,
@@ -400,8 +409,8 @@ def default(
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         latency_highr_buckets: Buckets tuple for high res histogram. Can be 
             large because no labels are used.
         latency_lowr_buckets: Buckets tuple for low res histogram. Should be 
@@ -421,8 +430,8 @@ def default(
         name=&#34;http_requests_total&#34;,
         documentation=&#34;Total number of requests by method, status and handler.&#34;,
         labelnames=(&#34;method&#34;, &#34;status&#34;, &#34;handler&#34;,),
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     IN_SIZE = Summary(
@@ -433,8 +442,8 @@ def default(
             &#34;No percentile calculated. &#34;
         ),
         labelnames=(&#34;handler&#34;,),
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     OUT_SIZE = Summary(
@@ -445,8 +454,8 @@ def default(
             &#34;No percentile calculated. &#34;
         ),
         labelnames=(&#34;handler&#34;,),
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     LATENCY_HIGHR = Histogram(
@@ -456,8 +465,8 @@ def default(
             &#34;Made for more accurate percentile calculations. &#34;
         ),
         buckets=latency_highr_buckets,
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     LATENCY_LOWR = Histogram(
@@ -468,8 +477,8 @@ def default(
         ),
         buckets=latency_lowr_buckets,
         labelnames=(&#34;handler&#34;,),
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     def instrumentation(info: Info) -&gt; None:
@@ -494,7 +503,7 @@ def default(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="prometheus_fastapi_instrumentator.metrics.combined_size"><code class="name flex">
-<span>def <span class="ident">combined_size</span></span>(<span>metric_name: str = 'http_combined_size_bytes', metric_doc: str = 'Content bytes of requests and responses.', namespace: str = '', subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">combined_size</span></span>(<span>metric_name: str = 'http_combined_size_bytes', metric_doc: str = 'Content bytes of requests and responses.', metric_namespace: str = '', metric_subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Record the combined content length of requests and responses.</p>
@@ -505,10 +514,12 @@ def default(
 <dd>Name of the metric to be created. Must be unique.</dd>
 <dt><strong><code>metric_doc</code></strong></dt>
 <dd>Documentation of the metric.</dd>
-<dt><strong><code>namespace</code></strong></dt>
-<dd>Namespace of all Prometheus metrics in this metric.</dd>
-<dt><strong><code>subsystem</code></strong></dt>
-<dd>Subsystem of all Prometheus metrics in this metric.</dd>
+<dt><strong><code>metric_namespace</code></strong></dt>
+<dd>Namespace of all
+metrics in this metric function.</dd>
+<dt><strong><code>metric_subsystem</code></strong></dt>
+<dd>Subsystem of all
+metrics in this metric function.</dd>
 <dt><strong><code>should_include_handler</code></strong></dt>
 <dd>Should the <code>handler</code> label be part of the metric?</dd>
 <dt><strong><code>should_include_method</code></strong></dt>
@@ -525,8 +536,8 @@ def default(
 <pre><code class="python">def combined_size(
     metric_name: str = &#34;http_combined_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of requests and responses.&#34;,
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -538,8 +549,8 @@ def default(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -557,12 +568,15 @@ def default(
             metric_name,
             metric_doc,
             labelnames=label_names,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
     else:
         METRIC = Summary(
-            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+            metric_name,
+            metric_doc,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -&gt; None:
@@ -591,7 +605,7 @@ def default(
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.default"><code class="name flex">
-<span>def <span class="ident">default</span></span>(<span>namespace: str = '', subsystem: str = '', latency_highr_buckets: tuple = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60), latency_lowr_buckets: tuple = (0.1, 0.5, 1)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">default</span></span>(<span>metric_namespace: str = '', metric_subsystem: str = '', latency_highr_buckets: tuple = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60), latency_lowr_buckets: tuple = (0.1, 0.5, 1)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Contains multiple metrics to cover multiple things.</p>
@@ -612,10 +626,12 @@ Kepp the bucket count very low. Only put in SLIs.</li>
 </ul>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>namespace</code></strong></dt>
-<dd>Namespace of all Prometheus metrics in this metric.</dd>
-<dt><strong><code>subsystem</code></strong></dt>
-<dd>Subsystem of all Prometheus metrics in this metric.</dd>
+<dt><strong><code>metric_namespace</code></strong></dt>
+<dd>Namespace of all
+metrics in this metric function.</dd>
+<dt><strong><code>metric_subsystem</code></strong></dt>
+<dd>Subsystem of all
+metrics in this metric function.</dd>
 <dt><strong><code>latency_highr_buckets</code></strong></dt>
 <dd>Buckets tuple for high res histogram. Can be
 large because no labels are used.</dd>
@@ -630,8 +646,8 @@ very small as all possible labels are included.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def default(
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     latency_highr_buckets: tuple = (
         0.01,
         0.025,
@@ -676,8 +692,8 @@ very small as all possible labels are included.</dd>
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         latency_highr_buckets: Buckets tuple for high res histogram. Can be 
             large because no labels are used.
         latency_lowr_buckets: Buckets tuple for low res histogram. Should be 
@@ -697,8 +713,8 @@ very small as all possible labels are included.</dd>
         name=&#34;http_requests_total&#34;,
         documentation=&#34;Total number of requests by method, status and handler.&#34;,
         labelnames=(&#34;method&#34;, &#34;status&#34;, &#34;handler&#34;,),
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     IN_SIZE = Summary(
@@ -709,8 +725,8 @@ very small as all possible labels are included.</dd>
             &#34;No percentile calculated. &#34;
         ),
         labelnames=(&#34;handler&#34;,),
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     OUT_SIZE = Summary(
@@ -721,8 +737,8 @@ very small as all possible labels are included.</dd>
             &#34;No percentile calculated. &#34;
         ),
         labelnames=(&#34;handler&#34;,),
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     LATENCY_HIGHR = Histogram(
@@ -732,8 +748,8 @@ very small as all possible labels are included.</dd>
             &#34;Made for more accurate percentile calculations. &#34;
         ),
         buckets=latency_highr_buckets,
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     LATENCY_LOWR = Histogram(
@@ -744,8 +760,8 @@ very small as all possible labels are included.</dd>
         ),
         buckets=latency_lowr_buckets,
         labelnames=(&#34;handler&#34;,),
-        namespace=namespace,
-        subsystem=subsystem,
+        namespace=metric_namespace,
+        subsystem=metric_subsystem,
     )
 
     def instrumentation(info: Info) -&gt; None:
@@ -763,7 +779,7 @@ very small as all possible labels are included.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.latency"><code class="name flex">
-<span>def <span class="ident">latency</span></span>(<span>metric_name: str = 'http_request_duration_seconds', metric_doc: str = 'Duration of HTTP requests in seconds', namespace: str = '', subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True, buckets: tuple = (0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, inf)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">latency</span></span>(<span>metric_name: str = 'http_request_duration_seconds', metric_doc: str = 'Duration of HTTP requests in seconds', metric_namespace: str = '', metric_subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True, buckets: tuple = (0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, inf)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Default metric for the Prometheus FastAPI Instrumentator.</p>
@@ -773,10 +789,12 @@ very small as all possible labels are included.</dd>
 <dd>Name of the metric to be created. Must be unique.</dd>
 <dt><strong><code>metric_doc</code></strong></dt>
 <dd>Documentation of the metric.</dd>
-<dt><strong><code>namespace</code></strong></dt>
-<dd>Namespace of all Prometheus metrics in this metric.</dd>
-<dt><strong><code>subsystem</code></strong></dt>
-<dd>Subsystem of all Prometheus metrics in this metric.</dd>
+<dt><strong><code>metric_namespace</code></strong></dt>
+<dd>Namespace of all
+metrics in this metric function.</dd>
+<dt><strong><code>metric_subsystem</code></strong></dt>
+<dd>Subsystem of all
+metrics in this metric function.</dd>
 <dt><strong><code>should_include_handler</code></strong></dt>
 <dd>Should the <code>handler</code> label be part of the metric?</dd>
 <dt><strong><code>should_include_method</code></strong></dt>
@@ -795,8 +813,8 @@ very small as all possible labels are included.</dd>
 <pre><code class="python">def latency(
     metric_name: str = &#34;http_request_duration_seconds&#34;,
     metric_doc: str = &#34;Duration of HTTP requests in seconds&#34;,
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -807,8 +825,8 @@ very small as all possible labels are included.</dd>
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -831,16 +849,16 @@ very small as all possible labels are included.</dd>
             metric_doc,
             labelnames=label_names,
             buckets=buckets,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
     else:
         METRIC = Histogram(
             metric_name,
             metric_doc,
             buckets=buckets,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -&gt; None:
@@ -856,7 +874,7 @@ very small as all possible labels are included.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.request_size"><code class="name flex">
-<span>def <span class="ident">request_size</span></span>(<span>metric_name: str = 'http_request_size_bytes', metric_doc: str = 'Content bytes of requests.', namespace: str = '', subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">request_size</span></span>(<span>metric_name: str = 'http_request_size_bytes', metric_doc: str = 'Content bytes of requests.', metric_namespace: str = '', metric_subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Record the content length of incoming requests.</p>
@@ -867,10 +885,12 @@ very small as all possible labels are included.</dd>
 <dd>Name of the metric to be created. Must be unique.</dd>
 <dt><strong><code>metric_doc</code></strong></dt>
 <dd>Documentation of the metric.</dd>
-<dt><strong><code>namespace</code></strong></dt>
-<dd>Namespace of all Prometheus metrics in this metric.</dd>
-<dt><strong><code>subsystem</code></strong></dt>
-<dd>Subsystem of all Prometheus metrics in this metric.</dd>
+<dt><strong><code>metric_namespace</code></strong></dt>
+<dd>Namespace of all
+metrics in this metric function.</dd>
+<dt><strong><code>metric_subsystem</code></strong></dt>
+<dd>Subsystem of all
+metrics in this metric function.</dd>
 <dt><strong><code>should_include_handler</code></strong></dt>
 <dd>Should the <code>handler</code> label be part of the metric?</dd>
 <dt><strong><code>should_include_method</code></strong></dt>
@@ -887,8 +907,8 @@ very small as all possible labels are included.</dd>
 <pre><code class="python">def request_size(
     metric_name: str = &#34;http_request_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of requests.&#34;,
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -900,8 +920,8 @@ very small as all possible labels are included.</dd>
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -919,12 +939,15 @@ very small as all possible labels are included.</dd>
             metric_name,
             metric_doc,
             labelnames=label_names,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
     else:
         METRIC = Summary(
-            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+            metric_name,
+            metric_doc,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -&gt; None:
@@ -942,7 +965,7 @@ very small as all possible labels are included.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.response_size"><code class="name flex">
-<span>def <span class="ident">response_size</span></span>(<span>metric_name: str = 'http_response_size_bytes', metric_doc: str = 'Content bytes of responses.', namespace: str = '', subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">response_size</span></span>(<span>metric_name: str = 'http_response_size_bytes', metric_doc: str = 'Content bytes of responses.', metric_namespace: str = '', metric_subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Record the content length of outgoing responses.</p>
@@ -953,10 +976,12 @@ very small as all possible labels are included.</dd>
 <dd>Name of the metric to be created. Must be unique.</dd>
 <dt><strong><code>metric_doc</code></strong></dt>
 <dd>Documentation of the metric.</dd>
-<dt><strong><code>namespace</code></strong></dt>
-<dd>Namespace of all Prometheus metrics in this metric.</dd>
-<dt><strong><code>subsystem</code></strong></dt>
-<dd>Subsystem of all Prometheus metrics in this metric.</dd>
+<dt><strong><code>metric_namespace</code></strong></dt>
+<dd>Namespace of all
+metrics in this metric function.</dd>
+<dt><strong><code>metric_subsystem</code></strong></dt>
+<dd>Subsystem of all
+metrics in this metric function.</dd>
 <dt><strong><code>should_include_handler</code></strong></dt>
 <dd>Should the <code>handler</code> label be part of the metric?</dd>
 <dt><strong><code>should_include_method</code></strong></dt>
@@ -973,8 +998,8 @@ very small as all possible labels are included.</dd>
 <pre><code class="python">def response_size(
     metric_name: str = &#34;http_response_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of responses.&#34;,
-    namespace: str = &#34;&#34;,
-    subsystem: str = &#34;&#34;,
+    metric_namespace: str = &#34;&#34;,
+    metric_subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -986,8 +1011,8 @@ very small as all possible labels are included.</dd>
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
-        namespace: Namespace of all Prometheus metrics in this metric.
-        subsystem: Subsystem of all Prometheus metrics in this metric.
+        metric_namespace: Namespace of all  metrics in this metric function.
+        metric_subsystem: Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -1005,12 +1030,15 @@ very small as all possible labels are included.</dd>
             metric_name,
             metric_doc,
             labelnames=label_names,
-            namespace=namespace,
-            subsystem=subsystem,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
     else:
         METRIC = Summary(
-            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+            metric_name,
+            metric_doc,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -&gt; None:
