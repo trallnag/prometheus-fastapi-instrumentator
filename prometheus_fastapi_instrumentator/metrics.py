@@ -95,6 +95,8 @@ def latency(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
+        namespace: Namespace of all Prometheus metrics in this metric.
+        subsystem: Subsystem of all Prometheus metrics in this metric.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -157,6 +159,8 @@ def request_size(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
+        namespace: Namespace of all Prometheus metrics in this metric.
+        subsystem: Subsystem of all Prometheus metrics in this metric.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -212,6 +216,8 @@ def response_size(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
+        namespace: Namespace of all Prometheus metrics in this metric.
+        subsystem: Subsystem of all Prometheus metrics in this metric.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -267,6 +273,8 @@ def combined_size(
     Args:
         metric_name: Name of the metric to be created. Must be unique.
         metric_doc: Documentation of the metric.
+        namespace: Namespace of all Prometheus metrics in this metric.
+        subsystem: Subsystem of all Prometheus metrics in this metric.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -364,6 +372,8 @@ def default(
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
+        namespace: Namespace of all Prometheus metrics in this metric.
+        subsystem: Subsystem of all Prometheus metrics in this metric.
         latency_highr_buckets: Buckets tuple for high res histogram. Can be 
             large because no labels are used.
         latency_lowr_buckets: Buckets tuple for low res histogram. Should be 
