@@ -111,6 +111,8 @@ def _build_label_attribute_names(
 def latency(
     metric_name: str = &#34;http_request_duration_seconds&#34;,
     metric_doc: str = &#34;Duration of HTTP requests in seconds&#34;,
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -139,10 +141,21 @@ def latency(
 
     if label_names:
         METRIC = Histogram(
-            metric_name, metric_doc, labelnames=label_names, buckets=buckets
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            buckets=buckets,
+            namespace=namespace,
+            subsystem=subsystem,
         )
     else:
-        METRIC = Histogram(metric_name, metric_doc, buckets=buckets)
+        METRIC = Histogram(
+            metric_name,
+            metric_doc,
+            buckets=buckets,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -&gt; None:
         if label_names:
@@ -159,6 +172,8 @@ def latency(
 def request_size(
     metric_name: str = &#34;http_request_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of requests.&#34;,
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -183,9 +198,17 @@ def request_size(
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -&gt; None:
         content_length = info.request.headers.get(&#34;Content-Length&#34;, None)
@@ -204,6 +227,8 @@ def request_size(
 def response_size(
     metric_name: str = &#34;http_response_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of responses.&#34;,
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -228,9 +253,17 @@ def response_size(
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -&gt; None:
         content_length = info.response.headers.get(&#34;Content-Length&#34;, None)
@@ -249,6 +282,8 @@ def response_size(
 def combined_size(
     metric_name: str = &#34;http_combined_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of requests and responses.&#34;,
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -273,9 +308,17 @@ def combined_size(
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -&gt; None:
         request_cl = info.request.headers.get(&#34;Content-Length&#34;, None)
@@ -303,6 +346,8 @@ def combined_size(
 
 
 def default(
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     latency_highr_buckets: tuple = (
         0.01,
         0.025,
@@ -366,6 +411,8 @@ def default(
         name=&#34;http_requests_total&#34;,
         documentation=&#34;Total number of requests by method, status and handler.&#34;,
         labelnames=(&#34;method&#34;, &#34;status&#34;, &#34;handler&#34;,),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     IN_SIZE = Summary(
@@ -376,6 +423,8 @@ def default(
             &#34;No percentile calculated. &#34;
         ),
         labelnames=(&#34;handler&#34;,),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     OUT_SIZE = Summary(
@@ -386,6 +435,8 @@ def default(
             &#34;No percentile calculated. &#34;
         ),
         labelnames=(&#34;handler&#34;,),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     LATENCY_HIGHR = Histogram(
@@ -395,6 +446,8 @@ def default(
             &#34;Made for more accurate percentile calculations. &#34;
         ),
         buckets=latency_highr_buckets,
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     LATENCY_LOWR = Histogram(
@@ -405,6 +458,8 @@ def default(
         ),
         buckets=latency_lowr_buckets,
         labelnames=(&#34;handler&#34;,),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     def instrumentation(info: Info) -&gt; None:
@@ -429,7 +484,7 @@ def default(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="prometheus_fastapi_instrumentator.metrics.combined_size"><code class="name flex">
-<span>def <span class="ident">combined_size</span></span>(<span>metric_name: str = 'http_combined_size_bytes', metric_doc: str = 'Content bytes of requests and responses.', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">combined_size</span></span>(<span>metric_name: str = 'http_combined_size_bytes', metric_doc: str = 'Content bytes of requests and responses.', namespace: str = '', subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Record the combined content length of requests and responses.</p>
@@ -456,6 +511,8 @@ def default(
 <pre><code class="python">def combined_size(
     metric_name: str = &#34;http_combined_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of requests and responses.&#34;,
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -480,9 +537,17 @@ def default(
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -&gt; None:
         request_cl = info.request.headers.get(&#34;Content-Length&#34;, None)
@@ -510,7 +575,7 @@ def default(
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.default"><code class="name flex">
-<span>def <span class="ident">default</span></span>(<span>latency_highr_buckets: tuple = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60), latency_lowr_buckets: tuple = (0.1, 0.5, 1)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">default</span></span>(<span>namespace: str = '', subsystem: str = '', latency_highr_buckets: tuple = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60), latency_lowr_buckets: tuple = (0.1, 0.5, 1)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Contains multiple metrics to cover multiple things.</p>
@@ -545,6 +610,8 @@ very small as all possible labels are included.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def default(
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     latency_highr_buckets: tuple = (
         0.01,
         0.025,
@@ -608,6 +675,8 @@ very small as all possible labels are included.</dd>
         name=&#34;http_requests_total&#34;,
         documentation=&#34;Total number of requests by method, status and handler.&#34;,
         labelnames=(&#34;method&#34;, &#34;status&#34;, &#34;handler&#34;,),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     IN_SIZE = Summary(
@@ -618,6 +687,8 @@ very small as all possible labels are included.</dd>
             &#34;No percentile calculated. &#34;
         ),
         labelnames=(&#34;handler&#34;,),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     OUT_SIZE = Summary(
@@ -628,6 +699,8 @@ very small as all possible labels are included.</dd>
             &#34;No percentile calculated. &#34;
         ),
         labelnames=(&#34;handler&#34;,),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     LATENCY_HIGHR = Histogram(
@@ -637,6 +710,8 @@ very small as all possible labels are included.</dd>
             &#34;Made for more accurate percentile calculations. &#34;
         ),
         buckets=latency_highr_buckets,
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     LATENCY_LOWR = Histogram(
@@ -647,6 +722,8 @@ very small as all possible labels are included.</dd>
         ),
         buckets=latency_lowr_buckets,
         labelnames=(&#34;handler&#34;,),
+        namespace=namespace,
+        subsystem=subsystem,
     )
 
     def instrumentation(info: Info) -&gt; None:
@@ -664,7 +741,7 @@ very small as all possible labels are included.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.latency"><code class="name flex">
-<span>def <span class="ident">latency</span></span>(<span>metric_name: str = 'http_request_duration_seconds', metric_doc: str = 'Duration of HTTP requests in seconds', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True, buckets: tuple = (0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, inf)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">latency</span></span>(<span>metric_name: str = 'http_request_duration_seconds', metric_doc: str = 'Duration of HTTP requests in seconds', namespace: str = '', subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True, buckets: tuple = (0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, inf)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Default metric for the Prometheus FastAPI Instrumentator.</p>
@@ -692,6 +769,8 @@ very small as all possible labels are included.</dd>
 <pre><code class="python">def latency(
     metric_name: str = &#34;http_request_duration_seconds&#34;,
     metric_doc: str = &#34;Duration of HTTP requests in seconds&#34;,
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -720,10 +799,21 @@ very small as all possible labels are included.</dd>
 
     if label_names:
         METRIC = Histogram(
-            metric_name, metric_doc, labelnames=label_names, buckets=buckets
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            buckets=buckets,
+            namespace=namespace,
+            subsystem=subsystem,
         )
     else:
-        METRIC = Histogram(metric_name, metric_doc, buckets=buckets)
+        METRIC = Histogram(
+            metric_name,
+            metric_doc,
+            buckets=buckets,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -&gt; None:
         if label_names:
@@ -738,7 +828,7 @@ very small as all possible labels are included.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.request_size"><code class="name flex">
-<span>def <span class="ident">request_size</span></span>(<span>metric_name: str = 'http_request_size_bytes', metric_doc: str = 'Content bytes of requests.', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">request_size</span></span>(<span>metric_name: str = 'http_request_size_bytes', metric_doc: str = 'Content bytes of requests.', namespace: str = '', subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Record the content length of incoming requests.</p>
@@ -765,6 +855,8 @@ very small as all possible labels are included.</dd>
 <pre><code class="python">def request_size(
     metric_name: str = &#34;http_request_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of requests.&#34;,
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -789,9 +881,17 @@ very small as all possible labels are included.</dd>
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -&gt; None:
         content_length = info.request.headers.get(&#34;Content-Length&#34;, None)
@@ -808,7 +908,7 @@ very small as all possible labels are included.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.response_size"><code class="name flex">
-<span>def <span class="ident">response_size</span></span>(<span>metric_name: str = 'http_response_size_bytes', metric_doc: str = 'Content bytes of responses.', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">response_size</span></span>(<span>metric_name: str = 'http_response_size_bytes', metric_doc: str = 'Content bytes of responses.', namespace: str = '', subsystem: str = '', should_include_handler: bool = True, should_include_method: bool = True, should_include_status: bool = True) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Record the content length of outgoing responses.</p>
@@ -835,6 +935,8 @@ very small as all possible labels are included.</dd>
 <pre><code class="python">def response_size(
     metric_name: str = &#34;http_response_size_bytes&#34;,
     metric_doc: str = &#34;Content bytes of responses.&#34;,
+    namespace: str = &#34;&#34;,
+    subsystem: str = &#34;&#34;,
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
@@ -859,9 +961,17 @@ very small as all possible labels are included.</dd>
     )
 
     if label_names:
-        METRIC = Summary(metric_name, metric_doc, labelnames=label_names)
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=namespace,
+            subsystem=subsystem,
+        )
     else:
-        METRIC = Summary(metric_name, metric_doc)
+        METRIC = Summary(
+            metric_name, metric_doc, namespace=namespace, subsystem=subsystem,
+        )
 
     def instrumentation(info: Info) -&gt; None:
         content_length = info.response.headers.get(&#34;Content-Length&#34;, None)

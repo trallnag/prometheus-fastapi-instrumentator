@@ -72,7 +72,7 @@ jobs:
         commit_message: Apply auto-formatting [skip ci]
         file_pattern: ./*.py
         commit_user_name: My GitHub Actions Bot
-        commit_user_email: tim.schwenke+github@protonmail.ch
+        commit_user_email: tim.schwenke+trallnag@protonmail.ch
 
     - name: Build package
       run: poetry build
