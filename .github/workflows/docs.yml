@@ -28,7 +28,6 @@ jobs:
       run: make docs
 
     - name: Recommit docs
-      if: matrix.python-version == 3.8
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Update docs [skip ci]
