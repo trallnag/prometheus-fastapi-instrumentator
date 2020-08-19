@@ -173,8 +173,8 @@ def test_namespace_subsystem():
             should_include_handler=False,
             should_include_method=False,
             should_include_status=False,
-            namespace="namespace",
-            subsystem="subsystem",
+            metric_namespace="namespace",
+            metric_subsystem="subsystem",
         )
     ).instrument(app).expose(app)
     client = TestClient(app)
