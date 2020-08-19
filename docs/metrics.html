@@ -322,7 +322,9 @@ def default(
         4.5,
         5,
         7.5,
-        10.0,
+        10,
+        30,
+        60,
     ),
     latency_lowr_buckets: tuple = (0.1, 0.5, 1),
 ) -&gt; Callable[[Info], None]:
@@ -333,14 +335,15 @@ def default(
     
     You get the following:
 
-    * `http_requests_total` (no labels): Total number of requests.
-    * `http_in_bytes_total` (no labels): Total number of incoming content 
-        length bytes.
-    * `http_out_bytes_total` (no labels): Total number of outgoing content 
-        length bytes.
-    * `http_highr_request_duration_seconds` (no labels): High number of buckets 
+    * `http_requests_total` (`handler`, `status`, `method`): Total number of 
+        requests by handler, status and method. 
+    * `http_request_size_bytes` (`handler`): Total number of incoming 
+        content length bytes by handler.
+    * `http_response_size_bytes` (`handler`): Total number of outgoing 
+        content length bytes by handler.
+    * `http_request_duration_highr_seconds` (no labels): High number of buckets 
         leading to more accurate calculation of percentiles.
-    * `http_lowr_request_duration_seconds` (`handler`, `status`, `method`): 
+    * `http_request_duration_seconds` (`handler`): 
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
@@ -360,33 +363,60 @@ def default(
         latency_lowr_buckets = latency_lowr_buckets + (float(&#34;inf&#34;),)
 
     TOTAL = Counter(
-        &#34;http_requests_total&#34;, &#34;Total number of requests with no API specific labels.&#34;
+        name=&#34;http_requests_total&#34;,
+        documentation=&#34;Total number of requests by method, status and handler.&#34;,
+        labelnames=(&#34;method&#34;, &#34;status&#34;, &#34;handler&#34;,),
     )
 
-    IN_SIZE = Counter(&#34;http_in_bytes_total&#34;, &#34;Content length of incoming requests.&#34;)
-    OUT_SIZE = Counter(&#34;http_out_bytes_total&#34;, &#34;Content length of incoming requests.&#34;)
+    IN_SIZE = Summary(
+        name=&#34;http_request_size_bytes&#34;,
+        documentation=(
+            &#34;Content length of incoming requests by handler. &#34;
+            &#34;Only value of header is respected. Otherwise ignored. &#34;
+            &#34;No percentile calculated. &#34;
+        ),
+        labelnames=(&#34;handler&#34;,),
+    )
+
+    OUT_SIZE = Summary(
+        name=&#34;http_response_size_bytes&#34;,
+        documentation=(
+            &#34;Content length of outgoing responses by handler. &#34;
+            &#34;Only value of header is respected. Otherwise ignored. &#34;
+            &#34;No percentile calculated. &#34;
+        ),
+        labelnames=(&#34;handler&#34;,),
+    )
 
     LATENCY_HIGHR = Histogram(
-        &#34;http_highr_request_duration_seconds&#34;,
-        &#34;Latency with many buckets but no API specific labels.&#34;,
+        name=&#34;http_request_duration_highr_seconds&#34;,
+        documentation=(
+            &#34;Latency with many buckets but no API specific labels. &#34;
+            &#34;Made for more accurate percentile calculations. &#34;
+        ),
         buckets=latency_highr_buckets,
     )
 
     LATENCY_LOWR = Histogram(
-        &#34;http_lowr_request_duration_seconds&#34;,
-        &#34;Latency with only few buckets.&#34;,
+        name=&#34;http_request_duration_seconds&#34;,
+        documentation=(
+            &#34;Latency with only few buckets by handler. &#34;
+            &#34;Made to be only used if aggregation by handler is important. &#34;
+        ),
         buckets=latency_lowr_buckets,
-        labelnames=(&#34;method&#34;, &#34;status&#34;, &#34;handler&#34;),
+        labelnames=(&#34;handler&#34;,),
     )
 
     def instrumentation(info: Info) -&gt; None:
-        TOTAL.inc()
-        IN_SIZE.inc(int(info.request.headers.get(&#34;Content-Length&#34;, 0)))
-        OUT_SIZE.inc(int(info.response.headers.get(&#34;Content-Length&#34;, 0)))
+        TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+        IN_SIZE.labels(info.modified_handler).observe(
+            int(info.request.headers.get(&#34;Content-Length&#34;, 0))
+        )
+        OUT_SIZE.labels(info.modified_handler).observe(
+            int(info.response.headers.get(&#34;Content-Length&#34;, 0))
+        )
         LATENCY_HIGHR.observe(info.modified_duration)
-        LATENCY_LOWR.labels(
-            info.method, info.modified_status, info.modified_handler
-        ).observe(info.modified_duration)
+        LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
     return instrumentation</code></pre>
 </details>
@@ -479,8 +509,8 @@ def default(
     return instrumentation</code></pre>
 </details>
 </dd>
-<dt id="prometheus_fastapi_instrumentator.metrics.full"><code class="name flex">
-<span>def <span class="ident">full</span></span>(<span>latency_highr_buckets: tuple = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10.0), latency_lowr_buckets: tuple = (0.1, 0.5, 1)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<dt id="prometheus_fastapi_instrumentator.metrics.default"><code class="name flex">
+<span>def <span class="ident">default</span></span>(<span>latency_highr_buckets: tuple = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60), latency_lowr_buckets: tuple = (0.1, 0.5, 1)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Contains multiple metrics to cover multiple things.</p>
@@ -488,14 +518,15 @@ def default(
 multiple separate instrumentation functions that do more or less the same.</p>
 <p>You get the following:</p>
 <ul>
-<li><code>http_requests_total</code> (no labels): Total number of requests.</li>
-<li><code>http_in_bytes_total</code> (no labels): Total number of incoming content
-length bytes.</li>
-<li><code>http_out_bytes_total</code> (no labels): Total number of outgoing content
-length bytes.</li>
-<li><code>http_highr_request_duration_seconds</code> (no labels): High number of buckets
+<li><code>http_requests_total</code> (<code>handler</code>, <code>status</code>, <code>method</code>): Total number of
+requests by handler, status and method. </li>
+<li><code>http_request_size_bytes</code> (<code>handler</code>): Total number of incoming
+content length bytes by handler.</li>
+<li><code>http_response_size_bytes</code> (<code>handler</code>): Total number of outgoing
+content length bytes by handler.</li>
+<li><code>http_request_duration_highr_seconds</code> (no labels): High number of buckets
 leading to more accurate calculation of percentiles.</li>
-<li><code>http_lowr_request_duration_seconds</code> (<code>handler</code>, <code>status</code>, <code>method</code>):
+<li><code>http_request_duration_seconds</code> (<code>handler</code>):
 Kepp the bucket count very low. Only put in SLIs.</li>
 </ul>
 <h2 id="args">Args</h2>
@@ -533,7 +564,9 @@ very small as all possible labels are included.</dd>
         4.5,
         5,
         7.5,
-        10.0,
+        10,
+        30,
+        60,
     ),
     latency_lowr_buckets: tuple = (0.1, 0.5, 1),
 ) -&gt; Callable[[Info], None]:
@@ -544,14 +577,15 @@ very small as all possible labels are included.</dd>
     
     You get the following:
 
-    * `http_requests_total` (no labels): Total number of requests.
-    * `http_in_bytes_total` (no labels): Total number of incoming content 
-        length bytes.
-    * `http_out_bytes_total` (no labels): Total number of outgoing content 
-        length bytes.
-    * `http_highr_request_duration_seconds` (no labels): High number of buckets 
+    * `http_requests_total` (`handler`, `status`, `method`): Total number of 
+        requests by handler, status and method. 
+    * `http_request_size_bytes` (`handler`): Total number of incoming 
+        content length bytes by handler.
+    * `http_response_size_bytes` (`handler`): Total number of outgoing 
+        content length bytes by handler.
+    * `http_request_duration_highr_seconds` (no labels): High number of buckets 
         leading to more accurate calculation of percentiles.
-    * `http_lowr_request_duration_seconds` (`handler`, `status`, `method`): 
+    * `http_request_duration_seconds` (`handler`): 
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
@@ -571,33 +605,60 @@ very small as all possible labels are included.</dd>
         latency_lowr_buckets = latency_lowr_buckets + (float(&#34;inf&#34;),)
 
     TOTAL = Counter(
-        &#34;http_requests_total&#34;, &#34;Total number of requests with no API specific labels.&#34;
+        name=&#34;http_requests_total&#34;,
+        documentation=&#34;Total number of requests by method, status and handler.&#34;,
+        labelnames=(&#34;method&#34;, &#34;status&#34;, &#34;handler&#34;,),
     )
 
-    IN_SIZE = Counter(&#34;http_in_bytes_total&#34;, &#34;Content length of incoming requests.&#34;)
-    OUT_SIZE = Counter(&#34;http_out_bytes_total&#34;, &#34;Content length of incoming requests.&#34;)
+    IN_SIZE = Summary(
+        name=&#34;http_request_size_bytes&#34;,
+        documentation=(
+            &#34;Content length of incoming requests by handler. &#34;
+            &#34;Only value of header is respected. Otherwise ignored. &#34;
+            &#34;No percentile calculated. &#34;
+        ),
+        labelnames=(&#34;handler&#34;,),
+    )
+
+    OUT_SIZE = Summary(
+        name=&#34;http_response_size_bytes&#34;,
+        documentation=(
+            &#34;Content length of outgoing responses by handler. &#34;
+            &#34;Only value of header is respected. Otherwise ignored. &#34;
+            &#34;No percentile calculated. &#34;
+        ),
+        labelnames=(&#34;handler&#34;,),
+    )
 
     LATENCY_HIGHR = Histogram(
-        &#34;http_highr_request_duration_seconds&#34;,
-        &#34;Latency with many buckets but no API specific labels.&#34;,
+        name=&#34;http_request_duration_highr_seconds&#34;,
+        documentation=(
+            &#34;Latency with many buckets but no API specific labels. &#34;
+            &#34;Made for more accurate percentile calculations. &#34;
+        ),
         buckets=latency_highr_buckets,
     )
 
     LATENCY_LOWR = Histogram(
-        &#34;http_lowr_request_duration_seconds&#34;,
-        &#34;Latency with only few buckets.&#34;,
+        name=&#34;http_request_duration_seconds&#34;,
+        documentation=(
+            &#34;Latency with only few buckets by handler. &#34;
+            &#34;Made to be only used if aggregation by handler is important. &#34;
+        ),
         buckets=latency_lowr_buckets,
-        labelnames=(&#34;method&#34;, &#34;status&#34;, &#34;handler&#34;),
+        labelnames=(&#34;handler&#34;,),
     )
 
     def instrumentation(info: Info) -&gt; None:
-        TOTAL.inc()
-        IN_SIZE.inc(int(info.request.headers.get(&#34;Content-Length&#34;, 0)))
-        OUT_SIZE.inc(int(info.response.headers.get(&#34;Content-Length&#34;, 0)))
+        TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+        IN_SIZE.labels(info.modified_handler).observe(
+            int(info.request.headers.get(&#34;Content-Length&#34;, 0))
+        )
+        OUT_SIZE.labels(info.modified_handler).observe(
+            int(info.response.headers.get(&#34;Content-Length&#34;, 0))
+        )
         LATENCY_HIGHR.observe(info.modified_duration)
-        LATENCY_LOWR.labels(
-            info.method, info.modified_status, info.modified_handler
-        ).observe(info.modified_duration)
+        LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
     return instrumentation</code></pre>
 </details>
@@ -900,7 +961,7 @@ instrumentator. For example rounding of decimals. Seconds.</dd>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="prometheus_fastapi_instrumentator.metrics.combined_size" href="#prometheus_fastapi_instrumentator.metrics.combined_size">combined_size</a></code></li>
-<li><code><a title="prometheus_fastapi_instrumentator.metrics.full" href="#prometheus_fastapi_instrumentator.metrics.full">full</a></code></li>
+<li><code><a title="prometheus_fastapi_instrumentator.metrics.default" href="#prometheus_fastapi_instrumentator.metrics.default">default</a></code></li>
 <li><code><a title="prometheus_fastapi_instrumentator.metrics.latency" href="#prometheus_fastapi_instrumentator.metrics.latency">latency</a></code></li>
 <li><code><a title="prometheus_fastapi_instrumentator.metrics.request_size" href="#prometheus_fastapi_instrumentator.metrics.request_size">request_size</a></code></li>
 <li><code><a title="prometheus_fastapi_instrumentator.metrics.response_size" href="#prometheus_fastapi_instrumentator.metrics.response_size">response_size</a></code></li>
