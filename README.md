@@ -199,7 +199,7 @@ with FastAPI, the `instrument()` method has to be called.
 instrumentator.instrument(app)
 ```
 
-Notice that this will to nothing if `should_respect_env_var` has been set 
+Notice that this will do nothing if `should_respect_env_var` has been set 
 during construction of the instrumentator object and the respective env var 
 is not found.
 
