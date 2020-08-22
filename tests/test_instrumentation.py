@@ -327,9 +327,7 @@ def test_excluding_handlers():
 
 def test_excluding_handlers_regex():
     app = create_app()
-    Instrumentator(excluded_handlers=["^/$"]).add(metrics.latency()).instrument(
-        app
-    )
+    Instrumentator(excluded_handlers=["^/$"]).add(metrics.latency()).instrument(app)
     expose_metrics(app)
     client = TestClient(app)
 
