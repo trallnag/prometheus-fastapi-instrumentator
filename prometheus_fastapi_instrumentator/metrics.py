@@ -470,7 +470,7 @@ def default(
 
         if not should_only_respect_2xx_for_highr or info.modified_status.startswith("2"):
             LATENCY_HIGHR.observe(info.modified_duration)
-        
+
         LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
     return instrumentation
