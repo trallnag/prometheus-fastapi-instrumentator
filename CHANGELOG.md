@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing
 
+## [5.2.0] 2020-08-22
+
+### Added
+
+* Parameter `should_only_respect_2xx_for_highr` to `default` metrics. Allows 
+    you to only put successful requests into the high resolution bucket.
+
 ## [5.1.0] 2020-08-19
 
 ### Added

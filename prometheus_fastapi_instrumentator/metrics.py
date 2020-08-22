@@ -337,6 +337,7 @@ def combined_size(
 def default(
     metric_namespace: str = "",
     metric_subsystem: str = "",
+    should_only_respect_2xx_for_highr: bool = False,
     latency_highr_buckets: tuple = (
         0.01,
         0.025,
@@ -383,6 +384,9 @@ def default(
     Args:
         metric_namespace: Namespace of all  metrics in this metric function.
         metric_subsystem: Subsystem of all  metrics in this metric function.
+        should_only_respect_2xx_for_highr: Should the metric 
+            `http_request_duration_highr_seconds` only include latencies of 
+            requests / responses that have a status code starting with `2`?
         latency_highr_buckets: Buckets tuple for high res histogram. Can be 
             large because no labels are used.
         latency_lowr_buckets: Buckets tuple for low res histogram. Should be 
@@ -455,13 +459,18 @@ def default(
 
     def instrumentation(info: Info) -> None:
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+
         IN_SIZE.labels(info.modified_handler).observe(
             int(info.request.headers.get("Content-Length", 0))
         )
+
         OUT_SIZE.labels(info.modified_handler).observe(
             int(info.response.headers.get("Content-Length", 0))
         )
-        LATENCY_HIGHR.observe(info.modified_duration)
+
+        if not should_only_respect_2xx_for_highr or info.modified_status.startswith("2"):
+            LATENCY_HIGHR.observe(info.modified_duration)
+        
         LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
     return instrumentation

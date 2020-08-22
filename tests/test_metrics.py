@@ -384,3 +384,30 @@ def test_default():
         REGISTRY.get_sample_value("http_request_duration_seconds_sum", {"handler": "/"},)
         > 0
     )
+
+
+def test_default_should_only_respect_2xx_for_highr():
+    app = create_app()
+    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.default(should_only_respect_2xx_for_highr=True)).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/efefewffe", data="fefeef")
+    client.get("/ffe04904nfiuo-ni")
+
+    response = get_response(client, "/metrics")
+
+    assert b"http_request_duration_highr_seconds_count 0.0" in response.content
+
+
+def test_default_should_not_only_respect_2xx_for_highr():
+    app = create_app()
+    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.default(should_only_respect_2xx_for_highr=False)).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/efefewffe", data="fefeef")
+    client.get("/ffe04904nfiuo-ni")
+
+    response = get_response(client, "/metrics")
+
+    assert b"http_request_duration_highr_seconds_count 0.0" not in response.content
+    assert b"http_request_duration_highr_seconds_count 2.0" in response.content
