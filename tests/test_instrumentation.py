@@ -325,8 +325,23 @@ def test_excluding_handlers():
     assert b'handler="none"' not in response.content
 
 
-# ------------------------------------------------------------------------------
-# Test None excluded handlers.
+def test_excluding_handlers_regex():
+    app = create_app()
+    Instrumentator(excluded_handlers=["^/$"]).add(metrics.latency()).instrument(
+        app
+    )
+    expose_metrics(app)
+    client = TestClient(app)
+
+    get_response(client, "/ignore")
+    get_response(client, "/ignore")
+    get_response(client, "/")
+
+    response = get_response(client, "/metrics")
+
+    assert b'handler="/"' not in response.content
+    assert b'handler="none"' not in response.content
+    assert b'handler="/ignore"' in response.content
 
 
 def test_excluded_handlers_none():
