@@ -1,5 +1,5 @@
 appdirs==1.4.4
-attrs==19.3.0
+attrs==20.1.0
 black==19.10b0
 certifi==2020.6.20
 chardet==3.0.4
@@ -19,7 +19,7 @@ pathspec==0.8.0
 pdoc3==0.8.4
 pluggy==0.13.1
 prometheus-client==0.8.0
--e git+https://github.com/trallnag/prometheus-fastapi-instrumentator@9d9881df8e617c968e14022d0c503496d6869033#egg=prometheus_fastapi_instrumentator
+-e git+https://github.com/trallnag/prometheus-fastapi-instrumentator@4b86baaed609228022b9076652f02ae2c5c87084#egg=prometheus_fastapi_instrumentator
 py==1.9.0
 pycodestyle==2.6.0
 pydantic==1.6.1
