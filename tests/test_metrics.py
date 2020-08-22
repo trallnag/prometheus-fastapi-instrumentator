@@ -388,7 +388,9 @@ def test_default():
 
 def test_default_should_only_respect_2xx_for_highr():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.default(should_only_respect_2xx_for_highr=True)).instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.default(should_only_respect_2xx_for_highr=True)
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/efefewffe", data="fefeef")
@@ -401,7 +403,9 @@ def test_default_should_only_respect_2xx_for_highr():
 
 def test_default_should_not_only_respect_2xx_for_highr():
     app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.default(should_only_respect_2xx_for_highr=False)).instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).add(
+        metrics.default(should_only_respect_2xx_for_highr=False)
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     client.get("/efefewffe", data="fefeef")
