@@ -365,6 +365,7 @@ def combined_size(
 def default(
     metric_namespace: str = &#34;&#34;,
     metric_subsystem: str = &#34;&#34;,
+    should_only_respect_2xx_for_highr: bool = False,
     latency_highr_buckets: tuple = (
         0.01,
         0.025,
@@ -411,6 +412,9 @@ def default(
     Args:
         metric_namespace: Namespace of all  metrics in this metric function.
         metric_subsystem: Subsystem of all  metrics in this metric function.
+        should_only_respect_2xx_for_highr: Should the metric 
+            `http_request_duration_highr_seconds` only include latencies of 
+            requests / responses that have a status code starting with `2`?
         latency_highr_buckets: Buckets tuple for high res histogram. Can be 
             large because no labels are used.
         latency_lowr_buckets: Buckets tuple for low res histogram. Should be 
@@ -483,13 +487,18 @@ def default(
 
     def instrumentation(info: Info) -&gt; None:
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+
         IN_SIZE.labels(info.modified_handler).observe(
             int(info.request.headers.get(&#34;Content-Length&#34;, 0))
         )
+
         OUT_SIZE.labels(info.modified_handler).observe(
             int(info.response.headers.get(&#34;Content-Length&#34;, 0))
         )
-        LATENCY_HIGHR.observe(info.modified_duration)
+
+        if not should_only_respect_2xx_for_highr or info.modified_status.startswith(&#34;2&#34;):
+            LATENCY_HIGHR.observe(info.modified_duration)
+
         LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
     return instrumentation</code></pre>
@@ -605,7 +614,7 @@ metrics in this metric function.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.metrics.default"><code class="name flex">
-<span>def <span class="ident">default</span></span>(<span>metric_namespace: str = '', metric_subsystem: str = '', latency_highr_buckets: tuple = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60), latency_lowr_buckets: tuple = (0.1, 0.5, 1)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
+<span>def <span class="ident">default</span></span>(<span>metric_namespace: str = '', metric_subsystem: str = '', should_only_respect_2xx_for_highr: bool = False, latency_highr_buckets: tuple = (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60), latency_lowr_buckets: tuple = (0.1, 0.5, 1)) ‑> Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Contains multiple metrics to cover multiple things.</p>
@@ -632,6 +641,10 @@ metrics in this metric function.</dd>
 <dt><strong><code>metric_subsystem</code></strong></dt>
 <dd>Subsystem of all
 metrics in this metric function.</dd>
+<dt><strong><code>should_only_respect_2xx_for_highr</code></strong></dt>
+<dd>Should the metric
+<code>http_request_duration_highr_seconds</code> only include latencies of
+requests / responses that have a status code starting with <code>2</code>?</dd>
 <dt><strong><code>latency_highr_buckets</code></strong></dt>
 <dd>Buckets tuple for high res histogram. Can be
 large because no labels are used.</dd>
@@ -648,6 +661,7 @@ very small as all possible labels are included.</dd>
 <pre><code class="python">def default(
     metric_namespace: str = &#34;&#34;,
     metric_subsystem: str = &#34;&#34;,
+    should_only_respect_2xx_for_highr: bool = False,
     latency_highr_buckets: tuple = (
         0.01,
         0.025,
@@ -694,6 +708,9 @@ very small as all possible labels are included.</dd>
     Args:
         metric_namespace: Namespace of all  metrics in this metric function.
         metric_subsystem: Subsystem of all  metrics in this metric function.
+        should_only_respect_2xx_for_highr: Should the metric 
+            `http_request_duration_highr_seconds` only include latencies of 
+            requests / responses that have a status code starting with `2`?
         latency_highr_buckets: Buckets tuple for high res histogram. Can be 
             large because no labels are used.
         latency_lowr_buckets: Buckets tuple for low res histogram. Should be 
@@ -766,13 +783,18 @@ very small as all possible labels are included.</dd>
 
     def instrumentation(info: Info) -&gt; None:
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+
         IN_SIZE.labels(info.modified_handler).observe(
             int(info.request.headers.get(&#34;Content-Length&#34;, 0))
         )
+
         OUT_SIZE.labels(info.modified_handler).observe(
             int(info.response.headers.get(&#34;Content-Length&#34;, 0))
         )
-        LATENCY_HIGHR.observe(info.modified_duration)
+
+        if not should_only_respect_2xx_for_highr or info.modified_status.startswith(&#34;2&#34;):
+            LATENCY_HIGHR.observe(info.modified_duration)
+
         LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
     return instrumentation</code></pre>
