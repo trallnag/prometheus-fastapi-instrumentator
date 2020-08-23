@@ -238,3 +238,4 @@ cloned, run `poetry install` and `poetry shell`. From here you may start the
 IDE of your choice.
 
 Take a look at the Makefile or workflows on how to test this package.
+
