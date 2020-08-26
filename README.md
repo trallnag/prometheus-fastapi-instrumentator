@@ -33,7 +33,7 @@ sensible defaults give you:
     content lengths of all outgoing responses. If the response has no valid 
     content length header it will be ignored. No percentile calculated.
 * Histogram `http_request_duration_seconds` with `handler`. Only a few buckets 
-    to keep cardinality low. Uses for aggregations by handler or SLI buckets.
+    to keep cardinality low. Use it for aggregations by handler or SLI buckets.
 * Histogram `http_request_duration_highr_seconds` without any labels. Large 
     number of buckets (>20) for accurate percentile calculations.
 
