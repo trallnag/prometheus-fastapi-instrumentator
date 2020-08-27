@@ -182,7 +182,7 @@ def request_size(
 ) -&gt; Callable[[Info], None]:
     &#34;&#34;&#34;Record the content length of incoming requests.
 
-    Requests / Responses with missing `Content-Length` will be skipped.
+    If content length is missing 0 will be assumed.
 
     Args:
         metric_name: Name of the metric to be created. Must be unique.
@@ -218,15 +218,14 @@ def request_size(
         )
 
     def instrumentation(info: Info) -&gt; None:
-        content_length = info.request.headers.get(&#34;Content-Length&#34;, None)
-        if content_length is not None:
-            if label_names:
-                label_values = []
-                for attribute_name in info_attribute_names:
-                    label_values.append(getattr(info, attribute_name))
-                METRIC.labels(*label_values).observe(int(content_length))
-            else:
-                METRIC.observe(int(content_length))
+        content_length = info.request.headers.get(&#34;Content-Length&#34;, 0)
+        if label_names:
+            label_values = []
+            for attribute_name in info_attribute_names:
+                label_values.append(getattr(info, attribute_name))
+            METRIC.labels(*label_values).observe(int(content_length))
+        else:
+            METRIC.observe(int(content_length))
 
     return instrumentation
 
@@ -242,7 +241,7 @@ def response_size(
 ) -&gt; Callable[[Info], None]:
     &#34;&#34;&#34;Record the content length of outgoing responses.
 
-    Responses with missing `Content-Length` will be skipped.
+    If content length is missing 0 will be assumed.
 
     Args:
         metric_name: Name of the metric to be created. Must be unique.
@@ -278,15 +277,18 @@ def response_size(
         )
 
     def instrumentation(info: Info) -&gt; None:
-        content_length = info.response.headers.get(&#34;Content-Length&#34;, None)
-        if content_length is not None:
-            if label_names:
-                label_values = []
-                for attribute_name in info_attribute_names:
-                    label_values.append(getattr(info, attribute_name))
-                METRIC.labels(*label_values).observe(int(content_length))
-            else:
-                METRIC.observe(int(content_length))
+        if info.response and hasattr(info.response, &#34;headers&#34;):
+            content_length = info.response.headers.get(&#34;Content-Length&#34;, 0)
+        else:
+            content_length = 0
+
+        if label_names:
+            label_values = []
+            for attribute_name in info_attribute_names:
+                label_values.append(getattr(info, attribute_name))
+            METRIC.labels(*label_values).observe(int(content_length))
+        else:
+            METRIC.observe(int(content_length))
 
     return instrumentation
 
@@ -302,7 +304,7 @@ def combined_size(
 ) -&gt; Callable[[Info], None]:
     &#34;&#34;&#34;Record the combined content length of requests and responses.
 
-    Requests / Responses with missing `Content-Length` will be skipped.
+    If content length is missing 0 will be assumed.
 
     Args:
         metric_name: Name of the metric to be created. Must be unique.
@@ -338,26 +340,22 @@ def combined_size(
         )
 
     def instrumentation(info: Info) -&gt; None:
-        request_cl = info.request.headers.get(&#34;Content-Length&#34;, None)
-        response_cl = info.response.headers.get(&#34;Content-Length&#34;, None)
+        request_cl = info.request.headers.get(&#34;Content-Length&#34;, 0)
 
-        if request_cl and response_cl:
-            content_length = int(request_cl) + int(response_cl)
-        elif request_cl:
-            content_length = int(request_cl)
-        elif response_cl:
-            content_length = int(response_cl)
+        if info.response and hasattr(info.response, &#34;headers&#34;):
+            response_cl = info.response.headers.get(&#34;Content-Length&#34;, 0)
         else:
-            content_length = None
+            response_cl = 0
 
-        if content_length is not None:
-            if label_names:
-                label_values = []
-                for attribute_name in info_attribute_names:
-                    label_values.append(getattr(info, attribute_name))
-                METRIC.labels(*label_values).observe(int(content_length))
-            else:
-                METRIC.observe(int(content_length))
+        content_length = int(request_cl) + int(response_cl)
+
+        if label_names:
+            label_values = []
+            for attribute_name in info_attribute_names:
+                label_values.append(getattr(info, attribute_name))
+            METRIC.labels(*label_values).observe(int(content_length))
+        else:
+            METRIC.observe(int(content_length))
 
     return instrumentation
 
@@ -492,9 +490,12 @@ def default(
             int(info.request.headers.get(&#34;Content-Length&#34;, 0))
         )
 
-        OUT_SIZE.labels(info.modified_handler).observe(
-            int(info.response.headers.get(&#34;Content-Length&#34;, 0))
-        )
+        if info.response and hasattr(info.response, &#34;headers&#34;):
+            OUT_SIZE.labels(info.modified_handler).observe(
+                int(info.response.headers.get(&#34;Content-Length&#34;, 0))
+            )
+        else:
+            OUT_SIZE.labels(info.modified_handler).observe(0)
 
         if not should_only_respect_2xx_for_highr or info.modified_status.startswith(&#34;2&#34;):
             LATENCY_HIGHR.observe(info.modified_duration)
@@ -516,7 +517,7 @@ def default(
 </code></dt>
 <dd>
 <div class="desc"><p>Record the combined content length of requests and responses.</p>
-<p>Requests / Responses with missing <code>Content-Length</code> will be skipped.</p>
+<p>If content length is missing 0 will be assumed.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>metric_name</code></strong></dt>
@@ -553,7 +554,7 @@ metrics in this metric function.</dd>
 ) -&gt; Callable[[Info], None]:
     &#34;&#34;&#34;Record the combined content length of requests and responses.
 
-    Requests / Responses with missing `Content-Length` will be skipped.
+    If content length is missing 0 will be assumed.
 
     Args:
         metric_name: Name of the metric to be created. Must be unique.
@@ -589,26 +590,22 @@ metrics in this metric function.</dd>
         )
 
     def instrumentation(info: Info) -&gt; None:
-        request_cl = info.request.headers.get(&#34;Content-Length&#34;, None)
-        response_cl = info.response.headers.get(&#34;Content-Length&#34;, None)
+        request_cl = info.request.headers.get(&#34;Content-Length&#34;, 0)
 
-        if request_cl and response_cl:
-            content_length = int(request_cl) + int(response_cl)
-        elif request_cl:
-            content_length = int(request_cl)
-        elif response_cl:
-            content_length = int(response_cl)
+        if info.response and hasattr(info.response, &#34;headers&#34;):
+            response_cl = info.response.headers.get(&#34;Content-Length&#34;, 0)
         else:
-            content_length = None
+            response_cl = 0
 
-        if content_length is not None:
-            if label_names:
-                label_values = []
-                for attribute_name in info_attribute_names:
-                    label_values.append(getattr(info, attribute_name))
-                METRIC.labels(*label_values).observe(int(content_length))
-            else:
-                METRIC.observe(int(content_length))
+        content_length = int(request_cl) + int(response_cl)
+
+        if label_names:
+            label_values = []
+            for attribute_name in info_attribute_names:
+                label_values.append(getattr(info, attribute_name))
+            METRIC.labels(*label_values).observe(int(content_length))
+        else:
+            METRIC.observe(int(content_length))
 
     return instrumentation</code></pre>
 </details>
@@ -788,9 +785,12 @@ very small as all possible labels are included.</dd>
             int(info.request.headers.get(&#34;Content-Length&#34;, 0))
         )
 
-        OUT_SIZE.labels(info.modified_handler).observe(
-            int(info.response.headers.get(&#34;Content-Length&#34;, 0))
-        )
+        if info.response and hasattr(info.response, &#34;headers&#34;):
+            OUT_SIZE.labels(info.modified_handler).observe(
+                int(info.response.headers.get(&#34;Content-Length&#34;, 0))
+            )
+        else:
+            OUT_SIZE.labels(info.modified_handler).observe(0)
 
         if not should_only_respect_2xx_for_highr or info.modified_status.startswith(&#34;2&#34;):
             LATENCY_HIGHR.observe(info.modified_duration)
@@ -900,7 +900,7 @@ metrics in this metric function.</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>Record the content length of incoming requests.</p>
-<p>Requests / Responses with missing <code>Content-Length</code> will be skipped.</p>
+<p>If content length is missing 0 will be assumed.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>metric_name</code></strong></dt>
@@ -937,7 +937,7 @@ metrics in this metric function.</dd>
 ) -&gt; Callable[[Info], None]:
     &#34;&#34;&#34;Record the content length of incoming requests.
 
-    Requests / Responses with missing `Content-Length` will be skipped.
+    If content length is missing 0 will be assumed.
 
     Args:
         metric_name: Name of the metric to be created. Must be unique.
@@ -973,15 +973,14 @@ metrics in this metric function.</dd>
         )
 
     def instrumentation(info: Info) -&gt; None:
-        content_length = info.request.headers.get(&#34;Content-Length&#34;, None)
-        if content_length is not None:
-            if label_names:
-                label_values = []
-                for attribute_name in info_attribute_names:
-                    label_values.append(getattr(info, attribute_name))
-                METRIC.labels(*label_values).observe(int(content_length))
-            else:
-                METRIC.observe(int(content_length))
+        content_length = info.request.headers.get(&#34;Content-Length&#34;, 0)
+        if label_names:
+            label_values = []
+            for attribute_name in info_attribute_names:
+                label_values.append(getattr(info, attribute_name))
+            METRIC.labels(*label_values).observe(int(content_length))
+        else:
+            METRIC.observe(int(content_length))
 
     return instrumentation</code></pre>
 </details>
@@ -991,7 +990,7 @@ metrics in this metric function.</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>Record the content length of outgoing responses.</p>
-<p>Responses with missing <code>Content-Length</code> will be skipped.</p>
+<p>If content length is missing 0 will be assumed.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>metric_name</code></strong></dt>
@@ -1028,7 +1027,7 @@ metrics in this metric function.</dd>
 ) -&gt; Callable[[Info], None]:
     &#34;&#34;&#34;Record the content length of outgoing responses.
 
-    Responses with missing `Content-Length` will be skipped.
+    If content length is missing 0 will be assumed.
 
     Args:
         metric_name: Name of the metric to be created. Must be unique.
@@ -1064,15 +1063,18 @@ metrics in this metric function.</dd>
         )
 
     def instrumentation(info: Info) -&gt; None:
-        content_length = info.response.headers.get(&#34;Content-Length&#34;, None)
-        if content_length is not None:
-            if label_names:
-                label_values = []
-                for attribute_name in info_attribute_names:
-                    label_values.append(getattr(info, attribute_name))
-                METRIC.labels(*label_values).observe(int(content_length))
-            else:
-                METRIC.observe(int(content_length))
+        if info.response and hasattr(info.response, &#34;headers&#34;):
+            content_length = info.response.headers.get(&#34;Content-Length&#34;, 0)
+        else:
+            content_length = 0
+
+        if label_names:
+            label_values = []
+            for attribute_name in info_attribute_names:
+                label_values.append(getattr(info, attribute_name))
+            METRIC.labels(*label_values).observe(int(content_length))
+        else:
+            METRIC.observe(int(content_length))
 
     return instrumentation</code></pre>
 </details>
