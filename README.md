@@ -28,10 +28,10 @@ sensible defaults give you:
     number of requests.
 * Summary `http_request_size_bytes` with `handler`. Added up total of the 
     content lengths of all incoming requests. If the request has no valid 
-    content length header it will be ignored. No percentile calculated.
+    content length, 0 bytes will be assumed.
 * Summary `http_response_size_bytes` with `handler`. Added up total of the 
     content lengths of all outgoing responses. If the response has no valid 
-    content length header it will be ignored. No percentile calculated.
+    content length, 0 bytes will be assumed.
 * Histogram `http_request_duration_seconds` with `handler`. Only a few buckets 
     to keep cardinality low. Use it for aggregations by handler or SLI buckets.
 * Histogram `http_request_duration_highr_seconds` without any labels. Large 
@@ -182,6 +182,10 @@ metric instance itself). Next comes the closure. This function must adhere
 to the shown interface. It will always get an `Info` object that contains 
 the request, response and a few other modified informations. For example the 
 (grouped) status code or the handler. Finally, the closure is returned.
+
+**Important:** The response object inside `info` can either be the response 
+object or `None`. I recommend to check the documentation and/or the source 
+code before creating your own metrics.
 
 To use it, we hand over the closure to the instrumentator object.
 
