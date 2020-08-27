@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing
 
+## [5.2.1] 2020-08-27
+
+### Fixed
+
+* Fix for <https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/7>.
+    If a run time error is raised inside the endpoint, FastAPI will not wrap 
+    the error in a response object. In addition this instrumentator assumed 
+    that `info.response` will always contain the `headers` attribute which is 
+    not the case if a runtime error is thrown. Now the metrics check if the 
+    response is `None` and that the `headers` attribute actually exists. Tests 
+    have been added as well.
+
+### Changed
+
+* Metrics `response_size` and `combined_size` no longer skip if content length 
+    is not found. Now the content length will default no zero bytes.
+
 ## [5.2.0] 2020-08-22
 
 ### Added
