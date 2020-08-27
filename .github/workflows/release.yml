@@ -146,6 +146,8 @@ jobs:
   # ============================================================================
 
   docs:    
+    needs: create-github-release
+    
     runs-on: ubuntu-latest
     steps:
 
