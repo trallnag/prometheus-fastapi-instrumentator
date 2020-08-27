@@ -252,6 +252,21 @@ def test_response_size_no_labels():
     assert REGISTRY.get_sample_value("http_response_size_bytes_sum", {}) == 14
 
 
+def test_response_size_with_runtime_error():
+    app = create_app()
+    Instrumentator().add(metrics.response_size()).instrument(app).expose(app)
+    client = TestClient(app)
+
+    try:
+        get_response(client, "/runtime_error")
+    except RuntimeError:
+        pass
+
+    response = get_response(client, "/metrics")
+
+    assert b'http_response_size_bytes_count{handler="/runtime_error",method="GET",status="5xx"} 1.0' in response.content
+
+
 # ------------------------------------------------------------------------------
 # combined_size
 
@@ -306,6 +321,21 @@ def test_combined_size_no_labels():
     client.get("/")
 
     assert REGISTRY.get_sample_value("http_combined_size_bytes_sum", {}) == 14
+
+
+def test_combined_size_with_runtime_error():
+    app = create_app()
+    Instrumentator().add(metrics.combined_size()).instrument(app).expose(app)
+    client = TestClient(app)
+
+    try:
+        get_response(client, "/runtime_error")
+    except RuntimeError:
+        pass
+
+    response = get_response(client, "/metrics")
+
+    assert b'http_combined_size_bytes_count{handler="/runtime_error",method="GET",status="5xx"} 1.0' in response.content
 
 
 # ------------------------------------------------------------------------------
