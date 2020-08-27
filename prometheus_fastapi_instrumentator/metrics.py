@@ -464,9 +464,12 @@ def default(
             int(info.request.headers.get("Content-Length", 0))
         )
 
-        OUT_SIZE.labels(info.modified_handler).observe(
-            int(info.response.headers.get("Content-Length", 0))
-        )
+        if info.response and hasattr(info.response, "headers"):
+            OUT_SIZE.labels(info.modified_handler).observe(
+                int(info.response.headers.get("Content-Length", 0))
+            )
+        else:
+            OUT_SIZE.labels(info.modified_handler).observe(0)
 
         if not should_only_respect_2xx_for_highr or info.modified_status.startswith("2"):
             LATENCY_HIGHR.observe(info.modified_duration)

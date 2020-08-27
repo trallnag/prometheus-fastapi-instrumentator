@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional
 
+import pytest
 from fastapi import FastAPI, HTTPException
 from prometheus_client import REGISTRY
 from starlette.responses import Response
@@ -57,6 +58,10 @@ def create_app() -> FastAPI:
     @app.post("/items")
     def create_item(item: Dict[Any, Any]):
         return None
+
+    @app.get("/runtime_error")
+    def always_error():
+        raise RuntimeError()
 
     return app
 
@@ -124,6 +129,13 @@ def test_build_label_attribute_names_mixed():
     )
     assert label_names == ["handler", "status"]
     assert info_attribute_names == ["modified_handler", "modified_status"]
+
+
+def test_api_throwing_error():
+    app = create_app()
+    client = TestClient(app)
+    with pytest.raises(RuntimeError):
+        get_response(client, "/runtime_error")
 
 
 # ==============================================================================
@@ -415,3 +427,18 @@ def test_default_should_not_only_respect_2xx_for_highr():
 
     assert b"http_request_duration_highr_seconds_count 0.0" not in response.content
     assert b"http_request_duration_highr_seconds_count 2.0" in response.content
+
+
+def test_default_with_runtime_error():
+    app = create_app()
+    Instrumentator().instrument(app).expose(app)
+    client = TestClient(app)
+
+    try:
+        get_response(client, "/runtime_error")
+    except RuntimeError:
+        pass
+
+    response = get_response(client, "/metrics")
+
+    assert b'http_request_size_bytes_count{handler="/runtime_error"} 1.0' in response.content
