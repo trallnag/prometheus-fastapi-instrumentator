@@ -209,7 +209,7 @@ def test_request_size_no_cl():
     response = get_response(client, "/metrics")
 
     assert b"http_request_size_bytes" in response.content
-    assert b"http_request_size_bytes_count{" not in response.content
+    assert b"http_request_size_bytes_count{" in response.content
 
 
 # ------------------------------------------------------------------------------
