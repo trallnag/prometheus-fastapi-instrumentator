@@ -264,7 +264,10 @@ def test_response_size_with_runtime_error():
 
     response = get_response(client, "/metrics")
 
-    assert b'http_response_size_bytes_count{handler="/runtime_error",method="GET",status="5xx"} 1.0' in response.content
+    assert (
+        b'http_response_size_bytes_count{handler="/runtime_error",method="GET",status="5xx"} 1.0'
+        in response.content
+    )
 
 
 # ------------------------------------------------------------------------------
@@ -335,7 +338,10 @@ def test_combined_size_with_runtime_error():
 
     response = get_response(client, "/metrics")
 
-    assert b'http_combined_size_bytes_count{handler="/runtime_error",method="GET",status="5xx"} 1.0' in response.content
+    assert (
+        b'http_combined_size_bytes_count{handler="/runtime_error",method="GET",status="5xx"} 1.0'
+        in response.content
+    )
 
 
 # ------------------------------------------------------------------------------
@@ -471,4 +477,6 @@ def test_default_with_runtime_error():
 
     response = get_response(client, "/metrics")
 
-    assert b'http_request_size_bytes_count{handler="/runtime_error"} 1.0' in response.content
+    assert (
+        b'http_request_size_bytes_count{handler="/runtime_error"} 1.0' in response.content
+    )
