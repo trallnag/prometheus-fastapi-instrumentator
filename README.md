@@ -42,8 +42,10 @@ In addition, following behaviour is active:
 * Status codes are grouped into `2xx`, `3xx` and so on.
 * Requests without a matching template are grouped into the handler `none`.
 
-If one of these presets does not suit your needs you can simply tweak 
-the instrumentator with one of the many parameters or roll your own metrics.
+**If one of these presets does not suit your needs you can simply tweak 
+the instrumentator with one of the many parameters available 
+or simply register your own handler with the instrumentator to roll 
+your own metrics.**
 
 ---
 
