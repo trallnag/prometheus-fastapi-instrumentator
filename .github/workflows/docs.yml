@@ -3,6 +3,7 @@ name: docs
 on: 
   workflow_dispatch:
 
+jobs:
   docs:        
     runs-on: ubuntu-latest
     steps:
