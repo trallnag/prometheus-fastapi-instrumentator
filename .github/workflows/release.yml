@@ -85,7 +85,7 @@ jobs:
   # ============================================================================
 
   release-to-pypi:
-    needs: tests
+    needs: test
     
     runs-on: ubuntu-latest
 
