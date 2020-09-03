@@ -43,7 +43,8 @@ In addition, following behaviour is active:
 * Requests without a matching template are grouped into the handler `none`.
 
 **If one of these presets does not suit your needs you can tweak 
-behaviour or register your own metric handler with the instrumentator.**
+behaviour or register your own metric handler with the instrumentator. Find out
+[here](#creating-new-metrics) how to do that.**
 
 ---
 
@@ -153,7 +154,17 @@ You can add as many metrics you like to the instrumentator.
 ### Creating new metrics
 
 As already mentioned, it is possible to create custom functions to pass on to
-`add()`. Let's say we want to count the number of times a certain language 
+`add()`. This is also how the default metrics are implemented. The 
+documentation and code (here)[] is helpful to get an overview.
+
+The basic idea is that the instrumentator creates an `info` object that 
+contains everything necessary for instrumentation based on the configuration 
+of the instrumentator. This includes the raw request and response objects 
+but also the modified handler, grouped status code and duration. Next, all 
+registered instrumentation functions are called. They get `info` as their 
+single argument.
+
+Let's say we want to count the number of times a certain language 
 has been requested.
 
 ```python
@@ -184,7 +195,8 @@ the request, response and a few other modified informations. For example the
 (grouped) status code or the handler. Finally, the closure is returned.
 
 **Important:** The response object inside `info` can either be the response 
-object or `None`. I recommend to check the documentation and/or the source 
+object or `None`. In addition, errors thrown in the handler are not caught by 
+the instrumentator. I recommend to check the documentation and/or the source 
 code before creating your own metrics.
 
 To use it, we hand over the closure to the instrumentator object.
