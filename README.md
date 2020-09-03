@@ -13,7 +13,7 @@
 A configurable and modular Prometheus Instrumentator for your FastAPI. Install 
 `prometheus-fastapi-instrumentator` from 
 [PyPI](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/). Here 
-is the fast track to get started with a sensible preconfigured instrumentator:
+is the fast track to get started with a preconfigured instrumentator:
 
 ```python
 from prometheus_fastapi_instrumentator import Instrumentator
