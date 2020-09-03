@@ -1,0 +1,33 @@
+name: docs
+
+on: 
+  workflow_dispatch:
+
+  docs:        
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout repositry
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install Poetry
+      uses: Gr1N/setup-poetry@v2
+    
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Build docs
+      run: make docs
+
+    - name: Recommit docs
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Update docs [skip ci]
+        file_pattern: ./docs/*
+        commit_user_name: My GitHub Actions Bot
+        commit_user_email: tim.and.trallnag+code@gmail.com
