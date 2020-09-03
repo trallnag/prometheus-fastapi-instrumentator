@@ -19,7 +19,7 @@ pathspec==0.8.0
 pdoc3==0.8.5
 pluggy==0.13.1
 prometheus-client==0.8.0
--e git+https://github.com/trallnag/prometheus-fastapi-instrumentator@2466f8c82a8bf8f949e539ec3f7834e55e3af69e#egg=prometheus_fastapi_instrumentator
+-e git+https://github.com/trallnag/prometheus-fastapi-instrumentator@7595700f129c91c75553f8df2206b5ae29c1f76c#egg=prometheus_fastapi_instrumentator
 py==1.9.0
 pycodestyle==2.6.0
 pydantic==1.6.1
