@@ -9,11 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing
 
-## [5.2.2] 2020-09-03
+## [5.2.3] [5.2.2] 2020-09-03
 
 ### Changed
 
 * Improvements to the README and updated dev dependencies.
+* Work in GitHub Release workflow.
 
 ## [5.2.1] 2020-08-27
 
