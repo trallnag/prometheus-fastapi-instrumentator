@@ -1,5 +1,5 @@
 appdirs==1.4.4
-attrs==20.1.0
+attrs==20.2.0
 black==19.10b0
 certifi==2020.6.20
 chardet==3.0.4
@@ -8,7 +8,7 @@ coverage==5.2.1
 fastapi==0.61.1
 flake8==3.8.3
 idna==2.10
-isort==5.5.0
+isort==5.5.1
 Mako==1.1.3
 Markdown==3.2.2
 MarkupSafe==1.1.1
@@ -19,7 +19,7 @@ pathspec==0.8.0
 pdoc3==0.8.5
 pluggy==0.13.1
 prometheus-client==0.8.0
--e git+https://github.com/trallnag/prometheus-fastapi-instrumentator@7595700f129c91c75553f8df2206b5ae29c1f76c#egg=prometheus_fastapi_instrumentator
+-e git+https://github.com/trallnag/prometheus-fastapi-instrumentator@c49e3bcdec18f6fd61b0d581577bdfb0e11a1ce4#egg=prometheus_fastapi_instrumentator
 py==1.9.0
 pycodestyle==2.6.0
 pydantic==1.6.1
