@@ -156,7 +156,8 @@ You can add as many metrics you like to the instrumentator.
 
 As already mentioned, it is possible to create custom functions to pass on to
 `add()`. This is also how the default metrics are implemented. The 
-documentation and code (here)[] is helpful to get an overview.
+documentation and code [here](https://trallnag.github.io/prometheus-fastapi-instrumentator/metrics.html) 
+is helpful to get an overview.
 
 The basic idea is that the instrumentator creates an `info` object that 
 contains everything necessary for instrumentation based on the configuration 
@@ -169,6 +170,10 @@ Let's say we want to count the number of times a certain language
 has been requested.
 
 ```python
+from typing import Callable
+from prometheus_fastapi_instrumentator.metrics import Info
+from prometheus_client import Counter
+
 def http_requested_languages_total() -> Callable[[Info], None]:
     METRIC = Counter(
         "http_requested_languages_total", 
