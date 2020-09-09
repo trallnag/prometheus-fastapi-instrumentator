@@ -165,6 +165,38 @@ def test_metrics_endpoint_availability():
 
 
 # ------------------------------------------------------------------------------
+# Test gzip
+
+
+def test_gzip_accepted():
+    app = create_app()
+    Instrumentator().instrument(app).expose(app, should_gzip=True)
+    client = TestClient(app)
+
+    get_response(client, "/")
+    get_response(client, "/")
+
+    response = get_response(client, "/metrics")
+
+    assert response.headers["Content-Encoding"] == "gzip"
+    assert int(response.headers["Content-Length"]) <= 2000
+
+
+def test_gzip_not_accepted():
+    app = create_app()
+    Instrumentator().instrument(app).expose(app, should_gzip=False)
+    client = TestClient(app)
+
+    get_response(client, "/")
+    get_response(client, "/")
+
+    response = get_response(client, "/metrics")
+
+    assert response.headers.get("Content-Encoding") is None
+    assert int(response.headers["Content-Length"]) >= 2000
+
+
+# ------------------------------------------------------------------------------
 # Test metric name
 
 

@@ -1,3 +1,4 @@
+import gzip
 import os
 import re
 from timeit import default_timer
@@ -133,12 +134,23 @@ class PrometheusFastApiInstrumentator:
         return self
 
     def expose(
-        self, app: FastAPI, endpoint: str = "/metrics", include_in_schema: bool = True
+        self,
+        app: FastAPI,
+        should_gzip: bool = False,
+        endpoint: str = "/metrics",
+        include_in_schema: bool = True,
     ) -> "self":
         """Exposes endpoint for metrics.
 
         Args:
             app: FastAPI app instance. Endpoint will be added to this app.
+
+            should_gzip: Should the endpoint return compressed data? It will 
+                also check for `gzip` in the `Accept-Encoding` header. 
+                Compression consumes more CPU cycles. In most cases it's best 
+                to just leave this option off since network bandwith is usually 
+                cheaper than CPU cycles. Defaults to `False`.
+
             endpoint: Endpoint on which metrics should be exposed.
             include_in_schema: Should the endpoint show up in the documentation?
 
@@ -177,8 +189,15 @@ class PrometheusFastApiInstrumentator:
             registry = REGISTRY
 
         @app.get("/metrics", include_in_schema=include_in_schema)
-        def metrics():
-            return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
+        def metrics(request: Request):
+            if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
+                return Response(
+                    gzip.compress(generate_latest(registry)),
+                    headers={"Content-Encoding": "gzip"},
+                    media_type=CONTENT_TYPE_LATEST,
+                )
+            else:
+                return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
 
         return self
 
