@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing
 
+## [5.3.0] 2020-09-09
+
+### Added
+
+* Parameter `should_gzip` to `expose` method will check for `gzip` in the 
+    `Accepted-Encoding` header and gzip the metrics data. You can expect a 
+    reduction of around 90 % in bytes.
+
+### Changed
+
+* Poetry update
+
 ## [5.2.3] [5.2.2] 2020-09-03
 
 ### Changed

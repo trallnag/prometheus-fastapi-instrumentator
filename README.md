@@ -72,6 +72,7 @@ a list of some of these options you may opt-in to:
 * Control instrumentation and exposition with an env var.
 * Rounding of latencies to a certain decimal number.
 * Renaming of labels and the metric.
+* Metrics endpoint can compress data with gzip.
 
 It also features a **modular approach to metrics** that should instrument all 
 FastAPI endpoints. You can either choose from a set of already existing metrics 
@@ -225,10 +226,12 @@ To expose an endpoint for the metrics either follow
 [Prometheus Python Client](https://github.com/prometheus/client_python) and 
 add the endpoint manually to the FastAPI or serve it on a separate server.
 You can also use the included `expose` method. It will add an endpoint to the 
-given FastAPI.
+given FastAPI. With `should_gzip` you can instruct the endpoint to compress the 
+data as long as the client accepts gzip encoding. Prometheus for example does 
+by default. Beware that network bandwith is often cheaper than CPU cycles.
 
 ```python
-instrumentator.expose(app, include_in_schema=False)
+instrumentator.expose(app, include_in_schema=False, should_gzip=True)
 ```
 
 Notice that this will to nothing if `should_respect_env_var` has been set 
@@ -254,4 +257,3 @@ cloned, run `poetry install` and `poetry shell`. From here you may start the
 IDE of your choice.
 
 Take a look at the Makefile or workflows on how to test this package.
-
