@@ -188,7 +188,7 @@ class PrometheusFastApiInstrumentator:
         else:
             registry = REGISTRY
 
-        @app.get("/metrics", include_in_schema=include_in_schema)
+        @app.get(endpoint, include_in_schema=include_in_schema)
         def metrics(request: Request):
             if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
                 return Response(

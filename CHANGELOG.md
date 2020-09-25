@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Nothing
 
+## [5.3.1] 2020-09-25
+
+### Fixed
+
+* Fix for <https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/9>.
+    The `expose` method in the instrumentator ignores the `endpoint` argument 
+    and always creates the endpoint with the path `/metrics`. 
+    Variable was missing. Raised by @funkybase on 2020-09-24.
+
+### Changed
+
+* Poetry update
+
 ## [5.3.0] 2020-09-09
 
 ### Added
