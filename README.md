@@ -48,6 +48,14 @@ behaviour or register your own metric handler with the instrumentator. Find out
 
 ---
 
+> Don't hesitate to open an issue if you have questions or ideas regarding 
+    the Prometheus FastAPI Instrumentator. Since I'm currently using it in 
+    production I'm (still) motivated to work on it :wink:
+>  
+> -- <cite>trallnag</cite>
+
+---
+
 Contents: **[Features](#features)** |
 **[Advanced Usage](#advanced-usage)** | 
 [Creating the Instrumentator](#creating-the-instrumentator) |
