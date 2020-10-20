@@ -34,7 +34,7 @@ docs:
 	mkdir -p docs && \
 	rm -rf ~/tmp/docs && \
 	mkdir -p ~/tmp/docs && \
-	poetry run pdoc --output-dir ~/tmp/docs --html prometheus_fastapi_instrumentator && \
+	pdoc --output-dir ~/tmp/docs --html prometheus_fastapi_instrumentator && \
 	mv ~/tmp/docs/prometheus_fastapi_instrumentator/* docs/; 
 
 .PHONY: requirements
