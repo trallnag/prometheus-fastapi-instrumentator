@@ -81,6 +81,7 @@ a list of some of these options you may opt-in to:
 * Rounding of latencies to a certain decimal number.
 * Renaming of labels and the metric.
 * Metrics endpoint can compress data with gzip.
+* Opt-in metric to monitor the number of requests in progress.
 
 It also features a **modular approach to metrics** that should instrument all 
 FastAPI endpoints. You can either choose from a set of already existing metrics 
@@ -106,8 +107,11 @@ instrumentator = Instrumentator(
     should_group_status_codes=False,
     should_ignore_untemplated=True,
     should_respect_env_var=True,
+    should_instrument_requests_inprogress=True,
     excluded_handlers=[".*admin.*", "/metrics"],
     env_var_name="ENABLE_METRICS",
+    inprogress_name="inprogress",
+    inprogress_labels=True,
 )
 ```
 

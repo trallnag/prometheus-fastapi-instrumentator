@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "prometheus-fastapi-instrumentator"
-version = "5.3.1"
+version = "5.4.0"
 description = "Instrument your FastAPI with Prometheus metrics"
 authors = ["Tim Schwenke <tim.and.trallnag+code@gmail.com>"]
 license = "MIT"
