@@ -381,7 +381,13 @@ def test_latency_no_labels():
 
     _ = get_response(client, "/metrics")
 
-    assert REGISTRY.get_sample_value("http_request_duration_seconds_sum", {},) > 0
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_duration_seconds_sum",
+            {},
+        )
+        > 0
+    )
 
 
 def test_latency_with_bucket_no_inf():
@@ -400,7 +406,13 @@ def test_latency_with_bucket_no_inf():
 
     _ = get_response(client, "/metrics")
 
-    assert REGISTRY.get_sample_value("http_request_duration_seconds_sum", {},) > 0
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_duration_seconds_sum",
+            {},
+        )
+        > 0
+    )
 
 
 # ------------------------------------------------------------------------------
@@ -419,17 +431,37 @@ def test_default():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_requests_total", {"handler": "/", "method": "GET", "status": "2xx"},
+            "http_requests_total",
+            {"handler": "/", "method": "GET", "status": "2xx"},
         )
         > 0
     )
-    assert REGISTRY.get_sample_value("http_request_size_bytes_sum", {"handler": "/"},) > 0
     assert (
-        REGISTRY.get_sample_value("http_response_size_bytes_sum", {"handler": "/"},) > 0
+        REGISTRY.get_sample_value(
+            "http_request_size_bytes_sum",
+            {"handler": "/"},
+        )
+        > 0
     )
-    assert REGISTRY.get_sample_value("http_request_duration_highr_seconds_sum", {},) > 0
     assert (
-        REGISTRY.get_sample_value("http_request_duration_seconds_sum", {"handler": "/"},)
+        REGISTRY.get_sample_value(
+            "http_response_size_bytes_sum",
+            {"handler": "/"},
+        )
+        > 0
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_duration_highr_seconds_sum",
+            {},
+        )
+        > 0
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_duration_seconds_sum",
+            {"handler": "/"},
+        )
         > 0
     )
 

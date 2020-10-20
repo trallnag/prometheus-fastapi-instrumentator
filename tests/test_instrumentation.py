@@ -393,7 +393,13 @@ def test_excluded_handlers_none():
 def test_bucket_without_inf():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.latency(buckets=(1, 2, 3,))
+        metrics.latency(
+            buckets=(
+                1,
+                2,
+                3,
+            )
+        )
     ).instrument(app).expose(app)
     client = TestClient(app)
 
@@ -456,7 +462,13 @@ def test_entropy():
 def test_default_no_rounding():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.latency(buckets=(1, 2, 3,))
+        metrics.latency(
+            buckets=(
+                1,
+                2,
+                3,
+            )
+        )
     ).instrument(app).expose(app)
     client = TestClient(app)
 
@@ -479,7 +491,13 @@ def test_default_no_rounding():
 def test_rounding():
     app = create_app()
     Instrumentator(should_round_latency_decimals=True).add(
-        metrics.latency(buckets=(1, 2, 3,))
+        metrics.latency(
+            buckets=(
+                1,
+                2,
+                3,
+            )
+        )
     ).instrument(app).expose(app)
     client = TestClient(app)
 
@@ -529,7 +547,13 @@ def is_prometheus_multiproc_set():
 def test_multiprocess_reg():
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.latency(buckets=(1, 2, 3,))
+        metrics.latency(
+            buckets=(
+                1,
+                2,
+                3,
+            )
+        )
     ).instrument(app).expose(app)
     client = TestClient(app)
 
@@ -568,6 +592,6 @@ def test_multiprocess_env_folder(monkeypatch, tmp_path):
 
     app = create_app()
     with pytest.raises(Exception):
-        Instrumentator(buckets=(1, 2, 3,)).add(metrics.latency()).instrument(app).expose(
+        Instrumentator(buckets=(1, 2, 3,)).add(metrics.latency()).instrument(
             app
-        )
+        ).expose(app)
