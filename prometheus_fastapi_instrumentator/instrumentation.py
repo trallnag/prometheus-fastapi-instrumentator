@@ -31,29 +31,29 @@ class PrometheusFastApiInstrumentator:
         """Create a Prometheus FastAPI Instrumentator.
 
         Args:
-            should_group_status_codes: Should status codes be grouped into 
+            should_group_status_codes: Should status codes be grouped into
                 `2xx`, `3xx` and so on?
-            should_ignore_untemplated: Should requests without a matching 
+            should_ignore_untemplated: Should requests without a matching
                 template be ignored?
-            should_group_untemplated: Should requests without a matching 
+            should_group_untemplated: Should requests without a matching
                 template be grouped to handler `none`?
-            should_round_latency_decimals: Should recorded latencies be 
+            should_round_latency_decimals: Should recorded latencies be
                 rounded to a certain number of decimals?
-            should_respect_env_var: Should the instrumentator only work - for 
-                example the methods `instrument()` and `expose()` - if a 
-                certain environment variable is set to `true`? Usecase: A base 
-                FastAPI app that is used by multiple distinct apps. The apps 
+            should_respect_env_var: Should the instrumentator only work - for
+                example the methods `instrument()` and `expose()` - if a
+                certain environment variable is set to `true`? Usecase: A base
+                FastAPI app that is used by multiple distinct apps. The apps
                 only have to set the variable to be instrumented.
             should_instrument_requests_inprogress: Enables a gauge that shows
                 the inprogress requests. See also the related args starting
                 with `inprogress`.
             excluded_handlers: List of strings that will be compiled to regex 
                 patterns. All matches will be skipped and not instrumented.
-            round_latency_decimals: Number of decimals latencies should be 
-                rounded to. Ignored unless `should_round_latency_decimals` is 
+            round_latency_decimals: Number of decimals latencies should be
+                rounded to. Ignored unless `should_round_latency_decimals` is
                 `True`.
-            env_var_name: Any valid os environment variable name that will be 
-                checked for existence before instrumentation. Ignored unless 
+            env_var_name: Any valid os environment variable name that will be
+                checked for existence before instrumentation. Ignored unless
                 `should_respect_env_var` is `True`.
             inprogress_name: Name of the gauge. Defaults to
                 `http_requests_inprogress`. Ignored unless
@@ -175,17 +175,17 @@ class PrometheusFastApiInstrumentator:
         Args:
             app: FastAPI app instance. Endpoint will be added to this app.
 
-            should_gzip: Should the endpoint return compressed data? It will 
-                also check for `gzip` in the `Accept-Encoding` header. 
-                Compression consumes more CPU cycles. In most cases it's best 
-                to just leave this option off since network bandwith is usually 
+            should_gzip: Should the endpoint return compressed data? It will
+                also check for `gzip` in the `Accept-Encoding` header.
+                Compression consumes more CPU cycles. In most cases it's best
+                to just leave this option off since network bandwith is usually
                 cheaper than CPU cycles. Defaults to `False`.
 
             endpoint: Endpoint on which metrics should be exposed.
             include_in_schema: Should the endpoint show up in the documentation?
 
         Raises:
-            ValueError: If `prometheus_multiproc_dir` env var is found but 
+            ValueError: If `prometheus_multiproc_dir` env var is found but
                 doesn't point to a valid directory.
 
         Returns:
@@ -235,8 +235,8 @@ class PrometheusFastApiInstrumentator:
         """Adds function to list of instrumentations.
 
         Args:
-            instrumentation_function: Function that will be executed during 
-                every request handler call (if not excluded). See above for 
+            instrumentation_function: Function that will be executed during
+                every request handler call (if not excluded). See above for
                 detailed information on the interface of the function.
 
         Returns:
@@ -248,12 +248,12 @@ class PrometheusFastApiInstrumentator:
 
     def _get_handler(self, request: Request) -> Tuple[str, bool]:
         """Extracts either template or (if no template) path.
-        
+
         Args:
             request: Python Requests request object.
 
         Returns:
-            Tuple with two elements. 
+            Tuple with two elements.
 
             First element: Either template or if no template the path.
             Second element: If the path is templated or not.
@@ -268,7 +268,7 @@ class PrometheusFastApiInstrumentator:
 
     def _is_handler_excluded(self, handler: str, is_templated: bool) -> bool:
         """Determines if the handler should be ignored.
-        
+
         Args:
             handler: Handler that handles the request.
             is_templated: Shows if the request is templated.

@@ -23,11 +23,11 @@ class Info:
             request: Python Requests request object.
             response Python Requests response object.
             method: Unmodified method of the request.
-            modified_handler: Handler representation after processing by 
+            modified_handler: Handler representation after processing by
                 instrumentator. For example grouped to `none` if not templated.
             modified_status: Status code representation after processing by
                 instrumentator. For example grouping into `2xx`, `3xx` and so on.
-            modified_duration: Latency representation after processing by 
+            modified_duration: Latency representation after processing by
                 instrumentator. For example rounding of decimals. Seconds.
         """
 
@@ -55,7 +55,7 @@ def _build_label_attribute_names(
         Tuple with two list elements.
 
         First element: List with all labels to be used.
-        Second element: List with all attribute names to be used from the 
+        Second element: List with all attribute names to be used from the
             `Info` object. Done like this to enable dynamic on / off of labels.
     """
 
@@ -363,31 +363,31 @@ def default(
 ) -> Callable[[Info], None]:
     """Contains multiple metrics to cover multiple things.
 
-    Combines several metrics into a single function. Also more efficient than 
+    Combines several metrics into a single function. Also more efficient than
     multiple separate instrumentation functions that do more or less the same.
-    
+
     You get the following:
 
-    * `http_requests_total` (`handler`, `status`, `method`): Total number of 
-        requests by handler, status and method. 
-    * `http_request_size_bytes` (`handler`): Total number of incoming 
+    * `http_requests_total` (`handler`, `status`, `method`): Total number of
+        requests by handler, status and method.
+    * `http_request_size_bytes` (`handler`): Total number of incoming
         content length bytes by handler.
-    * `http_response_size_bytes` (`handler`): Total number of outgoing 
+    * `http_response_size_bytes` (`handler`): Total number of outgoing
         content length bytes by handler.
-    * `http_request_duration_highr_seconds` (no labels): High number of buckets 
+    * `http_request_duration_highr_seconds` (no labels): High number of buckets
         leading to more accurate calculation of percentiles.
-    * `http_request_duration_seconds` (`handler`): 
+    * `http_request_duration_seconds` (`handler`):
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
         metric_namespace: Namespace of all  metrics in this metric function.
         metric_subsystem: Subsystem of all  metrics in this metric function.
-        should_only_respect_2xx_for_highr: Should the metric 
-            `http_request_duration_highr_seconds` only include latencies of 
+        should_only_respect_2xx_for_highr: Should the metric
+            `http_request_duration_highr_seconds` only include latencies of
             requests / responses that have a status code starting with `2`?
-        latency_highr_buckets: Buckets tuple for high res histogram. Can be 
+        latency_highr_buckets: Buckets tuple for high res histogram. Can be
             large because no labels are used.
-        latency_lowr_buckets: Buckets tuple for low res histogram. Should be 
+        latency_lowr_buckets: Buckets tuple for low res histogram. Should be
             very small as all possible labels are included.
 
     Returns:
@@ -403,7 +403,11 @@ def default(
     TOTAL = Counter(
         name="http_requests_total",
         documentation="Total number of requests by method, status and handler.",
-        labelnames=("method", "status", "handler",),
+        labelnames=(
+            "method",
+            "status",
+            "handler",
+        ),
         namespace=metric_namespace,
         subsystem=metric_subsystem,
     )
