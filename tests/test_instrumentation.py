@@ -1,5 +1,5 @@
-import os
 import asyncio
+import os
 from typing import Any, Dict, Optional
 
 import pytest
@@ -598,9 +598,9 @@ def test_multiprocess_env_folder(monkeypatch, tmp_path):
 
     app = create_app()
     with pytest.raises(Exception):
-        Instrumentator(buckets=(1, 2, 3,)).add(metrics.latency()).instrument(
-            app
-        )
+        Instrumentator(buckets=(1, 2, 3,)).add(
+            metrics.latency()
+        ).instrument(app)
 
 
 # ------------------------------------------------------------------------------
@@ -613,18 +613,15 @@ def test_multiprocess_env_folder(monkeypatch, tmp_path):
 )
 def test_multiprocess_inprogress():
     app = create_app()
-    Instrumentator(should_instrument_requests_inprogress=True, inprogress_labels=True).instrument(app).expose(app)
+    Instrumentator(
+        should_instrument_requests_inprogress=True, inprogress_labels=True
+    ).instrument(app).expose(app)
     client = TestClient(app)
 
     async def main():
         loop = asyncio.get_event_loop()
         futures = [
-            loop.run_in_executor(
-                None, 
-                get_response, 
-                client,
-                "/sleep?seconds=0.1"
-            )
+            loop.run_in_executor(None, get_response, client, "/sleep?seconds=0.1")
             for i in range(5)
         ]
         for response in await asyncio.gather(*futures):

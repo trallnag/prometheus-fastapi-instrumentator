@@ -5,10 +5,10 @@ from timeit import default_timer
 from typing import Callable, Tuple
 
 from fastapi import FastAPI
+from prometheus_client import Gauge
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Match
-from prometheus_client import Gauge
 
 from prometheus_fastapi_instrumentator import metrics
 
@@ -47,7 +47,7 @@ class PrometheusFastApiInstrumentator:
             should_instrument_requests_inprogress: Enables a gauge that shows
                 the inprogress requests. See also the related args starting
                 with `inprogress`.
-            excluded_handlers: List of strings that will be compiled to regex 
+            excluded_handlers: List of strings that will be compiled to regex
                 patterns. All matches will be skipped and not instrumented.
             round_latency_decimals: Number of decimals latencies should be
                 rounded to. Ignored unless `should_round_latency_decimals` is
@@ -108,8 +108,20 @@ class PrometheusFastApiInstrumentator:
 
         self.inprogress = None
         if self.should_instrument_requests_inprogress:
-            labels = ("method", "handler",) if self.inprogress_labels else ()
-            self.inprogress = Gauge(name=self.inprogress_name, documentation="Number of HTTP requests in progress.", labelnames=labels, multiprocess_mode="livesum")
+            labels = (
+                (
+                    "method",
+                    "handler",
+                )
+                if self.inprogress_labels
+                else ()
+            )
+            self.inprogress = Gauge(
+                name=self.inprogress_name,
+                documentation="Number of HTTP requests in progress.",
+                labelnames=labels,
+                multiprocess_mode="livesum",
+            )
 
         @app.middleware("http")
         async def dispatch_middleware(request: Request, call_next) -> Response:
@@ -117,7 +129,9 @@ class PrometheusFastApiInstrumentator:
 
             handler, is_templated = self._get_handler(request)
             is_excluded = self._is_handler_excluded(handler, is_templated)
-            handler = "none" if not is_templated and self.should_group_untemplated else handler
+            handler = (
+                "none" if not is_templated and self.should_group_untemplated else handler
+            )
 
             if not is_excluded and self.should_instrument_requests_inprogress:
                 if self.inprogress_labels:
@@ -137,7 +151,7 @@ class PrometheusFastApiInstrumentator:
             finally:
                 if not is_excluded:
                     duration = max(default_timer() - start_time, 0)
-                    
+
                     if self.should_instrument_requests_inprogress:
                         inprogress.dec()
 
