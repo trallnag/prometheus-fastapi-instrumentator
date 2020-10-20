@@ -3,11 +3,18 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+as well as the [Conventional Commits](https://www.conventionalcommits.org) 
+specification.
 
 ## Unreleased
 
-* Nothing
+### Changed
+
+* Updated a few of the development dependencies to newer versions.
+* Updated CI to test with Python 3.9 instead of 3.8.
+* Replace deprecated way of creating GitHub environment variables in workflows.
+* Update few minor things around the GitHub workflow files.
 
 ## [5.3.1] 2020-09-25
 

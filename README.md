@@ -257,7 +257,7 @@ The documentation is hosted [here](https://trallnag.github.io/prometheus-fastapi
 
 ## Prerequesites
 
-* `python = "^3.6"` (tested with 3.6 and 3.8)
+* `python = "^3.6"` (tested with 3.6 and 3.9)
 * `fastapi = ">=0.38.1, <=1.0.0"` (tested with 0.38.1 and 0.61.0)
 * `prometheus-client = "^0.8.0"` (tested with 0.8.0)
 

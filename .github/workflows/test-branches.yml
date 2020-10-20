@@ -1,10 +1,6 @@
 name: test branches
 
-on:
-  push:
-    branches: 
-      - dev
-      - master
+on: push
 
 jobs:
 
@@ -15,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.8]
+        python-version: [3.6, 3.9]
 
     steps:
     
@@ -48,8 +44,8 @@ jobs:
       run: make test
 
     - name: Code Coverage
-      uses: codecov/codecov-action@v1.0.11
-      if: matrix.python-version == 3.8
+      uses: codecov/codecov-action@v1.0.14
+      if: matrix.python-version == 3.9
       with:
         file: ./coverage.xml
         flags: unittests
@@ -58,20 +54,20 @@ jobs:
         fail_ci_if_error: false
 
     - name: Format code style
-      if: matrix.python-version == 3.8
+      if: matrix.python-version == 3.9
       run: make format_style
 
     - name: Format imports
-      if: matrix.python-version == 3.8
+      if: matrix.python-version == 3.9
       run: make format_imports
   
     - name: Recommit
-      if: matrix.python-version == 3.8
+      if: matrix.python-version == 3.9
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: Apply auto-formatting [skip ci]
-        file_pattern: ./*.py
-        commit_user_name: My GitHub Actions Bot
+        commit_message: 'bot: apply auto stuff [skip ci]'
+        file_pattern: ./*.py requirements.txt
+        commit_user_name: trallnag-bot
         commit_user_email: tim.and.trallnag+code@gmail.com
 
     - name: Build package
