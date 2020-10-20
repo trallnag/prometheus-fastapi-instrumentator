@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Match
+from prometheus_client import Gauge
 
 from prometheus_fastapi_instrumentator import metrics
 
@@ -20,9 +21,12 @@ class PrometheusFastApiInstrumentator:
         should_group_untemplated: bool = True,
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
+        should_instrument_requests_inprogress: bool = False,
         excluded_handlers: list = [],
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
+        inprogress_name: str = "http_requests_inprogress",
+        inprogress_labels: bool = False,
     ):
         """Create a Prometheus FastAPI Instrumentator.
 
@@ -40,6 +44,9 @@ class PrometheusFastApiInstrumentator:
                 certain environment variable is set to `true`? Usecase: A base 
                 FastAPI app that is used by multiple distinct apps. The apps 
                 only have to set the variable to be instrumented.
+            should_instrument_requests_inprogress: Enables a gauge that shows
+                the inprogress requests. See also the related args starting
+                with `inprogress`.
             excluded_handlers: List of strings that will be compiled to regex 
                 patterns. All matches will be skipped and not instrumented.
             round_latency_decimals: Number of decimals latencies should be 
@@ -48,6 +55,12 @@ class PrometheusFastApiInstrumentator:
             env_var_name: Any valid os environment variable name that will be 
                 checked for existence before instrumentation. Ignored unless 
                 `should_respect_env_var` is `True`.
+            inprogress_name: Name of the gauge. Defaults to
+                `http_requests_inprogress`. Ignored unless
+                `should_instrument_requests_inprogress` is `True`.
+            inprogress_labels: Should labels `method` and `handler` be part of
+                the inprogress label? Ignored unless
+                `should_instrument_requests_inprogress` is `True`.
         """
 
         self.should_group_status_codes = should_group_status_codes
@@ -55,9 +68,12 @@ class PrometheusFastApiInstrumentator:
         self.should_group_untemplated = should_group_untemplated
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
+        self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
 
         self.round_latency_decimals = round_latency_decimals
         self.env_var_name = env_var_name
+        self.inprogress_name = inprogress_name
+        self.inprogress_labels = inprogress_labels
 
         if excluded_handlers:
             self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
@@ -90,9 +106,25 @@ class PrometheusFastApiInstrumentator:
         if len(self.instrumentations) == 0:
             self.instrumentations.append(metrics.default())
 
+        self.inprogress = None
+        if self.should_instrument_requests_inprogress:
+            labels = ("method", "handler",) if self.inprogress_labels else ()
+            self.inprogress = Gauge(name=self.inprogress_name, documentation="Number of HTTP requests in progress.", labelnames=labels, multiprocess_mode="livesum")
+
         @app.middleware("http")
         async def dispatch_middleware(request: Request, call_next) -> Response:
             start_time = default_timer()
+
+            handler, is_templated = self._get_handler(request)
+            is_excluded = self._is_handler_excluded(handler, is_templated)
+            handler = "none" if not is_templated and self.should_group_untemplated else handler
+
+            if not is_excluded and self.should_instrument_requests_inprogress:
+                if self.inprogress_labels:
+                    inprogress = self.inprogress.labels(request.method, handler)
+                else:
+                    inprogress = self.inprogress
+                inprogress.inc()
 
             try:
                 response = None
@@ -103,16 +135,14 @@ class PrometheusFastApiInstrumentator:
                     status = "500"
                 raise e from None
             finally:
-                handler, is_templated = self._get_handler(request)
-
-                if not self._is_handler_excluded(handler, is_templated):
+                if not is_excluded:
                     duration = max(default_timer() - start_time, 0)
+                    
+                    if self.should_instrument_requests_inprogress:
+                        inprogress.dec()
 
                     if self.should_round_latency_decimals:
                         duration = round(duration, self.round_latency_decimals)
-
-                    if is_templated is False and self.should_group_untemplated:
-                        handler = "none"
 
                     if self.should_group_status_codes:
                         status = status[0] + "xx"

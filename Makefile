@@ -24,7 +24,7 @@ test_std:
 test_multiproc:
 	mkdir -p /tmp/test_multiproc; \
 	export prometheus_multiproc_dir=/tmp/test_multiproc; \
-	poetry run pytest -k test_multiprocess_reg --cov-append --cov=./ --cov-report=xml; \
+	poetry run pytest -k test_multiprocess --cov-append --cov=./ --cov-report=xml; \
 	rm -rf /tmp/test_multiproc; \
 	unset prometheus_multiproc_dir;
 

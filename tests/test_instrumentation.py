@@ -1,4 +1,6 @@
 import os
+import time
+import asyncio
 from typing import Any, Dict, Optional
 
 import pytest
@@ -39,6 +41,11 @@ def create_app() -> FastAPI:
     @app.get("/")
     def read_root():
         return "Hello World!"
+
+    @app.get("/sleep")
+    async def sleep(seconds: float):
+        await asyncio.sleep(seconds)
+        return f"I have slept for {seconds}s"
 
     @app.get("/always_error")
     def read_always_error():
@@ -499,7 +506,7 @@ def test_rounding():
     assert entropy < 10
 
 
-# ------------------------------------------------------------------------------
+# ==============================================================================
 # Test with multiprocess reg.
 
 
@@ -571,3 +578,41 @@ def test_multiprocess_env_folder(monkeypatch, tmp_path):
         Instrumentator(buckets=(1, 2, 3,)).add(metrics.latency()).instrument(app).expose(
             app
         )
+
+
+# ------------------------------------------------------------------------------
+# Test inprogress.
+
+
+@pytest.mark.skipif(
+    is_prometheus_multiproc_set() is False,
+    reason="Environment variable must be set before starting Python process.",
+)
+def test_multiprocess_inprogress():
+    app = create_app()
+    Instrumentator(should_instrument_requests_inprogress=True, inprogress_labels=True).instrument(app).expose(app)
+    client = TestClient(app)
+
+    async def main():
+        loop = asyncio.get_event_loop()
+        futures = [
+            loop.run_in_executor(
+                None, 
+                get_response, 
+                client,
+                "/sleep?seconds=0.1"
+            )
+            for i in range(5)
+        ]
+        for response in await asyncio.gather(*futures):
+            assert response.status_code == 200
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+
+    response = get_response(client, "/metrics")
+    assert response.status_code == 200
+    assert b"Multiprocess" in response.content
+    assert b"# HELP process_cpu_seconds_total" not in response.content
+    assert b"http_request_duration_seconds" in response.content
+    assert b'http_requests_inprogress{handler="/sleep",method="GET"}' in response.content
