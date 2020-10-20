@@ -24,7 +24,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Poetry
-      uses: Gr1N/setup-poetry@v2
+      uses: Gr1N/setup-poetry@v4
       
     - name: Setup cache
       uses: actions/cache@v1

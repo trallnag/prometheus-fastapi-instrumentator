@@ -40,7 +40,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Poetry
-      uses: Gr1N/setup-poetry@v2
+      uses: Gr1N/setup-poetry@v4
     
     - name: Install dependencies
       run: poetry install
@@ -102,7 +102,7 @@ jobs:
           python-version: 3.9
 
       - name: Install Poetry and setup cache
-        uses: Gr1N/setup-poetry@v2
+        uses: Gr1N/setup-poetry@v4
       
       - name: Install dependencies
         run: poetry install

@@ -16,6 +16,9 @@ jobs:
       with:
         python-version: 3.9
 
+    - name: Install Poetry and setup cache
+      uses: Gr1N/setup-poetry@v4
+    
     - name: Install dependencies
       run: poetry install
 
