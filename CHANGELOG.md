@@ -11,6 +11,15 @@ specification.
 
 * Nothing
 
+## [5.4.1] 2020-10-22
+
+### Fixed
+
+* Regression introduced in 5.4.1 by pinning FastAPI dependency to 
+    `fastapi = "0.38.1, <=1.0.0"` instead of `fastapi = ">=0.38.1, <=1.0.0"`.
+    Thanks to @PaulFlanaganGenscape for rasing this issue 
+    [here](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/14).
+
 ## [5.4.0] 2020-10-20
 
 ### Added
