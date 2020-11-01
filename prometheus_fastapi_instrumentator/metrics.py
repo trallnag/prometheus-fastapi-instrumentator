@@ -37,15 +37,18 @@ class Info:
         This is the only argument that is passed to the instrumentation functions.
 
         Args:
-            request: Python Requests request object.
-            response Python Requests response object.
-            method: Unmodified method of the request.
-            modified_handler: Handler representation after processing by
-                instrumentator. For example grouped to `none` if not templated.
-            modified_status: Status code representation after processing by
-                instrumentator. For example grouping into `2xx`, `3xx` and so on.
-            modified_duration: Latency representation after processing by
-                instrumentator. For example rounding of decimals. Seconds.
+            request (Request): Python Requests request object.
+            response (Response or None): Python Requests response object.
+            method (str): Unmodified method of the request.
+            modified_handler (str):
+                Handler representation after processing by instrumentator. For
+                example grouped to `none` if not templated.
+            modified_status (str):
+                Status code representation after processing by instrumentator.
+                For example grouping into `2xx`, `3xx` and so on.
+            modified_duration (float):
+                Latency representation after processing by instrumentator. For
+                example rounding of decimals. Seconds.
         """
 
         self.request = request
@@ -64,9 +67,12 @@ def _build_label_attribute_names(
     """Builds up tuple with to be used label and attribute names.
 
     Args:
-        should_include_handler: Should the `handler` label be part of the metric?
-        should_include_method: Should the `method` label be part of the metric?
-        should_include_status: Should the `status` label be part of the metric?
+        should_include_handler (bool):
+            Should the `handler` label be part of the metric?
+        should_include_method (bool):
+            Should the `method` label be part of the metric?
+        should_include_status (bool):
+            Should the `status` label be part of the metric?
 
     Returns:
         Tuple with two list elements.
@@ -111,10 +117,10 @@ def latency(
     """Default metric for the Prometheus FastAPI Instrumentator.
 
     Args:
-        metric_name: Name of the metric to be created. Must be unique.
-        metric_doc: Documentation of the metric.
-        metric_namespace: Namespace of all  metrics in this metric function.
-        metric_subsystem: Subsystem of all  metrics in this metric function.
+        metric_name (str, optional): Name of the metric to be created. Must be unique.
+        metric_doc (str, optional): Documentation of the metric.
+        metric_namespace (str, optional): Namespace of all  metrics in this metric function.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -175,10 +181,10 @@ def request_size(
     If content length is missing 0 will be assumed.
 
     Args:
-        metric_name: Name of the metric to be created. Must be unique.
-        metric_doc: Documentation of the metric.
-        metric_namespace: Namespace of all  metrics in this metric function.
-        metric_subsystem: Subsystem of all  metrics in this metric function.
+        metric_name (str, optional): Name of the metric to be created. Must be unique.
+        metric_doc (str, optional): Documentation of the metric.
+        metric_namespace (str, optional): Namespace of all  metrics in this metric function.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -234,10 +240,10 @@ def response_size(
     If content length is missing 0 will be assumed.
 
     Args:
-        metric_name: Name of the metric to be created. Must be unique.
-        metric_doc: Documentation of the metric.
-        metric_namespace: Namespace of all  metrics in this metric function.
-        metric_subsystem: Subsystem of all  metrics in this metric function.
+        metric_name (str, optional): Name of the metric to be created. Must be unique.
+        metric_doc (str, optional): Documentation of the metric.
+        metric_namespace (str, optional): Namespace of all  metrics in this metric function.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -297,10 +303,13 @@ def combined_size(
     If content length is missing 0 will be assumed.
 
     Args:
-        metric_name: Name of the metric to be created. Must be unique.
-        metric_doc: Documentation of the metric.
-        metric_namespace: Namespace of all  metrics in this metric function.
-        metric_subsystem: Subsystem of all  metrics in this metric function.
+        metric_name (str, optional):
+            Name of the metric to be created. Must be unique.
+        metric_doc (str, optional): Documentation of the metric.
+        metric_namespace (str, optional):
+            Namespace of all  metrics in this metric function.
+        metric_subsystem (str, optional):
+            Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -463,15 +472,21 @@ def default(
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
-        metric_namespace: Namespace of all  metrics in this metric function.
-        metric_subsystem: Subsystem of all  metrics in this metric function.
-        should_only_respect_2xx_for_highr: Should the metric
-            `http_request_duration_highr_seconds` only include latencies of
-            requests / responses that have a status code starting with `2`?
-        latency_highr_buckets: Buckets tuple for high res histogram. Can be
-            large because no labels are used.
-        latency_lowr_buckets: Buckets tuple for low res histogram. Should be
-            very small as all possible labels are included.
+        metric_namespace (str, optional):
+            Namespace of all  metrics in this metric function. Defaults to `""`.
+        metric_subsystem (str, optional):
+            Subsystem of all  metrics in this metric function. Defaults to `""`.
+        should_only_respect_2xx_for_highr (str, optional):
+            Should the metric `http_request_duration_highr_seconds` only include
+            latencies of requests / responses that have a status code starting
+            with `2`? Defaults to `False`.
+        latency_highr_buckets (tuple[float], optional):
+            Buckets tuple for high res histogram. Can be large because no labels
+            are used. Defaults to `(0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5,
+            0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60)`.
+        latency_lowr_buckets (tuple[float], optional):
+            Buckets tuple for low res histogram. Should be very small as all
+            possible labels are included. Defaults to `(0.1, 0.5, 1)`.
 
     Returns:
         Function that takes a single parameter `Info`.

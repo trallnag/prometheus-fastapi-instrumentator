@@ -110,7 +110,7 @@ class PrometheusFastApiInstrumentator:
 
         self.instrumentations = []
 
-    def instrument(self, app: FastAPI) -&gt; &#34;self&#34;:
+    def instrument(self, app: FastAPI):
         &#34;&#34;&#34;Performs the instrumentation by adding middleware.
 
         The middleware iterates through all `instrumentations` and execute them.
@@ -211,7 +211,7 @@ class PrometheusFastApiInstrumentator:
         should_gzip: bool = False,
         endpoint: str = &#34;/metrics&#34;,
         include_in_schema: bool = True,
-    ) -&gt; &#34;self&#34;:
+    ):
         &#34;&#34;&#34;Exposes endpoint for metrics.
 
         Args:
@@ -273,7 +273,7 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    def add(self, instrumentation_function: Callable[[metrics.Info], None]) -&gt; &#34;self&#34;:
+    def add(self, instrumentation_function: Callable[[metrics.Info], None]):
         &#34;&#34;&#34;Adds function to list of instrumentations.
 
         Args:
@@ -460,7 +460,7 @@ the inprogress label? Ignored unless
 
         self.instrumentations = []
 
-    def instrument(self, app: FastAPI) -&gt; &#34;self&#34;:
+    def instrument(self, app: FastAPI):
         &#34;&#34;&#34;Performs the instrumentation by adding middleware.
 
         The middleware iterates through all `instrumentations` and execute them.
@@ -561,7 +561,7 @@ the inprogress label? Ignored unless
         should_gzip: bool = False,
         endpoint: str = &#34;/metrics&#34;,
         include_in_schema: bool = True,
-    ) -&gt; &#34;self&#34;:
+    ):
         &#34;&#34;&#34;Exposes endpoint for metrics.
 
         Args:
@@ -623,7 +623,7 @@ the inprogress label? Ignored unless
 
         return self
 
-    def add(self, instrumentation_function: Callable[[metrics.Info], None]) -&gt; &#34;self&#34;:
+    def add(self, instrumentation_function: Callable[[metrics.Info], None]):
         &#34;&#34;&#34;Adds function to list of instrumentations.
 
         Args:
@@ -680,7 +680,7 @@ the inprogress label? Ignored unless
 <h3>Methods</h3>
 <dl>
 <dt id="prometheus_fastapi_instrumentator.instrumentation.PrometheusFastApiInstrumentator.add"><code class="name flex">
-<span>def <span class="ident">add</span></span>(<span>self, instrumentation_function: Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="metrics.html#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType]) ‑> self</span>
+<span>def <span class="ident">add</span></span>(<span>self, instrumentation_function: Callable[[<a title="prometheus_fastapi_instrumentator.metrics.Info" href="metrics.html#prometheus_fastapi_instrumentator.metrics.Info">Info</a>], NoneType])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Adds function to list of instrumentations.</p>
@@ -700,7 +700,7 @@ detailed information on the interface of the function.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add(self, instrumentation_function: Callable[[metrics.Info], None]) -&gt; &#34;self&#34;:
+<pre><code class="python">def add(self, instrumentation_function: Callable[[metrics.Info], None]):
     &#34;&#34;&#34;Adds function to list of instrumentations.
 
     Args:
@@ -717,7 +717,7 @@ detailed information on the interface of the function.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.instrumentation.PrometheusFastApiInstrumentator.expose"><code class="name flex">
-<span>def <span class="ident">expose</span></span>(<span>self, app: fastapi.applications.FastAPI, should_gzip: bool = False, endpoint: str = '/metrics', include_in_schema: bool = True) ‑> self</span>
+<span>def <span class="ident">expose</span></span>(<span>self, app: fastapi.applications.FastAPI, should_gzip: bool = False, endpoint: str = '/metrics', include_in_schema: bool = True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Exposes endpoint for metrics.</p>
@@ -757,7 +757,7 @@ doesn't point to a valid directory.</dd>
     should_gzip: bool = False,
     endpoint: str = &#34;/metrics&#34;,
     include_in_schema: bool = True,
-) -&gt; &#34;self&#34;:
+):
     &#34;&#34;&#34;Exposes endpoint for metrics.
 
     Args:
@@ -821,7 +821,7 @@ doesn't point to a valid directory.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.instrumentation.PrometheusFastApiInstrumentator.instrument"><code class="name flex">
-<span>def <span class="ident">instrument</span></span>(<span>self, app: fastapi.applications.FastAPI) ‑> self</span>
+<span>def <span class="ident">instrument</span></span>(<span>self, app: fastapi.applications.FastAPI)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Performs the instrumentation by adding middleware.</p>
@@ -845,7 +845,7 @@ doesn't point to a valid directory.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def instrument(self, app: FastAPI) -&gt; &#34;self&#34;:
+<pre><code class="python">def instrument(self, app: FastAPI):
     &#34;&#34;&#34;Performs the instrumentation by adding middleware.
 
     The middleware iterates through all `instrumentations` and execute them.

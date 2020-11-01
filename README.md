@@ -2,6 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/)
 [![Maintenance](https://img.shields.io/badge/maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+[![PyPI](https://img.shields.io/pypi/pyversions/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
 [![downloads](https://pepy.tech/badge/prometheus-fastapi-instrumentator/month)](https://pepy.tech/project/prometheus-fastapi-instrumentator/month)
 [![docs](https://img.shields.io/badge/docs-here-blue)](https://trallnag.github.io/prometheus-fastapi-instrumentator/)
 
@@ -27,15 +28,13 @@ sensible defaults give you:
 * Counter `http_requests_total` with `handler`, `status` and `method`. Total 
     number of requests.
 * Summary `http_request_size_bytes` with `handler`. Added up total of the 
-    content lengths of all incoming requests. If the request has no valid 
-    content length, 0 bytes will be assumed.
+    content lengths of all incoming requests.
 * Summary `http_response_size_bytes` with `handler`. Added up total of the 
-    content lengths of all outgoing responses. If the response has no valid 
-    content length, 0 bytes will be assumed.
+    content lengths of all outgoing responses.
 * Histogram `http_request_duration_seconds` with `handler`. Only a few buckets 
-    to keep cardinality low. Use it for aggregations by handler or SLI buckets.
+    to keep cardinality low.
 * Histogram `http_request_duration_highr_seconds` without any labels. Large 
-    number of buckets (>20) for accurate percentile calculations.
+    number of buckets (>20).
 
 In addition, following behaviour is active:
 
@@ -130,7 +129,9 @@ a single argument that stores useful information like the request and
 response objects. If no `add()` at all is used, the default metric gets added 
 in the background. This is what happens in the fast track example.
 
-All instrumentation functions are stored as closures in the `metrics` module. 
+All instrumentation functions are stored as closures in the `metrics` module.
+Fore more concrete info check out the [automatically generated documentation](https://trallnag.github.io/prometheus-fastapi-instrumentator/).
+
 Closures come in handy here because it allows us to configure the functions 
 within.
 

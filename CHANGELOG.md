@@ -11,7 +11,13 @@ specification.
 
 ### Added
 
-* New metrics closure `requests`. Idea raised by @jpslopes [here](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/15).
+* New metrics closure `requests`. Idea raised by @jpslopes
+    [here](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/15).
+
+### Changed
+
+* Small improvements to docstrings / docs.
+* Run `poetry update`.
 
 ## [5.4.1] 2020-10-22
 

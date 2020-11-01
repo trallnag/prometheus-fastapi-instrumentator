@@ -82,7 +82,7 @@ class PrometheusFastApiInstrumentator:
 
         self.instrumentations = []
 
-    def instrument(self, app: FastAPI) -> "self":
+    def instrument(self, app: FastAPI):
         """Performs the instrumentation by adding middleware.
 
         The middleware iterates through all `instrumentations` and execute them.
@@ -183,7 +183,7 @@ class PrometheusFastApiInstrumentator:
         should_gzip: bool = False,
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
-    ) -> "self":
+    ):
         """Exposes endpoint for metrics.
 
         Args:
@@ -245,7 +245,7 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    def add(self, instrumentation_function: Callable[[metrics.Info], None]) -> "self":
+    def add(self, instrumentation_function: Callable[[metrics.Info], None]):
         """Adds function to list of instrumentations.
 
         Args:

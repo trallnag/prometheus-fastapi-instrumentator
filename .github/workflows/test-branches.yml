@@ -65,7 +65,7 @@ jobs:
       if: matrix.python-version == 3.9
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: 'style: apply auto stuff [skip ci]'
+        commit_message: 'style: apply lint and format [skip ci]'
         file_pattern: ./*.py requirements.txt
         commit_user_name: trallnag-bot
         commit_user_email: tim.and.trallnag+code@gmail.com

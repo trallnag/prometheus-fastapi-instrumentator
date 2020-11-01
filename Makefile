@@ -5,6 +5,9 @@ all: lint format_style format_imports test docs requirements
 lint:
 	poetry run flake8 --config .flake8 --statistics
 
+.PHONY: format
+format: format_style format_imports
+
 .PHONY: format_style
 format_style:
 	poetry run black .
