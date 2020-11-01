@@ -42,4 +42,4 @@ docs:
 
 .PHONY: requirements
 requirements:
-	poetry run pip freeze > requirements.txt
+	poetry export --format "requirements.txt" --output "requirements.txt" --without-hashes

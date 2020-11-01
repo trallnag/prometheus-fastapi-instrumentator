@@ -29,3 +29,4 @@ pdoc3 = "^0.9.1"
 
 [tool.black]
 line-length = 90
+exclude = "(requirements.txt)"
