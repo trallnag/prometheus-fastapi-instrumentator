@@ -9,6 +9,10 @@ specification.
 
 ## Unreleased
 
+* Nothing
+
+## [5.5.0] 2020-11-01
+
 ### Added
 
 * New metrics closure `requests`. Idea raised by @jpslopes
