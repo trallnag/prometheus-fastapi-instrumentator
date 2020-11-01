@@ -9,7 +9,9 @@ specification.
 
 ## Unreleased
 
-* Nothing
+### Added
+
+* New metrics closure `requests`. Idea raised by @jpslopes [here](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/15).
 
 ## [5.4.1] 2020-10-22
 

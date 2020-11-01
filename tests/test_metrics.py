@@ -512,3 +512,49 @@ def test_default_with_runtime_error():
     assert (
         b'http_request_size_bytes_count{handler="/runtime_error"} 1.0' in response.content
     )
+
+
+# ------------------------------------------------------------------------------
+# requests
+
+
+def test_requests_all_labels():
+    app = create_app()
+    Instrumentator().add(metrics.requests()).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    _ = get_response(client, "/metrics")
+
+    assert (
+        REGISTRY.get_sample_value(
+            "http_requests_total",
+            {"handler": "/", "method": "GET", "status": "2xx"},
+        )
+        == 1
+    )
+
+
+def test_requests_no_labels():
+    app = create_app()
+    Instrumentator().add(
+        metrics.requests(
+            should_include_handler=False,
+            should_include_method=False,
+            should_include_status=False,
+        )
+    ).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    _ = get_response(client, "/metrics")
+
+    assert (
+        REGISTRY.get_sample_value(
+            "http_requests_total",
+            {},
+        )
+        == 2
+    )
