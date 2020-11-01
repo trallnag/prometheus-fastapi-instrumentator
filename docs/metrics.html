@@ -80,15 +80,12 @@ class Info:
             request (Request): Python Requests request object.
             response (Response or None): Python Requests response object.
             method (str): Unmodified method of the request.
-            modified_handler (str):
-                Handler representation after processing by instrumentator. For
-                example grouped to `none` if not templated.
-            modified_status (str):
-                Status code representation after processing by instrumentator.
-                For example grouping into `2xx`, `3xx` and so on.
-            modified_duration (float):
-                Latency representation after processing by instrumentator. For
-                example rounding of decimals. Seconds.
+            modified_handler (str): Handler representation after processing by
+                instrumentator. For example grouped to `none` if not templated.
+            modified_status (str): Status code representation after processing
+                by instrumentator. For example grouping into `2xx`, `3xx` and so on.
+            modified_duration (float): Latency representation after processing
+                by instrumentator. For example rounding of decimals. Seconds.
         &#34;&#34;&#34;
 
         self.request = request
@@ -107,12 +104,9 @@ def _build_label_attribute_names(
     &#34;&#34;&#34;Builds up tuple with to be used label and attribute names.
 
     Args:
-        should_include_handler (bool):
-            Should the `handler` label be part of the metric?
-        should_include_method (bool):
-            Should the `method` label be part of the metric?
-        should_include_status (bool):
-            Should the `status` label be part of the metric?
+        should_include_handler (bool): Should the `handler` label be part of the metric?
+        should_include_method (bool): Should the `method` label be part of the metric?
+        should_include_status (bool): Should the `status` label be part of the metric?
 
     Returns:
         Tuple with two list elements.
@@ -343,13 +337,10 @@ def combined_size(
     If content length is missing 0 will be assumed.
 
     Args:
-        metric_name (str, optional):
-            Name of the metric to be created. Must be unique.
+        metric_name (str, optional): Name of the metric to be created. Must be unique.
         metric_doc (str, optional): Documentation of the metric.
-        metric_namespace (str, optional):
-            Namespace of all  metrics in this metric function.
-        metric_subsystem (str, optional):
-            Subsystem of all  metrics in this metric function.
+        metric_namespace (str, optional): Namespace of all  metrics in this metric function.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -411,22 +402,20 @@ def requests(
     &#34;&#34;&#34;Record the number of requests.
 
     Args:
-        metric_name (str, optional):
-            Name of the metric to be created. Must be unique. Defaults to
-            `http_requests_total`.
-        metric_doc (str, optional):
-            Documentation of the metric. Defaults to
+        metric_name (str, optional): Name of the metric to be created. Must
+            be unique. Defaults to `http_requests_total`.
+        metric_doc (str, optional): Documentation of the metric. Defaults to
             `Total number of requests by method, status and handler.`.
-        metric_namespace (str, optional):
-            Namespace of all  metrics in this metric function. Defaults to `&#34;&#34;`.
-        metric_subsystem (str, optional):
-            Subsystem of all  metrics in this metric function. Defaults to `&#34;&#34;`.
-        should_include_handler (bool, optional):
-            Should the `handler` label be part of the metric? Defaults to `True`.
-        should_include_method (bool, optional):
-            Should the `method` label be part of the metric? Defaults to `True`.
-        should_include_status (bool, optional):
-            Should the `status` label be part of the metric? Defaults to `True`.
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to `&#34;&#34;`.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to `&#34;&#34;`.
+        should_include_handler (bool, optional): Should the `handler` label
+            be part of the metric? Defaults to `True`.
+        should_include_method (bool, optional): Should the `method` label be
+            part of the metric? Defaults to `True`.
+        should_include_status (bool, optional): Should the `status` label be
+            part of the metric? Defaults to `True`.
 
     Returns:
         Function that takes a single parameter `Info`.
@@ -512,21 +501,21 @@ def default(
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
-        metric_namespace (str, optional):
-            Namespace of all  metrics in this metric function. Defaults to `&#34;&#34;`.
-        metric_subsystem (str, optional):
-            Subsystem of all  metrics in this metric function. Defaults to `&#34;&#34;`.
-        should_only_respect_2xx_for_highr (str, optional):
-            Should the metric `http_request_duration_highr_seconds` only include
-            latencies of requests / responses that have a status code starting
-            with `2`? Defaults to `False`.
-        latency_highr_buckets (tuple[float], optional):
-            Buckets tuple for high res histogram. Can be large because no labels
-            are used. Defaults to `(0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5,
-            0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60)`.
-        latency_lowr_buckets (tuple[float], optional):
-            Buckets tuple for low res histogram. Should be very small as all
-            possible labels are included. Defaults to `(0.1, 0.5, 1)`.
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to `&#34;&#34;`.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to `&#34;&#34;`.
+        should_only_respect_2xx_for_highr (str, optional): Should the metric
+            `http_request_duration_highr_seconds` only include latencies of
+            requests / responses that have a status code starting with `2`?
+            Defaults to `False`.
+        latency_highr_buckets (tuple[float], optional): Buckets tuple for high
+            res histogram. Can be large because no labels are used. Defaults to
+            `(0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5,
+            3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60)`.
+        latency_lowr_buckets (tuple[float], optional): Buckets tuple for low
+            res histogram. Should be very small as all possible labels are
+            included. Defaults to `(0.1, 0.5, 1)`.
 
     Returns:
         Function that takes a single parameter `Info`.
@@ -637,16 +626,16 @@ def default(
 <p>If content length is missing 0 will be assumed.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt>metric_name (str, optional):</dt>
-<dt>Name of the metric to be created. Must be unique.</dt>
+<dt><strong><code>metric_name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Name of the metric to be created. Must be unique.</dd>
 <dt><strong><code>metric_doc</code></strong> :&ensp;<code>str</code>, optional</dt>
 <dd>Documentation of the metric.</dd>
-<dt>metric_namespace (str, optional):</dt>
-<dt>Namespace of all
-metrics in this metric function.</dt>
-<dt>metric_subsystem (str, optional):</dt>
-<dt>Subsystem of all
-metrics in this metric function.</dt>
+<dt><strong><code>metric_namespace</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Namespace of all
+metrics in this metric function.</dd>
+<dt><strong><code>metric_subsystem</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Subsystem of all
+metrics in this metric function.</dd>
 <dt><strong><code>should_include_handler</code></strong></dt>
 <dd>Should the <code>handler</code> label be part of the metric?</dd>
 <dt><strong><code>should_include_method</code></strong></dt>
@@ -674,13 +663,10 @@ metrics in this metric function.</dt>
     If content length is missing 0 will be assumed.
 
     Args:
-        metric_name (str, optional):
-            Name of the metric to be created. Must be unique.
+        metric_name (str, optional): Name of the metric to be created. Must be unique.
         metric_doc (str, optional): Documentation of the metric.
-        metric_namespace (str, optional):
-            Namespace of all  metrics in this metric function.
-        metric_subsystem (str, optional):
-            Subsystem of all  metrics in this metric function.
+        metric_namespace (str, optional): Namespace of all  metrics in this metric function.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this metric function.
         should_include_handler: Should the `handler` label be part of the metric?
         should_include_method: Should the `method` label be part of the metric?
         should_include_status: Should the `status` label be part of the metric?
@@ -751,23 +737,30 @@ leading to more accurate calculation of percentiles.</li>
 Kepp the bucket count very low. Only put in SLIs.</li>
 </ul>
 <h2 id="args">Args</h2>
-<p>metric_namespace (str, optional):
-Namespace of all
-metrics in this metric function. Defaults to <code>""</code>.
-metric_subsystem (str, optional):
-Subsystem of all
-metrics in this metric function. Defaults to <code>""</code>.
-should_only_respect_2xx_for_highr (str, optional):
-Should the metric <code>http_request_duration_highr_seconds</code> only include
-latencies of requests / responses that have a status code starting
-with <code>2</code>? Defaults to <code>False</code>.
-latency_highr_buckets (tuple[float], optional):
-Buckets tuple for high res histogram. Can be large because no labels
-are used. Defaults to <code>(0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5,
-0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60)</code>.
-latency_lowr_buckets (tuple[float], optional):
-Buckets tuple for low res histogram. Should be very small as all
-possible labels are included. Defaults to <code>(0.1, 0.5, 1)</code>.</p>
+<dl>
+<dt><strong><code>metric_namespace</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Namespace of all
+metrics in this
+metric function. Defaults to <code>""</code>.</dd>
+<dt><strong><code>metric_subsystem</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Subsystem of all
+metrics in this
+metric function. Defaults to <code>""</code>.</dd>
+<dt><strong><code>should_only_respect_2xx_for_highr</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Should the metric
+<code>http_request_duration_highr_seconds</code> only include latencies of
+requests / responses that have a status code starting with <code>2</code>?
+Defaults to <code>False</code>.</dd>
+<dt><strong><code>latency_highr_buckets</code></strong> :&ensp;<code>tuple[float]</code>, optional</dt>
+<dd>Buckets tuple for high
+res histogram. Can be large because no labels are used. Defaults to
+<code>(0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5,
+3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60)</code>.</dd>
+<dt><strong><code>latency_lowr_buckets</code></strong> :&ensp;<code>tuple[float]</code>, optional</dt>
+<dd>Buckets tuple for low
+res histogram. Should be very small as all possible labels are
+included. Defaults to <code>(0.1, 0.5, 1)</code>.</dd>
+</dl>
 <h2 id="returns">Returns</h2>
 <p>Function that takes a single parameter <code><a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a></code>.</p></div>
 <details class="source">
@@ -822,21 +815,21 @@ possible labels are included. Defaults to <code>(0.1, 0.5, 1)</code>.</p>
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
-        metric_namespace (str, optional):
-            Namespace of all  metrics in this metric function. Defaults to `&#34;&#34;`.
-        metric_subsystem (str, optional):
-            Subsystem of all  metrics in this metric function. Defaults to `&#34;&#34;`.
-        should_only_respect_2xx_for_highr (str, optional):
-            Should the metric `http_request_duration_highr_seconds` only include
-            latencies of requests / responses that have a status code starting
-            with `2`? Defaults to `False`.
-        latency_highr_buckets (tuple[float], optional):
-            Buckets tuple for high res histogram. Can be large because no labels
-            are used. Defaults to `(0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5,
-            0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60)`.
-        latency_lowr_buckets (tuple[float], optional):
-            Buckets tuple for low res histogram. Should be very small as all
-            possible labels are included. Defaults to `(0.1, 0.5, 1)`.
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to `&#34;&#34;`.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to `&#34;&#34;`.
+        should_only_respect_2xx_for_highr (str, optional): Should the metric
+            `http_request_duration_highr_seconds` only include latencies of
+            requests / responses that have a status code starting with `2`?
+            Defaults to `False`.
+        latency_highr_buckets (tuple[float], optional): Buckets tuple for high
+            res histogram. Can be large because no labels are used. Defaults to
+            `(0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5,
+            3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60)`.
+        latency_lowr_buckets (tuple[float], optional): Buckets tuple for low
+            res histogram. Should be very small as all possible labels are
+            included. Defaults to `(0.1, 0.5, 1)`.
 
     Returns:
         Function that takes a single parameter `Info`.
@@ -1120,24 +1113,31 @@ metrics in this metric function.</dd>
 <dd>
 <div class="desc"><p>Record the number of requests.</p>
 <h2 id="args">Args</h2>
-<p>metric_name (str, optional):
-Name of the metric to be created. Must be unique. Defaults to
-<code>http_requests_total</code>.
-metric_doc (str, optional):
-Documentation of the metric. Defaults to
-<code>Total number of <a title="prometheus_fastapi_instrumentator.metrics.requests" href="#prometheus_fastapi_instrumentator.metrics.requests">requests()</a> by method, status and handler.</code>.
-metric_namespace (str, optional):
-Namespace of all
-metrics in this metric function. Defaults to <code>""</code>.
-metric_subsystem (str, optional):
-Subsystem of all
-metrics in this metric function. Defaults to <code>""</code>.
-should_include_handler (bool, optional):
-Should the <code>handler</code> label be part of the metric? Defaults to <code>True</code>.
-should_include_method (bool, optional):
-Should the <code>method</code> label be part of the metric? Defaults to <code>True</code>.
-should_include_status (bool, optional):
-Should the <code>status</code> label be part of the metric? Defaults to <code>True</code>.</p>
+<dl>
+<dt><strong><code>metric_name</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Name of the metric to be created. Must
+be unique. Defaults to <code>http_requests_total</code>.</dd>
+<dt><strong><code>metric_doc</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Documentation of the metric. Defaults to
+<code>Total number of <a title="prometheus_fastapi_instrumentator.metrics.requests" href="#prometheus_fastapi_instrumentator.metrics.requests">requests()</a> by method, status and handler.</code>.</dd>
+<dt><strong><code>metric_namespace</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Namespace of all
+metrics in this
+metric function. Defaults to <code>""</code>.</dd>
+<dt><strong><code>metric_subsystem</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>Subsystem of all
+metrics in this
+metric function. Defaults to <code>""</code>.</dd>
+<dt><strong><code>should_include_handler</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Should the <code>handler</code> label
+be part of the metric? Defaults to <code>True</code>.</dd>
+<dt><strong><code>should_include_method</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Should the <code>method</code> label be
+part of the metric? Defaults to <code>True</code>.</dd>
+<dt><strong><code>should_include_status</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>Should the <code>status</code> label be
+part of the metric? Defaults to <code>True</code>.</dd>
+</dl>
 <h2 id="returns">Returns</h2>
 <p>Function that takes a single parameter <code><a title="prometheus_fastapi_instrumentator.metrics.Info" href="#prometheus_fastapi_instrumentator.metrics.Info">Info</a></code>.</p></div>
 <details class="source">
@@ -1156,22 +1156,20 @@ Should the <code>status</code> label be part of the metric? Defaults to <code>Tr
     &#34;&#34;&#34;Record the number of requests.
 
     Args:
-        metric_name (str, optional):
-            Name of the metric to be created. Must be unique. Defaults to
-            `http_requests_total`.
-        metric_doc (str, optional):
-            Documentation of the metric. Defaults to
+        metric_name (str, optional): Name of the metric to be created. Must
+            be unique. Defaults to `http_requests_total`.
+        metric_doc (str, optional): Documentation of the metric. Defaults to
             `Total number of requests by method, status and handler.`.
-        metric_namespace (str, optional):
-            Namespace of all  metrics in this metric function. Defaults to `&#34;&#34;`.
-        metric_subsystem (str, optional):
-            Subsystem of all  metrics in this metric function. Defaults to `&#34;&#34;`.
-        should_include_handler (bool, optional):
-            Should the `handler` label be part of the metric? Defaults to `True`.
-        should_include_method (bool, optional):
-            Should the `method` label be part of the metric? Defaults to `True`.
-        should_include_status (bool, optional):
-            Should the `status` label be part of the metric? Defaults to `True`.
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to `&#34;&#34;`.
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to `&#34;&#34;`.
+        should_include_handler (bool, optional): Should the `handler` label
+            be part of the metric? Defaults to `True`.
+        should_include_method (bool, optional): Should the `method` label be
+            part of the metric? Defaults to `True`.
+        should_include_status (bool, optional): Should the `status` label be
+            part of the metric? Defaults to `True`.
 
     Returns:
         Function that takes a single parameter `Info`.
@@ -1323,16 +1321,16 @@ metrics in this metric function.</dd>
 <dd>Python Requests response object.</dd>
 <dt><strong><code>method</code></strong> :&ensp;<code>str</code></dt>
 <dd>Unmodified method of the request.</dd>
-</dl>
-<p>modified_handler (str):
-Handler representation after processing by instrumentator. For
-example grouped to <code>none</code> if not templated.
-modified_status (str):
-Status code representation after processing by instrumentator.
-For example grouping into <code>2xx</code>, <code>3xx</code> and so on.
-modified_duration (float):
-Latency representation after processing by instrumentator. For
-example rounding of decimals. Seconds.</p></div>
+<dt><strong><code>modified_handler</code></strong> :&ensp;<code>str</code></dt>
+<dd>Handler representation after processing by
+instrumentator. For example grouped to <code>none</code> if not templated.</dd>
+<dt><strong><code>modified_status</code></strong> :&ensp;<code>str</code></dt>
+<dd>Status code representation after processing
+by instrumentator. For example grouping into <code>2xx</code>, <code>3xx</code> and so on.</dd>
+<dt><strong><code>modified_duration</code></strong> :&ensp;<code>float</code></dt>
+<dd>Latency representation after processing
+by instrumentator. For example rounding of decimals. Seconds.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1355,15 +1353,12 @@ example rounding of decimals. Seconds.</p></div>
             request (Request): Python Requests request object.
             response (Response or None): Python Requests response object.
             method (str): Unmodified method of the request.
-            modified_handler (str):
-                Handler representation after processing by instrumentator. For
-                example grouped to `none` if not templated.
-            modified_status (str):
-                Status code representation after processing by instrumentator.
-                For example grouping into `2xx`, `3xx` and so on.
-            modified_duration (float):
-                Latency representation after processing by instrumentator. For
-                example rounding of decimals. Seconds.
+            modified_handler (str): Handler representation after processing by
+                instrumentator. For example grouped to `none` if not templated.
+            modified_status (str): Status code representation after processing
+                by instrumentator. For example grouping into `2xx`, `3xx` and so on.
+            modified_duration (float): Latency representation after processing
+                by instrumentator. For example rounding of decimals. Seconds.
         &#34;&#34;&#34;
 
         self.request = request
