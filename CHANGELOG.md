@@ -11,6 +11,21 @@ specification.
 
 * Nothing
 
+## [5.5.1] 2020-11-13
+
+### Fixed
+
+* "Duplicate mime type charset=utf-8 on Response Header" raised by @flobaader in
+    [this issue](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/16).
+    Fixed in commit <af1c8bd717c9d8cc1192b78124caeb03dd6b7df5> by changing the
+    way the content type header is set. Seems like when Starlette's `media_type`
+    parameter is used to provide content type, the charset is appended
+    again automatically even if it already is part of `Content-Type`.
+
+### Changed
+
+* Run `poetry update` and with that updated a few dependencies.
+
 ## [5.5.0] 2020-11-01
 
 ### Added
