@@ -235,13 +235,14 @@ class PrometheusFastApiInstrumentator:
         @app.get(endpoint, include_in_schema=include_in_schema)
         def metrics(request: Request):
             if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
-                return Response(
-                    gzip.compress(generate_latest(registry)),
-                    headers={"Content-Encoding": "gzip"},
-                    media_type=CONTENT_TYPE_LATEST,
-                )
+                resp = Response(content=gzip.compress(generate_latest(registry)))
+                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
+                resp.headers["Content-Encoding"] = "gzip"
+                return resp
             else:
-                return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
+                resp = Response(content=generate_latest(registry))
+                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
+                return resp
 
         return self
 
