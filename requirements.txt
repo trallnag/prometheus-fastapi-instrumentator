@@ -1,5 +1,5 @@
-dataclasses==0.7; python_version >= "3.6" and python_version < "3.7"
-fastapi==0.61.1; python_version >= "3.6"
+dataclasses==0.8; python_version >= "3.6" and python_version < "3.7"
+fastapi==0.61.2; python_version >= "3.6"
 prometheus-client==0.8.0
 pydantic==1.7.2; python_version >= "3.6"
 starlette==0.13.6; python_version >= "3.6"
