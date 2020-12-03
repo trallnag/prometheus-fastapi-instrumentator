@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>prometheus_fastapi_instrumentator.instrumentation API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -30,7 +30,7 @@
 import os
 import re
 from timeit import default_timer
-from typing import Callable, Tuple
+from typing import Callable, List, Optional, Tuple
 
 from fastapi import FastAPI
 from prometheus_client import Gauge
@@ -211,6 +211,7 @@ class PrometheusFastApiInstrumentator:
         should_gzip: bool = False,
         endpoint: str = &#34;/metrics&#34;,
         include_in_schema: bool = True,
+        tags: Optional[List[str]] = None,
     ):
         &#34;&#34;&#34;Exposes endpoint for metrics.
 
@@ -260,16 +261,17 @@ class PrometheusFastApiInstrumentator:
         else:
             registry = REGISTRY
 
-        @app.get(endpoint, include_in_schema=include_in_schema)
+        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
         def metrics(request: Request):
             if should_gzip and &#34;gzip&#34; in request.headers.get(&#34;Accept-Encoding&#34;, &#34;&#34;):
-                return Response(
-                    gzip.compress(generate_latest(registry)),
-                    headers={&#34;Content-Encoding&#34;: &#34;gzip&#34;},
-                    media_type=CONTENT_TYPE_LATEST,
-                )
+                resp = Response(content=gzip.compress(generate_latest(registry)))
+                resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
+                resp.headers[&#34;Content-Encoding&#34;] = &#34;gzip&#34;
+                return resp
             else:
-                return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
+                resp = Response(content=generate_latest(registry))
+                resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
+                return resp
 
         return self
 
@@ -561,6 +563,7 @@ the inprogress label? Ignored unless
         should_gzip: bool = False,
         endpoint: str = &#34;/metrics&#34;,
         include_in_schema: bool = True,
+        tags: Optional[List[str]] = None,
     ):
         &#34;&#34;&#34;Exposes endpoint for metrics.
 
@@ -610,16 +613,17 @@ the inprogress label? Ignored unless
         else:
             registry = REGISTRY
 
-        @app.get(endpoint, include_in_schema=include_in_schema)
+        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
         def metrics(request: Request):
             if should_gzip and &#34;gzip&#34; in request.headers.get(&#34;Accept-Encoding&#34;, &#34;&#34;):
-                return Response(
-                    gzip.compress(generate_latest(registry)),
-                    headers={&#34;Content-Encoding&#34;: &#34;gzip&#34;},
-                    media_type=CONTENT_TYPE_LATEST,
-                )
+                resp = Response(content=gzip.compress(generate_latest(registry)))
+                resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
+                resp.headers[&#34;Content-Encoding&#34;] = &#34;gzip&#34;
+                return resp
             else:
-                return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
+                resp = Response(content=generate_latest(registry))
+                resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
+                return resp
 
         return self
 
@@ -717,7 +721,7 @@ detailed information on the interface of the function.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.instrumentation.PrometheusFastApiInstrumentator.expose"><code class="name flex">
-<span>def <span class="ident">expose</span></span>(<span>self, app: fastapi.applications.FastAPI, should_gzip: bool = False, endpoint: str = '/metrics', include_in_schema: bool = True)</span>
+<span>def <span class="ident">expose</span></span>(<span>self, app: fastapi.applications.FastAPI, should_gzip: bool = False, endpoint: str = '/metrics', include_in_schema: bool = True, tags: Optional[List[str]] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Exposes endpoint for metrics.</p>
@@ -757,6 +761,7 @@ doesn't point to a valid directory.</dd>
     should_gzip: bool = False,
     endpoint: str = &#34;/metrics&#34;,
     include_in_schema: bool = True,
+    tags: Optional[List[str]] = None,
 ):
     &#34;&#34;&#34;Exposes endpoint for metrics.
 
@@ -806,16 +811,17 @@ doesn't point to a valid directory.</dd>
     else:
         registry = REGISTRY
 
-    @app.get(endpoint, include_in_schema=include_in_schema)
+    @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
     def metrics(request: Request):
         if should_gzip and &#34;gzip&#34; in request.headers.get(&#34;Accept-Encoding&#34;, &#34;&#34;):
-            return Response(
-                gzip.compress(generate_latest(registry)),
-                headers={&#34;Content-Encoding&#34;: &#34;gzip&#34;},
-                media_type=CONTENT_TYPE_LATEST,
-            )
+            resp = Response(content=gzip.compress(generate_latest(registry)))
+            resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
+            resp.headers[&#34;Content-Encoding&#34;] = &#34;gzip&#34;
+            return resp
         else:
-            return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
+            resp = Response(content=generate_latest(registry))
+            resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
+            return resp
 
     return self</code></pre>
 </details>
@@ -973,7 +979,7 @@ doesn't point to a valid directory.</dd>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

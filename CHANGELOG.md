@@ -11,6 +11,13 @@ specification.
 
 * Nothing
 
+## [5.6.0] 2020-12-03
+
+### Added
+
+* Parameter `tags` to method `expose()`. Passthrough to FastAPI to support
+    tagging. Raised by @chisaipete [here](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/17).
+
 ## [5.5.1] 2020-11-13
 
 ### Fixed

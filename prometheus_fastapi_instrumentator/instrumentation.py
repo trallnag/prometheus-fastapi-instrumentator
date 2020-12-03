@@ -2,7 +2,7 @@ import gzip
 import os
 import re
 from timeit import default_timer
-from typing import Callable, Tuple
+from typing import Callable, List, Optional, Tuple
 
 from fastapi import FastAPI
 from prometheus_client import Gauge
@@ -183,6 +183,7 @@ class PrometheusFastApiInstrumentator:
         should_gzip: bool = False,
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
+        tags: Optional[List[str]] = None,
     ):
         """Exposes endpoint for metrics.
 
@@ -232,7 +233,7 @@ class PrometheusFastApiInstrumentator:
         else:
             registry = REGISTRY
 
-        @app.get(endpoint, include_in_schema=include_in_schema)
+        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
         def metrics(request: Request):
             if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
                 resp = Response(content=gzip.compress(generate_latest(registry)))
