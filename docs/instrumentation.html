@@ -30,7 +30,7 @@
 import os
 import re
 from timeit import default_timer
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Pattern, Tuple
 
 from fastapi import FastAPI
 from prometheus_client import Gauge
@@ -50,7 +50,7 @@ class PrometheusFastApiInstrumentator:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
-        excluded_handlers: list = [],
+        excluded_handlers: List[str] = [],
         round_latency_decimals: int = 4,
         env_var_name: str = &#34;ENABLE_METRICS&#34;,
         inprogress_name: str = &#34;http_requests_inprogress&#34;,
@@ -59,36 +59,50 @@ class PrometheusFastApiInstrumentator:
         &#34;&#34;&#34;Create a Prometheus FastAPI Instrumentator.
 
         Args:
-            should_group_status_codes: Should status codes be grouped into
-                `2xx`, `3xx` and so on?
-            should_ignore_untemplated: Should requests without a matching
-                template be ignored?
-            should_group_untemplated: Should requests without a matching
-                template be grouped to handler `none`?
+            should_group_status_codes (bool): Should status codes be grouped into
+                `2xx`, `3xx` and so on? Defaults to `True`.
+
+            should_ignore_untemplated (bool): Should requests without a matching
+                template be ignored? Defaults to `False`. This means that by
+                default a request like `curl -X GET localhost:80/doesnotexist`
+                will be ignored.
+
+            should_group_untemplated (bool): Should requests without a matching
+                template be grouped to handler `none`? Defaults to `True`.
+
             should_round_latency_decimals: Should recorded latencies be
                 rounded to a certain number of decimals?
-            should_respect_env_var: Should the instrumentator only work - for
+
+            should_respect_env_var (bool): Should the instrumentator only work - for
                 example the methods `instrument()` and `expose()` - if a
                 certain environment variable is set to `true`? Usecase: A base
                 FastAPI app that is used by multiple distinct apps. The apps
-                only have to set the variable to be instrumented.
-            should_instrument_requests_inprogress: Enables a gauge that shows
+                only have to set the variable to be instrumented. Defaults to
+                `False`.
+
+            should_instrument_requests_inprogress (bool): Enables a gauge that shows
                 the inprogress requests. See also the related args starting
-                with `inprogress`.
-            excluded_handlers: List of strings that will be compiled to regex
-                patterns. All matches will be skipped and not instrumented.
-            round_latency_decimals: Number of decimals latencies should be
+                with `inprogress`. Defaults to `False`.
+
+            excluded_handlers (List[str]): List of strings that will be compiled
+                to regex patterns. All matches will be skipped and not
+                instrumented. Defaults to `[]`.
+
+            round_latency_decimals (int): Number of decimals latencies should be
                 rounded to. Ignored unless `should_round_latency_decimals` is
-                `True`.
-            env_var_name: Any valid os environment variable name that will be
-                checked for existence before instrumentation. Ignored unless
-                `should_respect_env_var` is `True`.
-            inprogress_name: Name of the gauge. Defaults to
+                `True`. Defaults to `4`.
+
+            env_var_name (str): Any valid os environment variable name that will
+                be checked for existence before instrumentation. Ignored unless
+                `should_respect_env_var` is `True`. Defaults to `&#34;ENABLE_METRICS&#34;`.
+
+            inprogress_name (str): Name of the gauge. Defaults to
                 `http_requests_inprogress`. Ignored unless
                 `should_instrument_requests_inprogress` is `True`.
-            inprogress_labels: Should labels `method` and `handler` be part of
-                the inprogress label? Ignored unless
-                `should_instrument_requests_inprogress` is `True`.
+
+            inprogress_labels (bool): Should labels `method` and `handler` be
+                part of the inprogress label? Ignored unless
+                `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
         &#34;&#34;&#34;
 
         self.should_group_status_codes = should_group_status_codes
@@ -103,20 +117,23 @@ class PrometheusFastApiInstrumentator:
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
 
+        self.excluded_handlers: List[Pattern[str]]
         if excluded_handlers:
             self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
         else:
             self.excluded_handlers = []
 
-        self.instrumentations = []
+        self.instrumentations: List[Callable[[metrics.Info], None]] = []
+
+    # ==========================================================================
 
     def instrument(self, app: FastAPI):
         &#34;&#34;&#34;Performs the instrumentation by adding middleware.
 
-        The middleware iterates through all `instrumentations` and execute them.
+        The middleware iterates through all `instrumentations` and executes them.
 
         Args:
-            app: FastAPI app instance.
+            app (FastAPI): FastAPI app instance.
 
         Raises:
             e: Only raised if FastAPI itself throws an exception.
@@ -134,7 +151,6 @@ class PrometheusFastApiInstrumentator:
         if len(self.instrumentations) == 0:
             self.instrumentations.append(metrics.default())
 
-        self.inprogress = None
         if self.should_instrument_requests_inprogress:
             labels = (
                 (
@@ -151,6 +167,8 @@ class PrometheusFastApiInstrumentator:
                 multiprocess_mode=&#34;livesum&#34;,
             )
 
+        # ----------------------------------------------------------------------
+
         @app.middleware(&#34;http&#34;)
         async def dispatch_middleware(request: Request, call_next) -&gt; Response:
             start_time = default_timer()
@@ -162,26 +180,27 @@ class PrometheusFastApiInstrumentator:
             )
 
             if not is_excluded and self.should_instrument_requests_inprogress:
+                inprogress: Gauge
                 if self.inprogress_labels:
                     inprogress = self.inprogress.labels(request.method, handler)
                 else:
                     inprogress = self.inprogress
                 inprogress.inc()
 
+            response = None
+            status = &#34;500&#34;
+
             try:
-                response = None
                 response = await call_next(request)
                 status = str(response.status_code)
             except Exception as e:
-                if response is None:
-                    status = &#34;500&#34;
                 raise e from None
             finally:
                 if not is_excluded:
                     duration = max(default_timer() - start_time, 0)
 
                     if self.should_instrument_requests_inprogress:
-                        inprogress.dec()
+                        inprogress.dec()  # type: ignore
 
                     if self.should_round_latency_decimals:
                         duration = round(duration, self.round_latency_decimals)
@@ -203,7 +222,11 @@ class PrometheusFastApiInstrumentator:
 
             return response
 
+        # ----------------------------------------------------------------------
+
         return self
+
+    # ==========================================================================
 
     def expose(
         self,
@@ -212,6 +235,7 @@ class PrometheusFastApiInstrumentator:
         endpoint: str = &#34;/metrics&#34;,
         include_in_schema: bool = True,
         tags: Optional[List[str]] = None,
+        **kwargs,
     ):
         &#34;&#34;&#34;Exposes endpoint for metrics.
 
@@ -225,7 +249,13 @@ class PrometheusFastApiInstrumentator:
                 cheaper than CPU cycles. Defaults to `False`.
 
             endpoint: Endpoint on which metrics should be exposed.
+
             include_in_schema: Should the endpoint show up in the documentation?
+
+            tags (List[str], optional): If you manage your routes with tags.
+                Defaults to None.
+
+            kwargs: Will be passed to FastAPI route annotation.
 
         Raises:
             ValueError: If `prometheus_multiproc_dir` env var is found but
@@ -261,8 +291,10 @@ class PrometheusFastApiInstrumentator:
         else:
             registry = REGISTRY
 
-        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
+        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
         def metrics(request: Request):
+            &#34;&#34;&#34;Endpoint that serves Prometheus metrics.&#34;&#34;&#34;
+
             if should_gzip and &#34;gzip&#34; in request.headers.get(&#34;Accept-Encoding&#34;, &#34;&#34;):
                 resp = Response(content=gzip.compress(generate_latest(registry)))
                 resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
@@ -275,50 +307,57 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
+    # ==========================================================================
+
     def add(self, instrumentation_function: Callable[[metrics.Info], None]):
         &#34;&#34;&#34;Adds function to list of instrumentations.
 
         Args:
-            instrumentation_function: Function that will be executed during
-                every request handler call (if not excluded). See above for
-                detailed information on the interface of the function.
+            instrumentation_function (Callable[[metrics.Info], None]): Function
+                that will be executed during every request handler call (if
+                not excluded). See above for detailed information on the
+                interface of the function.
 
         Returns:
             self: Instrumentator. Builder Pattern.
         &#34;&#34;&#34;
 
         self.instrumentations.append(instrumentation_function)
+
         return self
+
+    # ==========================================================================
 
     def _get_handler(self, request: Request) -&gt; Tuple[str, bool]:
         &#34;&#34;&#34;Extracts either template or (if no template) path.
 
         Args:
-            request: Python Requests request object.
+            request (Request): Python Requests request object.
 
         Returns:
-            Tuple with two elements.
-
-            First element: Either template or if no template the path.
-            Second element: If the path is templated or not.
+            Tuple[str, bool]: Tuple with two elements. First element is either
+                template or if no template the path. Second element tells you
+                if the path is templated or not.
         &#34;&#34;&#34;
 
         for route in request.app.routes:
-            match, child_scope = route.matches(request.scope)
+            match, _ = route.matches(request.scope)
             if match == Match.FULL:
                 return route.path, True
 
         return request.url.path, False
 
+    # ==========================================================================
+
     def _is_handler_excluded(self, handler: str, is_templated: bool) -&gt; bool:
         &#34;&#34;&#34;Determines if the handler should be ignored.
 
         Args:
-            handler: Handler that handles the request.
-            is_templated: Shows if the request is templated.
+            handler (str): Handler that handles the request.
+            is_templated (bool): Shows if the request is templated.
 
         Returns:
-            `True` if excluded, `False` if not.
+            bool: `True` if excluded, `False` if not.
         &#34;&#34;&#34;
 
         if is_templated is False and self.should_ignore_untemplated:
@@ -341,53 +380,57 @@ class PrometheusFastApiInstrumentator:
 <dl>
 <dt id="prometheus_fastapi_instrumentator.instrumentation.PrometheusFastApiInstrumentator"><code class="flex name class">
 <span>class <span class="ident">PrometheusFastApiInstrumentator</span></span>
-<span>(</span><span>should_group_status_codes: bool = True, should_ignore_untemplated: bool = False, should_group_untemplated: bool = True, should_round_latency_decimals: bool = False, should_respect_env_var: bool = False, should_instrument_requests_inprogress: bool = False, excluded_handlers: list = [], round_latency_decimals: int = 4, env_var_name: str = 'ENABLE_METRICS', inprogress_name: str = 'http_requests_inprogress', inprogress_labels: bool = False)</span>
+<span>(</span><span>should_group_status_codes: bool = True, should_ignore_untemplated: bool = False, should_group_untemplated: bool = True, should_round_latency_decimals: bool = False, should_respect_env_var: bool = False, should_instrument_requests_inprogress: bool = False, excluded_handlers: List[str] = [], round_latency_decimals: int = 4, env_var_name: str = 'ENABLE_METRICS', inprogress_name: str = 'http_requests_inprogress', inprogress_labels: bool = False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a Prometheus FastAPI Instrumentator.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>should_group_status_codes</code></strong></dt>
+<dt><strong><code>should_group_status_codes</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Should status codes be grouped into
-<code>2xx</code>, <code>3xx</code> and so on?</dd>
-<dt><strong><code>should_ignore_untemplated</code></strong></dt>
+<code>2xx</code>, <code>3xx</code> and so on? Defaults to <code>True</code>.</dd>
+<dt><strong><code>should_ignore_untemplated</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Should requests without a matching
-template be ignored?</dd>
-<dt><strong><code>should_group_untemplated</code></strong></dt>
+template be ignored? Defaults to <code>False</code>. This means that by
+default a request like <code>curl -X GET localhost:80/doesnotexist</code>
+will be ignored.</dd>
+<dt><strong><code>should_group_untemplated</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Should requests without a matching
-template be grouped to handler <code>none</code>?</dd>
+template be grouped to handler <code>none</code>? Defaults to <code>True</code>.</dd>
 <dt><strong><code>should_round_latency_decimals</code></strong></dt>
 <dd>Should recorded latencies be
 rounded to a certain number of decimals?</dd>
-<dt><strong><code>should_respect_env_var</code></strong></dt>
+<dt><strong><code>should_respect_env_var</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Should the instrumentator only work - for
 example the methods <code>instrument()</code> and <code>expose()</code> - if a
 certain environment variable is set to <code>true</code>? Usecase: A base
 FastAPI app that is used by multiple distinct apps. The apps
-only have to set the variable to be instrumented.</dd>
-<dt><strong><code>should_instrument_requests_inprogress</code></strong></dt>
+only have to set the variable to be instrumented. Defaults to
+<code>False</code>.</dd>
+<dt><strong><code>should_instrument_requests_inprogress</code></strong> :&ensp;<code>bool</code></dt>
 <dd>Enables a gauge that shows
 the inprogress requests. See also the related args starting
-with <code>inprogress</code>.</dd>
-<dt><strong><code>excluded_handlers</code></strong></dt>
-<dd>List of strings that will be compiled to regex
-patterns. All matches will be skipped and not instrumented.</dd>
-<dt><strong><code>round_latency_decimals</code></strong></dt>
+with <code>inprogress</code>. Defaults to <code>False</code>.</dd>
+<dt><strong><code>excluded_handlers</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>List of strings that will be compiled
+to regex patterns. All matches will be skipped and not
+instrumented. Defaults to <code>[]</code>.</dd>
+<dt><strong><code>round_latency_decimals</code></strong> :&ensp;<code>int</code></dt>
 <dd>Number of decimals latencies should be
 rounded to. Ignored unless <code>should_round_latency_decimals</code> is
-<code>True</code>.</dd>
-<dt><strong><code>env_var_name</code></strong></dt>
-<dd>Any valid os environment variable name that will be
-checked for existence before instrumentation. Ignored unless
-<code>should_respect_env_var</code> is <code>True</code>.</dd>
-<dt><strong><code>inprogress_name</code></strong></dt>
+<code>True</code>. Defaults to <code>4</code>.</dd>
+<dt><strong><code>env_var_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>Any valid os environment variable name that will
+be checked for existence before instrumentation. Ignored unless
+<code>should_respect_env_var</code> is <code>True</code>. Defaults to <code>"ENABLE_METRICS"</code>.</dd>
+<dt><strong><code>inprogress_name</code></strong> :&ensp;<code>str</code></dt>
 <dd>Name of the gauge. Defaults to
 <code>http_requests_inprogress</code>. Ignored unless
 <code>should_instrument_requests_inprogress</code> is <code>True</code>.</dd>
-<dt><strong><code>inprogress_labels</code></strong></dt>
-<dd>Should labels <code>method</code> and <code>handler</code> be part of
-the inprogress label? Ignored unless
-<code>should_instrument_requests_inprogress</code> is <code>True</code>.</dd>
+<dt><strong><code>inprogress_labels</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Should labels <code>method</code> and <code>handler</code> be
+part of the inprogress label? Ignored unless
+<code>should_instrument_requests_inprogress</code> is <code>True</code>. Defaults to <code>False</code>.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -402,7 +445,7 @@ the inprogress label? Ignored unless
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
-        excluded_handlers: list = [],
+        excluded_handlers: List[str] = [],
         round_latency_decimals: int = 4,
         env_var_name: str = &#34;ENABLE_METRICS&#34;,
         inprogress_name: str = &#34;http_requests_inprogress&#34;,
@@ -411,36 +454,50 @@ the inprogress label? Ignored unless
         &#34;&#34;&#34;Create a Prometheus FastAPI Instrumentator.
 
         Args:
-            should_group_status_codes: Should status codes be grouped into
-                `2xx`, `3xx` and so on?
-            should_ignore_untemplated: Should requests without a matching
-                template be ignored?
-            should_group_untemplated: Should requests without a matching
-                template be grouped to handler `none`?
+            should_group_status_codes (bool): Should status codes be grouped into
+                `2xx`, `3xx` and so on? Defaults to `True`.
+
+            should_ignore_untemplated (bool): Should requests without a matching
+                template be ignored? Defaults to `False`. This means that by
+                default a request like `curl -X GET localhost:80/doesnotexist`
+                will be ignored.
+
+            should_group_untemplated (bool): Should requests without a matching
+                template be grouped to handler `none`? Defaults to `True`.
+
             should_round_latency_decimals: Should recorded latencies be
                 rounded to a certain number of decimals?
-            should_respect_env_var: Should the instrumentator only work - for
+
+            should_respect_env_var (bool): Should the instrumentator only work - for
                 example the methods `instrument()` and `expose()` - if a
                 certain environment variable is set to `true`? Usecase: A base
                 FastAPI app that is used by multiple distinct apps. The apps
-                only have to set the variable to be instrumented.
-            should_instrument_requests_inprogress: Enables a gauge that shows
+                only have to set the variable to be instrumented. Defaults to
+                `False`.
+
+            should_instrument_requests_inprogress (bool): Enables a gauge that shows
                 the inprogress requests. See also the related args starting
-                with `inprogress`.
-            excluded_handlers: List of strings that will be compiled to regex
-                patterns. All matches will be skipped and not instrumented.
-            round_latency_decimals: Number of decimals latencies should be
+                with `inprogress`. Defaults to `False`.
+
+            excluded_handlers (List[str]): List of strings that will be compiled
+                to regex patterns. All matches will be skipped and not
+                instrumented. Defaults to `[]`.
+
+            round_latency_decimals (int): Number of decimals latencies should be
                 rounded to. Ignored unless `should_round_latency_decimals` is
-                `True`.
-            env_var_name: Any valid os environment variable name that will be
-                checked for existence before instrumentation. Ignored unless
-                `should_respect_env_var` is `True`.
-            inprogress_name: Name of the gauge. Defaults to
+                `True`. Defaults to `4`.
+
+            env_var_name (str): Any valid os environment variable name that will
+                be checked for existence before instrumentation. Ignored unless
+                `should_respect_env_var` is `True`. Defaults to `&#34;ENABLE_METRICS&#34;`.
+
+            inprogress_name (str): Name of the gauge. Defaults to
                 `http_requests_inprogress`. Ignored unless
                 `should_instrument_requests_inprogress` is `True`.
-            inprogress_labels: Should labels `method` and `handler` be part of
-                the inprogress label? Ignored unless
-                `should_instrument_requests_inprogress` is `True`.
+
+            inprogress_labels (bool): Should labels `method` and `handler` be
+                part of the inprogress label? Ignored unless
+                `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
         &#34;&#34;&#34;
 
         self.should_group_status_codes = should_group_status_codes
@@ -455,20 +512,23 @@ the inprogress label? Ignored unless
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
 
+        self.excluded_handlers: List[Pattern[str]]
         if excluded_handlers:
             self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
         else:
             self.excluded_handlers = []
 
-        self.instrumentations = []
+        self.instrumentations: List[Callable[[metrics.Info], None]] = []
+
+    # ==========================================================================
 
     def instrument(self, app: FastAPI):
         &#34;&#34;&#34;Performs the instrumentation by adding middleware.
 
-        The middleware iterates through all `instrumentations` and execute them.
+        The middleware iterates through all `instrumentations` and executes them.
 
         Args:
-            app: FastAPI app instance.
+            app (FastAPI): FastAPI app instance.
 
         Raises:
             e: Only raised if FastAPI itself throws an exception.
@@ -486,7 +546,6 @@ the inprogress label? Ignored unless
         if len(self.instrumentations) == 0:
             self.instrumentations.append(metrics.default())
 
-        self.inprogress = None
         if self.should_instrument_requests_inprogress:
             labels = (
                 (
@@ -503,6 +562,8 @@ the inprogress label? Ignored unless
                 multiprocess_mode=&#34;livesum&#34;,
             )
 
+        # ----------------------------------------------------------------------
+
         @app.middleware(&#34;http&#34;)
         async def dispatch_middleware(request: Request, call_next) -&gt; Response:
             start_time = default_timer()
@@ -514,26 +575,27 @@ the inprogress label? Ignored unless
             )
 
             if not is_excluded and self.should_instrument_requests_inprogress:
+                inprogress: Gauge
                 if self.inprogress_labels:
                     inprogress = self.inprogress.labels(request.method, handler)
                 else:
                     inprogress = self.inprogress
                 inprogress.inc()
 
+            response = None
+            status = &#34;500&#34;
+
             try:
-                response = None
                 response = await call_next(request)
                 status = str(response.status_code)
             except Exception as e:
-                if response is None:
-                    status = &#34;500&#34;
                 raise e from None
             finally:
                 if not is_excluded:
                     duration = max(default_timer() - start_time, 0)
 
                     if self.should_instrument_requests_inprogress:
-                        inprogress.dec()
+                        inprogress.dec()  # type: ignore
 
                     if self.should_round_latency_decimals:
                         duration = round(duration, self.round_latency_decimals)
@@ -555,7 +617,11 @@ the inprogress label? Ignored unless
 
             return response
 
+        # ----------------------------------------------------------------------
+
         return self
+
+    # ==========================================================================
 
     def expose(
         self,
@@ -564,6 +630,7 @@ the inprogress label? Ignored unless
         endpoint: str = &#34;/metrics&#34;,
         include_in_schema: bool = True,
         tags: Optional[List[str]] = None,
+        **kwargs,
     ):
         &#34;&#34;&#34;Exposes endpoint for metrics.
 
@@ -577,7 +644,13 @@ the inprogress label? Ignored unless
                 cheaper than CPU cycles. Defaults to `False`.
 
             endpoint: Endpoint on which metrics should be exposed.
+
             include_in_schema: Should the endpoint show up in the documentation?
+
+            tags (List[str], optional): If you manage your routes with tags.
+                Defaults to None.
+
+            kwargs: Will be passed to FastAPI route annotation.
 
         Raises:
             ValueError: If `prometheus_multiproc_dir` env var is found but
@@ -613,8 +686,10 @@ the inprogress label? Ignored unless
         else:
             registry = REGISTRY
 
-        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
+        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
         def metrics(request: Request):
+            &#34;&#34;&#34;Endpoint that serves Prometheus metrics.&#34;&#34;&#34;
+
             if should_gzip and &#34;gzip&#34; in request.headers.get(&#34;Accept-Encoding&#34;, &#34;&#34;):
                 resp = Response(content=gzip.compress(generate_latest(registry)))
                 resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
@@ -627,50 +702,57 @@ the inprogress label? Ignored unless
 
         return self
 
+    # ==========================================================================
+
     def add(self, instrumentation_function: Callable[[metrics.Info], None]):
         &#34;&#34;&#34;Adds function to list of instrumentations.
 
         Args:
-            instrumentation_function: Function that will be executed during
-                every request handler call (if not excluded). See above for
-                detailed information on the interface of the function.
+            instrumentation_function (Callable[[metrics.Info], None]): Function
+                that will be executed during every request handler call (if
+                not excluded). See above for detailed information on the
+                interface of the function.
 
         Returns:
             self: Instrumentator. Builder Pattern.
         &#34;&#34;&#34;
 
         self.instrumentations.append(instrumentation_function)
+
         return self
+
+    # ==========================================================================
 
     def _get_handler(self, request: Request) -&gt; Tuple[str, bool]:
         &#34;&#34;&#34;Extracts either template or (if no template) path.
 
         Args:
-            request: Python Requests request object.
+            request (Request): Python Requests request object.
 
         Returns:
-            Tuple with two elements.
-
-            First element: Either template or if no template the path.
-            Second element: If the path is templated or not.
+            Tuple[str, bool]: Tuple with two elements. First element is either
+                template or if no template the path. Second element tells you
+                if the path is templated or not.
         &#34;&#34;&#34;
 
         for route in request.app.routes:
-            match, child_scope = route.matches(request.scope)
+            match, _ = route.matches(request.scope)
             if match == Match.FULL:
                 return route.path, True
 
         return request.url.path, False
 
+    # ==========================================================================
+
     def _is_handler_excluded(self, handler: str, is_templated: bool) -&gt; bool:
         &#34;&#34;&#34;Determines if the handler should be ignored.
 
         Args:
-            handler: Handler that handles the request.
-            is_templated: Shows if the request is templated.
+            handler (str): Handler that handles the request.
+            is_templated (bool): Shows if the request is templated.
 
         Returns:
-            `True` if excluded, `False` if not.
+            bool: `True` if excluded, `False` if not.
         &#34;&#34;&#34;
 
         if is_templated is False and self.should_ignore_untemplated:
@@ -690,10 +772,11 @@ the inprogress label? Ignored unless
 <div class="desc"><p>Adds function to list of instrumentations.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>instrumentation_function</code></strong></dt>
-<dd>Function that will be executed during
-every request handler call (if not excluded). See above for
-detailed information on the interface of the function.</dd>
+<dt><strong><code>instrumentation_function</code></strong> :&ensp;<code>Callable[[metrics.Info], None]</code></dt>
+<dd>Function
+that will be executed during every request handler call (if
+not excluded). See above for detailed information on the
+interface of the function.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -708,20 +791,22 @@ detailed information on the interface of the function.</dd>
     &#34;&#34;&#34;Adds function to list of instrumentations.
 
     Args:
-        instrumentation_function: Function that will be executed during
-            every request handler call (if not excluded). See above for
-            detailed information on the interface of the function.
+        instrumentation_function (Callable[[metrics.Info], None]): Function
+            that will be executed during every request handler call (if
+            not excluded). See above for detailed information on the
+            interface of the function.
 
     Returns:
         self: Instrumentator. Builder Pattern.
     &#34;&#34;&#34;
 
     self.instrumentations.append(instrumentation_function)
+
     return self</code></pre>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.instrumentation.PrometheusFastApiInstrumentator.expose"><code class="name flex">
-<span>def <span class="ident">expose</span></span>(<span>self, app: fastapi.applications.FastAPI, should_gzip: bool = False, endpoint: str = '/metrics', include_in_schema: bool = True, tags: Optional[List[str]] = None)</span>
+<span>def <span class="ident">expose</span></span>(<span>self, app: fastapi.applications.FastAPI, should_gzip: bool = False, endpoint: str = '/metrics', include_in_schema: bool = True, tags: Optional[List[str]] = None, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Exposes endpoint for metrics.</p>
@@ -739,6 +824,11 @@ cheaper than CPU cycles. Defaults to <code>False</code>.</dd>
 <dd>Endpoint on which metrics should be exposed.</dd>
 <dt><strong><code>include_in_schema</code></strong></dt>
 <dd>Should the endpoint show up in the documentation?</dd>
+<dt><strong><code>tags</code></strong> :&ensp;<code>List[str]</code>, optional</dt>
+<dd>If you manage your routes with tags.
+Defaults to None.</dd>
+<dt><strong><code>kwargs</code></strong></dt>
+<dd>Will be passed to FastAPI route annotation.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
@@ -762,6 +852,7 @@ doesn't point to a valid directory.</dd>
     endpoint: str = &#34;/metrics&#34;,
     include_in_schema: bool = True,
     tags: Optional[List[str]] = None,
+    **kwargs,
 ):
     &#34;&#34;&#34;Exposes endpoint for metrics.
 
@@ -775,7 +866,13 @@ doesn't point to a valid directory.</dd>
             cheaper than CPU cycles. Defaults to `False`.
 
         endpoint: Endpoint on which metrics should be exposed.
+
         include_in_schema: Should the endpoint show up in the documentation?
+
+        tags (List[str], optional): If you manage your routes with tags.
+            Defaults to None.
+
+        kwargs: Will be passed to FastAPI route annotation.
 
     Raises:
         ValueError: If `prometheus_multiproc_dir` env var is found but
@@ -811,8 +908,10 @@ doesn't point to a valid directory.</dd>
     else:
         registry = REGISTRY
 
-    @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
+    @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
     def metrics(request: Request):
+        &#34;&#34;&#34;Endpoint that serves Prometheus metrics.&#34;&#34;&#34;
+
         if should_gzip and &#34;gzip&#34; in request.headers.get(&#34;Accept-Encoding&#34;, &#34;&#34;):
             resp = Response(content=gzip.compress(generate_latest(registry)))
             resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
@@ -831,10 +930,10 @@ doesn't point to a valid directory.</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>Performs the instrumentation by adding middleware.</p>
-<p>The middleware iterates through all <code>instrumentations</code> and execute them.</p>
+<p>The middleware iterates through all <code>instrumentations</code> and executes them.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>app</code></strong></dt>
+<dt><strong><code>app</code></strong> :&ensp;<code>FastAPI</code></dt>
 <dd>FastAPI app instance.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
@@ -854,10 +953,10 @@ doesn't point to a valid directory.</dd>
 <pre><code class="python">def instrument(self, app: FastAPI):
     &#34;&#34;&#34;Performs the instrumentation by adding middleware.
 
-    The middleware iterates through all `instrumentations` and execute them.
+    The middleware iterates through all `instrumentations` and executes them.
 
     Args:
-        app: FastAPI app instance.
+        app (FastAPI): FastAPI app instance.
 
     Raises:
         e: Only raised if FastAPI itself throws an exception.
@@ -875,7 +974,6 @@ doesn't point to a valid directory.</dd>
     if len(self.instrumentations) == 0:
         self.instrumentations.append(metrics.default())
 
-    self.inprogress = None
     if self.should_instrument_requests_inprogress:
         labels = (
             (
@@ -892,6 +990,8 @@ doesn't point to a valid directory.</dd>
             multiprocess_mode=&#34;livesum&#34;,
         )
 
+    # ----------------------------------------------------------------------
+
     @app.middleware(&#34;http&#34;)
     async def dispatch_middleware(request: Request, call_next) -&gt; Response:
         start_time = default_timer()
@@ -903,26 +1003,27 @@ doesn't point to a valid directory.</dd>
         )
 
         if not is_excluded and self.should_instrument_requests_inprogress:
+            inprogress: Gauge
             if self.inprogress_labels:
                 inprogress = self.inprogress.labels(request.method, handler)
             else:
                 inprogress = self.inprogress
             inprogress.inc()
 
+        response = None
+        status = &#34;500&#34;
+
         try:
-            response = None
             response = await call_next(request)
             status = str(response.status_code)
         except Exception as e:
-            if response is None:
-                status = &#34;500&#34;
             raise e from None
         finally:
             if not is_excluded:
                 duration = max(default_timer() - start_time, 0)
 
                 if self.should_instrument_requests_inprogress:
-                    inprogress.dec()
+                    inprogress.dec()  # type: ignore
 
                 if self.should_round_latency_decimals:
                     duration = round(duration, self.round_latency_decimals)
@@ -943,6 +1044,8 @@ doesn't point to a valid directory.</dd>
                     instrumentation(info)
 
         return response
+
+    # ----------------------------------------------------------------------
 
     return self</code></pre>
 </details>
