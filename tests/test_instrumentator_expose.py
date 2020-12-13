@@ -1,3 +1,6 @@
+# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
+# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
+
 from fastapi import FastAPI
 from prometheus_client import REGISTRY
 from starlette.responses import Response

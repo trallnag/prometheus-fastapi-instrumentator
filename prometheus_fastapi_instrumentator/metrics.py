@@ -1,3 +1,6 @@
+# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
+# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
+
 """
 This module contains ready-to-use functions that can be passed on to the
 instrumentator instance with the `add()` method. The idea behind this is to
