@@ -70,9 +70,18 @@ _test_slow () {
     poetry run pytest -m "slow"
 }
 
+_test_multiproc () {
+    mkdir -p /tmp/test_multiproc
+    export prometheus_multiproc_dir=/tmp/test_multiproc
+    poetry run pytest -k test_multiprocess --cov-append --cov=./ --cov-report=xml
+    rm -rf /tmp/test_multiproc
+    unset prometheus_multiproc_dir
+}
+
 _test () {
     _test_not_slow
     _test_slow
+    _test_multiproc
 }
 
 # ==============================================================================
@@ -88,6 +97,7 @@ Functions you can use like this 'bash run.sh <function name>':
     format
     test_not_slow
     test_slow
+    test_multiproc
     test
 EOF
 }
@@ -107,6 +117,7 @@ do
     elif [ $arg = "format" ]; then _format
     elif [ $arg = "test_not_slow" ]; then _test_not_slow
     elif [ $arg = "test_slow" ]; then _test_slow
+    elif [ $arg = "test_multiproc" ]; then _test_multiproc
     elif [ $arg = "test" ]; then _test
     fi
 done
