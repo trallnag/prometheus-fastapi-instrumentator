@@ -61,13 +61,13 @@ _format () {
 _test_not_slow () {
     echo "Run non-slow tests with Pytest"
 
-    poetry run pytest -m "not slow"
+    poetry run pytest -m "not slow" --cov=./ --cov-report=xml
 }
 
 _test_slow () {
     echo "Run slow tests with Pytest"
     
-    poetry run pytest -m "slow"
+    poetry run pytest -m "slow" --cov-append --cov=./ --cov-report=xml
 }
 
 _test_multiproc () {
