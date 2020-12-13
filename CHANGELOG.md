@@ -23,6 +23,7 @@ Following points are only relevant for development and are non-breaking.
 - Replace workflow files with new workflows.
 - Add `conftest.py` that provides utilities for testing.
 - Reliscenced from MIT to Apache-2.0.
+- Added `DEVELOPMENT.md`.
 
 ## [5.6.0] 2020-12-03
 
