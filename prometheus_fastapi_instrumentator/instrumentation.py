@@ -223,7 +223,7 @@ class PrometheusFastApiInstrumentator:
             endpoint: Endpoint on which metrics should be exposed.
 
             include_in_schema: Should the endpoint show up in the documentation?
-            
+
             tags (List[str], optional): If you manage your routes with tags.
                 Defaults to None.
 
