@@ -2,7 +2,7 @@ import gzip
 import os
 import re
 from timeit import default_timer
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Pattern, Tuple
 
 from fastapi import FastAPI
 from prometheus_client import Gauge
@@ -22,7 +22,7 @@ class PrometheusFastApiInstrumentator:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
-        excluded_handlers: list = [],
+        excluded_handlers: List[str] = [],
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
@@ -31,36 +31,50 @@ class PrometheusFastApiInstrumentator:
         """Create a Prometheus FastAPI Instrumentator.
 
         Args:
-            should_group_status_codes: Should status codes be grouped into
-                `2xx`, `3xx` and so on?
-            should_ignore_untemplated: Should requests without a matching
-                template be ignored?
-            should_group_untemplated: Should requests without a matching
-                template be grouped to handler `none`?
+            should_group_status_codes (bool): Should status codes be grouped into
+                `2xx`, `3xx` and so on? Defaults to `True`.
+
+            should_ignore_untemplated (bool): Should requests without a matching
+                template be ignored? Defaults to `False`. This means that by
+                default a request like `curl -X GET localhost:80/doesnotexist`
+                will be ignored.
+
+            should_group_untemplated (bool): Should requests without a matching
+                template be grouped to handler `none`? Defaults to `True`.
+
             should_round_latency_decimals: Should recorded latencies be
                 rounded to a certain number of decimals?
-            should_respect_env_var: Should the instrumentator only work - for
+
+            should_respect_env_var (bool): Should the instrumentator only work - for
                 example the methods `instrument()` and `expose()` - if a
                 certain environment variable is set to `true`? Usecase: A base
                 FastAPI app that is used by multiple distinct apps. The apps
-                only have to set the variable to be instrumented.
-            should_instrument_requests_inprogress: Enables a gauge that shows
+                only have to set the variable to be instrumented. Defaults to
+                `False`.
+
+            should_instrument_requests_inprogress (bool): Enables a gauge that shows
                 the inprogress requests. See also the related args starting
-                with `inprogress`.
-            excluded_handlers: List of strings that will be compiled to regex
-                patterns. All matches will be skipped and not instrumented.
-            round_latency_decimals: Number of decimals latencies should be
+                with `inprogress`. Defaults to `False`.
+
+            excluded_handlers (List[str]): List of strings that will be compiled
+                to regex patterns. All matches will be skipped and not
+                instrumented. Defaults to `[]`.
+
+            round_latency_decimals (int): Number of decimals latencies should be
                 rounded to. Ignored unless `should_round_latency_decimals` is
-                `True`.
-            env_var_name: Any valid os environment variable name that will be
-                checked for existence before instrumentation. Ignored unless
-                `should_respect_env_var` is `True`.
-            inprogress_name: Name of the gauge. Defaults to
+                `True`. Defaults to `4`.
+
+            env_var_name (str): Any valid os environment variable name that will
+                be checked for existence before instrumentation. Ignored unless
+                `should_respect_env_var` is `True`. Defaults to `"ENABLE_METRICS"`.
+
+            inprogress_name (str): Name of the gauge. Defaults to
                 `http_requests_inprogress`. Ignored unless
                 `should_instrument_requests_inprogress` is `True`.
-            inprogress_labels: Should labels `method` and `handler` be part of
-                the inprogress label? Ignored unless
-                `should_instrument_requests_inprogress` is `True`.
+
+            inprogress_labels (bool): Should labels `method` and `handler` be
+                part of the inprogress label? Ignored unless
+                `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
         """
 
         self.should_group_status_codes = should_group_status_codes
@@ -75,20 +89,23 @@ class PrometheusFastApiInstrumentator:
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
 
+        self.excluded_handlers: List[Pattern[str]]
         if excluded_handlers:
             self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
         else:
             self.excluded_handlers = []
 
-        self.instrumentations = []
+        self.instrumentations: List[Callable[[metrics.Info], None]] = []
+
+    # ==========================================================================
 
     def instrument(self, app: FastAPI):
         """Performs the instrumentation by adding middleware.
 
-        The middleware iterates through all `instrumentations` and execute them.
+        The middleware iterates through all `instrumentations` and executes them.
 
         Args:
-            app: FastAPI app instance.
+            app (FastAPI): FastAPI app instance.
 
         Raises:
             e: Only raised if FastAPI itself throws an exception.
@@ -106,7 +123,6 @@ class PrometheusFastApiInstrumentator:
         if len(self.instrumentations) == 0:
             self.instrumentations.append(metrics.default())
 
-        self.inprogress = None
         if self.should_instrument_requests_inprogress:
             labels = (
                 (
@@ -123,6 +139,8 @@ class PrometheusFastApiInstrumentator:
                 multiprocess_mode="livesum",
             )
 
+        # ----------------------------------------------------------------------
+
         @app.middleware("http")
         async def dispatch_middleware(request: Request, call_next) -> Response:
             start_time = default_timer()
@@ -134,26 +152,27 @@ class PrometheusFastApiInstrumentator:
             )
 
             if not is_excluded and self.should_instrument_requests_inprogress:
+                inprogress: Gauge
                 if self.inprogress_labels:
                     inprogress = self.inprogress.labels(request.method, handler)
                 else:
                     inprogress = self.inprogress
                 inprogress.inc()
 
+            response = None
+            status = "500"
+
             try:
-                response = None
                 response = await call_next(request)
                 status = str(response.status_code)
             except Exception as e:
-                if response is None:
-                    status = "500"
                 raise e from None
             finally:
                 if not is_excluded:
                     duration = max(default_timer() - start_time, 0)
 
                     if self.should_instrument_requests_inprogress:
-                        inprogress.dec()
+                        inprogress.dec()  # type: ignore
 
                     if self.should_round_latency_decimals:
                         duration = round(duration, self.round_latency_decimals)
@@ -175,7 +194,11 @@ class PrometheusFastApiInstrumentator:
 
             return response
 
+        # ----------------------------------------------------------------------
+
         return self
+
+    # ==========================================================================
 
     def expose(
         self,
@@ -237,6 +260,8 @@ class PrometheusFastApiInstrumentator:
 
         @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
         def metrics(request: Request):
+            """Endpoint that serves Prometheus metrics."""
+
             if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
                 resp = Response(content=gzip.compress(generate_latest(registry)))
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
@@ -249,50 +274,57 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
+    # ==========================================================================
+
     def add(self, instrumentation_function: Callable[[metrics.Info], None]):
         """Adds function to list of instrumentations.
 
         Args:
-            instrumentation_function: Function that will be executed during
-                every request handler call (if not excluded). See above for
-                detailed information on the interface of the function.
+            instrumentation_function (Callable[[metrics.Info], None]): Function
+                that will be executed during every request handler call (if
+                not excluded). See above for detailed information on the
+                interface of the function.
 
         Returns:
             self: Instrumentator. Builder Pattern.
         """
 
         self.instrumentations.append(instrumentation_function)
+
         return self
+
+    # ==========================================================================
 
     def _get_handler(self, request: Request) -> Tuple[str, bool]:
         """Extracts either template or (if no template) path.
 
         Args:
-            request: Python Requests request object.
+            request (Request): Python Requests request object.
 
         Returns:
-            Tuple with two elements.
-
-            First element: Either template or if no template the path.
-            Second element: If the path is templated or not.
+            Tuple[str, bool]: Tuple with two elements. First element is either
+                template or if no template the path. Second element tells you
+                if the path is templated or not.
         """
 
         for route in request.app.routes:
-            match, child_scope = route.matches(request.scope)
+            match, _ = route.matches(request.scope)
             if match == Match.FULL:
                 return route.path, True
 
         return request.url.path, False
 
+    # ==========================================================================
+
     def _is_handler_excluded(self, handler: str, is_templated: bool) -> bool:
         """Determines if the handler should be ignored.
 
         Args:
-            handler: Handler that handles the request.
-            is_templated: Shows if the request is templated.
+            handler (str): Handler that handles the request.
+            is_templated (bool): Shows if the request is templated.
 
         Returns:
-            `True` if excluded, `False` if not.
+            bool: `True` if excluded, `False` if not.
         """
 
         if is_templated is False and self.should_ignore_untemplated:

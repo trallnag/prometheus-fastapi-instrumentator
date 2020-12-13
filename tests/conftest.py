@@ -64,7 +64,7 @@ def data_path(tmp_path: pathlib.Path):
     """Fixture that returns a temporary path with data.
 
     If the directory `data` exists, its content will be copied to a temporary
-    location. 
+    location.
 
     Args:
         tmp_path (pathlib.Path): Path to temporary location.
