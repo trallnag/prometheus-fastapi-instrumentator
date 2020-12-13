@@ -207,6 +207,7 @@ class PrometheusFastApiInstrumentator:
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
         tags: Optional[List[str]] = None,
+        **kwargs,
     ):
         """Exposes endpoint for metrics.
 
@@ -220,9 +221,13 @@ class PrometheusFastApiInstrumentator:
                 cheaper than CPU cycles. Defaults to `False`.
 
             endpoint: Endpoint on which metrics should be exposed.
+
             include_in_schema: Should the endpoint show up in the documentation?
+            
             tags (List[str], optional): If you manage your routes with tags.
                 Defaults to None.
+
+            kwargs: Will be passed to FastAPI route annotation.
 
         Raises:
             ValueError: If `prometheus_multiproc_dir` env var is found but
@@ -258,7 +263,7 @@ class PrometheusFastApiInstrumentator:
         else:
             registry = REGISTRY
 
-        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags)
+        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
         def metrics(request: Request):
             """Endpoint that serves Prometheus metrics."""
 

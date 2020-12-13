@@ -11,9 +11,13 @@ specification.
 
 * Nothing
 
+## Added
+
+- Passthrough of Kwargs to FastAPI route that exposes metrics.
+
 ### Changed
 
-Following points are only relevant for development and are non-breaking.
+All changes are non-breaking and mostly effect development only.
 
 - Most of the stuff that is not directly related to the code has been replaced
     with common files / scripts from another repository of mine I use as a kind
@@ -24,6 +28,7 @@ Following points are only relevant for development and are non-breaking.
 - Add `conftest.py` that provides utilities for testing.
 - Reliscenced from MIT to Apache-2.0.
 - Added `DEVELOPMENT.md`.
+- Introduced MyPy for linting during development.
 
 ## [5.6.0] 2020-12-03
 
