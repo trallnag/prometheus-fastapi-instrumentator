@@ -30,6 +30,9 @@ Pytest is used for testing. Run tests with `bash run.sh test`. There are more
 fine-grained functions available in `run.sh`. Slow test functions shall be
 annotated with the `slow` tag.
 
+Running tests with `run.sh` also creats a coverage report. This report is used
+by CodeCov during CI.
+
 ## Makefile
 
 The Bash script [`run.sh`](/run.sh) is used as a replacement for a Makefile.

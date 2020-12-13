@@ -1,3 +1,4 @@
+<!-- omit in toc -->
 # Prometheus FastAPI Instrumentator
 
 [![PyPI version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/)
@@ -7,7 +8,7 @@
 [![docs](https://img.shields.io/badge/docs-here-blue)](https://trallnag.github.io/prometheus-fastapi-instrumentator/)
 
 ![release](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/release/badge.svg)
-![test branches](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/test%20branches/badge.svg)
+![commit](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/commit/badge.svg)
 [![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -22,26 +23,52 @@ from prometheus_fastapi_instrumentator import Instrumentator
 Instrumentator().instrument(app).expose(app)
 ```
 
-With this, your FastAPI is instrumented and metrics ready to be scraped. The 
-sensible defaults give you:
+With this, your FastAPI is instrumented and metrics ready to be scraped. The defaults give you:
 
-* Counter `http_requests_total` with `handler`, `status` and `method`. Total 
+- Counter `http_requests_total` with `handler`, `status` and `method`. Total 
     number of requests.
-* Summary `http_request_size_bytes` with `handler`. Added up total of the 
+- Summary `http_request_size_bytes` with `handler`. Added up total of the 
     content lengths of all incoming requests.
-* Summary `http_response_size_bytes` with `handler`. Added up total of the 
+- Summary `http_response_size_bytes` with `handler`. Added up total of the 
     content lengths of all outgoing responses.
-* Histogram `http_request_duration_seconds` with `handler`. Only a few buckets 
+- Histogram `http_request_duration_seconds` with `handler`. Only a few buckets 
     to keep cardinality low.
-* Histogram `http_request_duration_highr_seconds` without any labels. Large 
+- Histogram `http_request_duration_highr_seconds` without any labels. Large 
     number of buckets (>20).
 
 In addition, following behaviour is active:
 
-* Status codes are grouped into `2xx`, `3xx` and so on.
-* Requests without a matching template are grouped into the handler `none`.
+- Status codes are grouped into `2xx`, `3xx` and so on.
+- Requests without a matching template are grouped into the handler `none`.
 
-**If one of these presets does not suit your needs you can tweak 
+If one of these presets does not suit your needs you can multiple things:
+
+- Pick one of the already existing closures from 
+    [`metrics`](https://trallnag.github.io/prometheus-fastapi-instrumentator/metrics.html)
+    and pass it to the instrumentator instance. See [here](#adding-metrics) how to do that.
+- Create your own instrumentation function that you can pass to an instrumentator
+    instance. See [here](#creating-new-metrics) to learn how more.
+- Don't use this package at all and just use the sorce code as inspiration on
+    how to instrument your FastAPI.
+
+Important: This package is not made for generic Prometheus instrumentation in
+Python. Use the Prometheus client library for that. This packages uses it as well.
+
+<!-- omit in toc -->
+## Table of Contents
+
+- [Features](#features)
+- [Advanced Usage](#advanced-usage)
+  - [Creating the Instrumentator](#creating-the-instrumentator)
+  - [Adding metrics](#adding-metrics)
+  - [Creating new metrics](#creating-new-metrics)
+  - [Perform instrumentation](#perform-instrumentation)
+  - [Exposing endpoint](#exposing-endpoint)
+- [Prerequesites](#prerequesites)
+- [Development](#development)
+
+
+tweak 
 behaviour or register your own metric handler with the instrumentator. Find out
 [here](#creating-new-metrics) how to do that.**
 
@@ -256,22 +283,13 @@ Notice that this will to nothing if `should_respect_env_var` has been set
 during construction of the instrumentator object and the respective env var 
 is not found.
 
-## Documentation
-
-The documentation is hosted [here](https://trallnag.github.io/prometheus-fastapi-instrumentator/).
-
 ## Prerequesites
+
+You can always check [`pyproject.toml`](/pyproject.toml) for dependencies.
 
 * `python = "^3.6"` (tested with 3.6 and 3.9)
 * `fastapi = ">=0.38.1, <=1.0.0"` (tested with 0.38.1 and 0.61.0)
-* `prometheus-client = "^0.8.0"` (tested with 0.8.0)
 
 ## Development
 
-Developing and building this package on a local machine requires 
-[Python Poetry](https://python-poetry.org/). I recommend to run Poetry in 
-tandem with [Pyenv](https://github.com/pyenv/pyenv). Once the repository is 
-cloned, run `poetry install` and `poetry shell`. From here you may start the 
-IDE of your choice.
-
-Take a look at the Makefile or workflows on how to test this package.
+Please refer to ["DEVELOPMENT.md"](DEVELOPMENT.md).

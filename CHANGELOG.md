@@ -29,6 +29,7 @@ All changes are non-breaking and mostly effect development only.
 - Reliscenced from MIT to Apache-2.0.
 - Added `DEVELOPMENT.md`.
 - Introduced MyPy for linting during development.
+- Updated docs.
 
 ## [5.6.0] 2020-12-03
 
