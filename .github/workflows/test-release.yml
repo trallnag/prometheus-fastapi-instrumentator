@@ -64,7 +64,7 @@ jobs:
         tag_name: test-releases/${{ env.PROJECT_VERSION }}
         release_name: "TEST_RELEASE [${{ env.PROJECT_VERSION }}] ${{ env.NOW }}"
         body: ${{ steps.extract-release-notes.outputs.release_notes }}
-        draft: false
+        draft: true
         prerelease: false
 
     # ==========================================================================
