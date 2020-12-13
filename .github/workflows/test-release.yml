@@ -1,13 +1,13 @@
-name: release
+name: test-release
 
 # Required secrets:
-# - PYPI_TOKEN (Token for PyPI)
+# - TEST_PYPI_TOKEN (Token for Test PyPI)
 
 on: 
   workflow_dispatch:
 
 jobs:
-  release:
+  test-release:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
@@ -35,7 +35,10 @@ jobs:
     - run: bash run.sh test
     - run: bash run.sh lint
     - run: poetry build
-    - run: poetry publish -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+    - name: Publish to test.pypi.org
+      run: |
+        poetry config repositories.testpypi https://test.pypi.org/legacy/
+        poetry publish -r testpypi -u __token__ -p ${{ secrets.TEST_PYPI_TOKEN }}
 
     # ==========================================================================
 
@@ -58,8 +61,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: releases/${{ env.PROJECT_VERSION }}
-        release_name: "[${{ env.PROJECT_VERSION }}] ${{ env.NOW }}"
+        tag_name: test-releases/${{ env.PROJECT_VERSION }}
+        release_name: "TEST_RELEASE [${{ env.PROJECT_VERSION }}] ${{ env.NOW }}"
         body: ${{ steps.extract-release-notes.outputs.release_notes }}
         draft: false
         prerelease: false

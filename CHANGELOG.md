@@ -15,8 +15,12 @@ specification.
 
 Following points are only relevant for development and are non-breaking.
 
+- Most of the stuff that is not directly related to the code has been replaced
+    with common files / scripts from another repository of mine I use as a kind
+    of template for Python projects you can find [here](https://github.com/trallnag/trallnags-hello-python).
 - Replaced Makefile with simple Bash script that contains a bunch of functions.
-    Easier to maintain and to use. `run.sh` is based on <https://github.com/trallnag/trallnags-hello-python>.
+    Easier to maintain and to use.
+- Replace workflow files with new workflows.
 
 ## [5.6.0] 2020-12-03
 
