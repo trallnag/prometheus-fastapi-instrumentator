@@ -9,6 +9,7 @@
 
 ![release](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/release/badge.svg)
 ![commit](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/commit/badge.svg)
+![CodeQL](https://github.com/trallnag/prometheus-fastapi-instrumentator/workflows/CodeQL/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
