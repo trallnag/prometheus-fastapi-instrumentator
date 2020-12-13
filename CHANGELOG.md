@@ -21,6 +21,7 @@ Following points are only relevant for development and are non-breaking.
 - Replaced Makefile with simple Bash script that contains a bunch of functions.
     Easier to maintain and to use.
 - Replace workflow files with new workflows.
+- Add `conftest.py` that provides utilities for testing.
 
 ## [5.6.0] 2020-12-03
 
