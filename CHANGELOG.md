@@ -11,6 +11,13 @@ specification.
 
 * Nothing
 
+### Changed
+
+Following points are only relevant for development and are non-breaking.
+
+- Replaced Makefile with simple Bash script that contains a bunch of functions.
+    Easier to maintain and to use. `run.sh` is based on <https://github.com/trallnag/trallnags-hello-python>.
+
 ## [5.6.0] 2020-12-03
 
 ### Added
