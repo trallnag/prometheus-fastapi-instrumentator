@@ -11,13 +11,15 @@ specification.
 
 * Nothing
 
+## [5.7.0] 2020-12-13
+
 ## Added
 
 - Passthrough of Kwargs to FastAPI route that exposes metrics.
 
 ### Changed
 
-All changes are non-breaking and mostly effect development only.
+All changes are minor and non-breaking and mostly effect development only.
 
 - Most of the stuff that is not directly related to the code has been replaced
     with common files / scripts from another repository of mine I use as a kind
