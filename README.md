@@ -68,34 +68,6 @@ Python. Use the Prometheus client library for that. This packages uses it as wel
 - [Prerequesites](#prerequesites)
 - [Development](#development)
 
-
-tweak 
-behaviour or register your own metric handler with the instrumentator. Find out
-[here](#creating-new-metrics) how to do that.**
-
----
-
-> Don't hesitate to open an issue if you have questions or ideas regarding 
-    the Prometheus FastAPI Instrumentator. Since I'm currently using it in 
-    production I'm (still) motivated to work on it :wink:
->  
-> -- <cite>trallnag</cite>
-
----
-
-Contents: **[Features](#features)** |
-**[Advanced Usage](#advanced-usage)** | 
-[Creating the Instrumentator](#creating-the-instrumentator) |
-[Adding metrics](#adding-metrics) |
-[Creating new metrics](#creating-new-metrics) |
-[Perform instrumentation](#perform-instrumentation) |
-[Exposing endpoint](#exposing-endpoint) |
-**[Documentation](#documentation)** |
-**[Prerequesites](#prerequesites)** |
-**[Development](#development)**
-
----
-
 ## Features
 
 Beyond the fast track, this instrumentator is **highly configurable** and it 
