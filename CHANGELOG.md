@@ -22,6 +22,7 @@ Following points are only relevant for development and are non-breaking.
     Easier to maintain and to use.
 - Replace workflow files with new workflows.
 - Add `conftest.py` that provides utilities for testing.
+- Reliscenced from MIT to Apache-2.0.
 
 ## [5.6.0] 2020-12-03
 
