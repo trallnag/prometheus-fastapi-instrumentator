@@ -4,7 +4,6 @@
 import gzip
 import os
 import re
-from abc import abstractmethod
 from functools import wraps
 from timeit import default_timer
 from typing import Callable, List, Optional, Pattern, Tuple
@@ -336,7 +335,7 @@ class PrometheusFastApiInstrumentator:
 
         return request.url.path, False
 
-    @abstractmethod
+    @staticmethod
     def _get_handler_(app: FastAPI, scope: Scope):
         for route in app.router.routes:
             match, _ = route.matches(scope)
