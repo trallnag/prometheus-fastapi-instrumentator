@@ -129,14 +129,7 @@ class PrometheusFastApiInstrumentator:
             self.instrumentations.append(metrics.default())
 
         if self.should_instrument_requests_inprogress:
-            labels = (
-                (
-                    "method",
-                    "handler",
-                )
-                if self.inprogress_labels
-                else ()
-            )
+            labels = ("method", "handler",) if self.inprogress_labels else ()
             self.inprogress = Gauge(
                 name=self.inprogress_name,
                 documentation="Number of HTTP requests in progress.",
@@ -149,12 +142,12 @@ class PrometheusFastApiInstrumentator:
         def _asgi_middleware_decorator(app: FastAPI) -> callable:
             @wraps(app)
             async def app_instrumentator(scope: Scope, receive: Receive, send: Send):
-                if scope["type"] != "http":
+                if scope["type"] not in ("http", "websocket"):
                     await app(scope, receive, send)
 
                 start_time = default_timer()
 
-                handler, is_templated = self._get_handler_(app, scope)
+                handler, is_templated = self._get_handler(app, scope)
                 is_excluded = self._is_handler_excluded(handler, is_templated)
                 handler = (
                     "none"
@@ -171,10 +164,13 @@ class PrometheusFastApiInstrumentator:
                     inprogress.inc()
 
                 status = "500"
+                response_headers = {}
 
                 async def wrapped_send(message: Message):
                     if message["type"] == "http.response.start":
+                        nonlocal status, response_headers
                         status = str(message["status"])
+                        response_headers = dict(message["headers"])
 
                     await send(message)
 
@@ -195,18 +191,17 @@ class PrometheusFastApiInstrumentator:
                         if self.should_group_status_codes:
                             status = status[0] + "xx"
 
-                        # NOTE: I can't create the response object.
-                        # info = metrics.Info(
-                        #     request=request,
-                        #     response=response,
-                        #     method=request.method,
-                        #     modified_handler=handler,
-                        #     modified_status=status,
-                        #     modified_duration=duration,
-                        # )
+                        info = metrics.Info(
+                            request=dict(scope["headers"]),
+                            response=response_headers,
+                            method=scope["method"],
+                            modified_handler=handler,
+                            modified_status=status,
+                            modified_duration=duration,
+                        )
 
-                        # for instrumentation in self.instrumentations:
-                        #     instrumentation(info)
+                        for instrumentation in self.instrumentations:
+                            instrumentation(info)
 
             return app_instrumentator
 
@@ -316,27 +311,8 @@ class PrometheusFastApiInstrumentator:
 
     # ==========================================================================
 
-    def _get_handler(self, request: Request) -> Tuple[str, bool]:
-        """Extracts either template or (if no template) path.
-
-        Args:
-            request (Request): Python Requests request object.
-
-        Returns:
-            Tuple[str, bool]: Tuple with two elements. First element is either
-                template or if no template the path. Second element tells you
-                if the path is templated or not.
-        """
-
-        for route in request.app.routes:
-            match, _ = route.matches(request.scope)
-            if match == Match.FULL:
-                return route.path, True
-
-        return request.url.path, False
-
     @staticmethod
-    def _get_handler_(app: FastAPI, scope: Scope):
+    def _get_handler(app: FastAPI, scope: Scope):
         for route in app.router.routes:
             match, _ = route.matches(scope)
             if match == Match.FULL:

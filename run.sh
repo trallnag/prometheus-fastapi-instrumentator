@@ -41,7 +41,7 @@ _requirements () {
 _format_style () {
     echo "Format style"
 
-    poetry run black .    
+    poetry run black .
 }
 
 _format_imports () {
@@ -66,7 +66,7 @@ _test_not_slow () {
 
 _test_slow () {
     echo "Run slow tests with Pytest"
-    
+
     poetry run pytest -m "slow" --cov-append --cov=./ --cov-report=xml
 }
 

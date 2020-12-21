@@ -6,10 +6,9 @@ from typing import Any, Dict, Optional
 import pytest
 from fastapi import FastAPI, HTTPException
 from prometheus_client import REGISTRY
+from prometheus_fastapi_instrumentator import Instrumentator, metrics
 from starlette.responses import Response
 from starlette.testclient import TestClient
-
-from prometheus_fastapi_instrumentator import Instrumentator, metrics
 
 # ==============================================================================
 # Setup
@@ -85,15 +84,15 @@ def get_response(client: TestClient, path: str) -> Response:
 
 def test_existence_of_attributes():
     info = metrics.Info(
-        request=None,
-        response=None,
+        request_headers=None,
+        response_headers=None,
         method=None,
         modified_duration=None,
         modified_status=None,
         modified_handler=None,
     )
-    assert info.request is None
-    assert info.response is None
+    assert info.request_headers is None
+    assert info.response_headers is None
     assert info.method is None
     assert info.modified_duration is None
     assert info.modified_status is None
@@ -384,13 +383,7 @@ def test_latency_no_labels():
 
     _ = get_response(client, "/metrics")
 
-    assert (
-        REGISTRY.get_sample_value(
-            "http_request_duration_seconds_sum",
-            {},
-        )
-        > 0
-    )
+    assert REGISTRY.get_sample_value("http_request_duration_seconds_sum", {},) > 0
 
 
 def test_latency_with_bucket_no_inf():
@@ -409,13 +402,7 @@ def test_latency_with_bucket_no_inf():
 
     _ = get_response(client, "/metrics")
 
-    assert (
-        REGISTRY.get_sample_value(
-            "http_request_duration_seconds_sum",
-            {},
-        )
-        > 0
-    )
+    assert REGISTRY.get_sample_value("http_request_duration_seconds_sum", {},) > 0
 
 
 # ------------------------------------------------------------------------------
@@ -434,37 +421,17 @@ def test_default():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_requests_total",
-            {"handler": "/", "method": "GET", "status": "2xx"},
+            "http_requests_total", {"handler": "/", "method": "GET", "status": "2xx"},
         )
         > 0
     )
+    assert REGISTRY.get_sample_value("http_request_size_bytes_sum", {"handler": "/"},) > 0
     assert (
-        REGISTRY.get_sample_value(
-            "http_request_size_bytes_sum",
-            {"handler": "/"},
-        )
-        > 0
+        REGISTRY.get_sample_value("http_response_size_bytes_sum", {"handler": "/"},) > 0
     )
+    assert REGISTRY.get_sample_value("http_request_duration_highr_seconds_sum", {},) > 0
     assert (
-        REGISTRY.get_sample_value(
-            "http_response_size_bytes_sum",
-            {"handler": "/"},
-        )
-        > 0
-    )
-    assert (
-        REGISTRY.get_sample_value(
-            "http_request_duration_highr_seconds_sum",
-            {},
-        )
-        > 0
-    )
-    assert (
-        REGISTRY.get_sample_value(
-            "http_request_duration_seconds_sum",
-            {"handler": "/"},
-        )
+        REGISTRY.get_sample_value("http_request_duration_seconds_sum", {"handler": "/"},)
         > 0
     )
 
@@ -532,8 +499,7 @@ def test_requests_all_labels():
 
     assert (
         REGISTRY.get_sample_value(
-            "http_requests_total",
-            {"handler": "/", "method": "GET", "status": "2xx"},
+            "http_requests_total", {"handler": "/", "method": "GET", "status": "2xx"},
         )
         == 1
     )
@@ -554,10 +520,5 @@ def test_requests_no_labels():
 
     _ = get_response(client, "/metrics")
 
-    assert (
-        REGISTRY.get_sample_value(
-            "http_requests_total",
-            {},
-        )
-        == 2
-    )
+    assert REGISTRY.get_sample_value("http_requests_total", {},) == 2
+

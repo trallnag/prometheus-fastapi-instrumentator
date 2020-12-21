@@ -13,11 +13,9 @@ create your own instrumentation function instead of combining several functions
 from this module.
 """
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Tuple
 
 from prometheus_client import Counter, Histogram, Summary
-from starlette.requests import Request
-from starlette.responses import Response
 
 # ==============================================================================
 
@@ -25,8 +23,8 @@ from starlette.responses import Response
 class Info:
     def __init__(
         self,
-        request: Request,
-        response: Optional[Response],
+        request_headers: dict,
+        response_headers: dict,
         method: str,
         modified_handler: str,
         modified_status: str,
@@ -37,8 +35,8 @@ class Info:
         This is the only argument that is passed to the instrumentation functions.
 
         Args:
-            request (Request): Python Requests request object.
-            response (Response or None): Python Requests response object.
+            request_headers (dict): Python Requests request object.
+            response_headers (dict): Python Requests response object.
             method (str): Unmodified method of the request.
             modified_handler (str): Handler representation after processing by
                 instrumentator. For example grouped to `none` if not templated.
@@ -48,8 +46,8 @@ class Info:
                 by instrumentator. For example rounding of decimals. Seconds.
         """
 
-        self.request = request
-        self.response = response
+        self.request_headers = request_headers
+        self.response_headers = response_headers
         self.method = method
         self.modified_handler = modified_handler
         self.modified_status = modified_status
@@ -233,7 +231,7 @@ def request_size(
         )
 
     def instrumentation(info: Info) -> None:
-        content_length = info.request.headers.get("Content-Length", 0)
+        content_length = int(info.request_headers.get(b"content-length", b"0"))
         if label_names:
             label_values = []
             for attribute_name in info_attribute_names:
@@ -308,10 +306,7 @@ def response_size(
         )
 
     def instrumentation(info: Info) -> None:
-        if info.response and hasattr(info.response, "headers"):
-            content_length = info.response.headers.get("Content-Length", 0)
-        else:
-            content_length = 0
+        content_length = int(info.response_headers.get(b"content-length", b"0"))
 
         if label_names:
             label_values = []
@@ -387,12 +382,8 @@ def combined_size(
         )
 
     def instrumentation(info: Info) -> None:
-        request_cl = info.request.headers.get("Content-Length", 0)
-
-        if info.response and hasattr(info.response, "headers"):
-            response_cl = info.response.headers.get("Content-Length", 0)
-        else:
-            response_cl = 0
+        request_cl = int(info.request_headers.get(b"content-length", b"0"))
+        response_cl = int(info.response_headers.get(b"content-length", b"0"))
 
         content_length = int(request_cl) + int(response_cl)
 
@@ -563,11 +554,7 @@ def default(
     TOTAL = Counter(
         name="http_requests_total",
         documentation="Total number of requests by method, status and handler.",
-        labelnames=(
-            "method",
-            "status",
-            "handler",
-        ),
+        labelnames=("method", "status", "handler",),
         namespace=metric_namespace,
         subsystem=metric_subsystem,
     )
@@ -623,15 +610,12 @@ def default(
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
 
         IN_SIZE.labels(info.modified_handler).observe(
-            int(info.request.headers.get("Content-Length", 0))
+            int(info.request_headers.get(b"content-Length", b"0"))
         )
 
-        if info.response and hasattr(info.response, "headers"):
-            OUT_SIZE.labels(info.modified_handler).observe(
-                int(info.response.headers.get("Content-Length", 0))
-            )
-        else:
-            OUT_SIZE.labels(info.modified_handler).observe(0)
+        OUT_SIZE.labels(info.modified_handler).observe(
+            int(info.response_headers.get(b"content-length", b"0"))
+        )
 
         if not should_only_respect_2xx_for_highr or info.modified_status.startswith("2"):
             LATENCY_HIGHR.observe(info.modified_duration)
