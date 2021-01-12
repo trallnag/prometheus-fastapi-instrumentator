@@ -9,9 +9,13 @@ specification.
 
 ## Unreleased
 
+### Changed
+
+- Ran `poetry update`.
+
 ### Fixed
 
-* Update `prometheus-client` dependency version constraint `^0.8.0` that only
+- Update `prometheus-client` dependency version constraint `^0.8.0` that only
     allows versions in the range `[0.8.0, 0.9.0[`. This is not correct and leads
     to conflicts when you want to install the newest prometheus client library
     version and this package. Switched to explicit contraints to ensure this
