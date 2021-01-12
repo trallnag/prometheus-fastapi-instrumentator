@@ -9,6 +9,10 @@ specification.
 
 ## Unreleased
 
+- Nothing.
+
+## [5.7.1] 2021-01-12
+
 ### Changed
 
 - Ran `poetry update`.
