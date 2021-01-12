@@ -13,9 +13,9 @@ repository = "https://github.com/trallnag/prometheus-fastapi-instrumentator"
 keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = ">=3.6.0, <4.0.0"
 fastapi = ">=0.38.1, <=1.0.0"
-prometheus-client = "^0.8.0"
+prometheus-client = ">=0.8.0, <1.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1"

@@ -9,7 +9,13 @@ specification.
 
 ## Unreleased
 
-* Nothing
+### Fixed
+
+* Update `prometheus-client` dependency version constraint `^0.8.0` that only
+    allows versions in the range `[0.8.0, 0.9.0[`. This is not correct and leads
+    to conflicts when you want to install the newest prometheus client library
+    version and this package. Switched to explicit contraints to ensure this
+    does not happen again.
 
 ## [5.7.0] 2020-12-13
 
