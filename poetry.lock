@@ -428,7 +428,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
 
 [[package]]
 name = "rope"
-version = "0.17.0"
+version = "0.18.0"
 description = "a python refactoring library..."
 category = "dev"
 optional = false
@@ -499,8 +499,8 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 
 [metadata]
 lock-version = "1.1"
-python-versions = ">=3.6, <4.0.0"
-content-hash = "e9f925098699d5952b74c1a0a0ce5ca71bf2fe041ed148d52b80e195251d31a4"
+python-versions = ">=3.6.0, <4.0.0"
+content-hash = "5dcb4edb4c3b51fc747811d7a1091b969a0f23aacf9655a7199825b937c2d4ce"
 
 [metadata.files]
 appdirs = [
@@ -799,7 +799,7 @@ requests = [
     {file = "requests-2.25.1.tar.gz", hash = "sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804"},
 ]
 rope = [
-    {file = "rope-0.17.0.tar.gz", hash = "sha256:658ad6705f43dcf3d6df379da9486529cf30e02d9ea14c5682aa80eb33b649e1"},
+    {file = "rope-0.18.0.tar.gz", hash = "sha256:786b5c38c530d4846aa68a42604f61b4e69a493390e3ca11b88df0fbfdc3ed04"},
 ]
 starlette = [
     {file = "starlette-0.13.6-py3-none-any.whl", hash = "sha256:bd2ffe5e37fb75d014728511f8e68ebf2c80b0fa3d04ca1479f4dc752ae31ac9"},
