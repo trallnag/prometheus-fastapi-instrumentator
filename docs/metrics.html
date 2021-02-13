@@ -1466,7 +1466,7 @@ Defaults to <code>True</code>.</dd>
 <dl>
 <dt id="prometheus_fastapi_instrumentator.metrics.Info"><code class="flex name class">
 <span>class <span class="ident">Info</span></span>
-<span>(</span><span>request: starlette.requests.Request, response: Optional[starlette.responses.Response], method: str, modified_handler: str, modified_status: str, modified_duration: float)</span>
+<span>(</span><span>request: starlette.requests.Request, response: Union[starlette.responses.Response, NoneType], method: str, modified_handler: str, modified_status: str, modified_duration: float)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates Info object that is used for instrumentation functions.</p>
