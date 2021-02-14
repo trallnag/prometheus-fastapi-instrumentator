@@ -809,7 +809,7 @@ interface of the function.</dd>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.instrumentation.PrometheusFastApiInstrumentator.expose"><code class="name flex">
-<span>def <span class="ident">expose</span></span>(<span>self, app: fastapi.applications.FastAPI, should_gzip: bool = False, endpoint: str = '/metrics', include_in_schema: bool = True, tags: Union[List[str], NoneType] = None, **kwargs)</span>
+<span>def <span class="ident">expose</span></span>(<span>self, app: fastapi.applications.FastAPI, should_gzip: bool = False, endpoint: str = '/metrics', include_in_schema: bool = True, tags: Optional[List[str]] = None, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Exposes endpoint for metrics.</p>
