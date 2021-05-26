@@ -9,7 +9,9 @@ specification.
 
 ## Unreleased
 
-- Nothing.
+### Added
+
+* Only relevant for CI: `dependabot.yml` that daily checks github-actions and pip.
 
 ## [5.7.1] 2021-01-12
 
