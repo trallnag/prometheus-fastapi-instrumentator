@@ -72,10 +72,10 @@ function _test_slow {
 
 function _test_multiproc {
     mkdir -p /tmp/test_multiproc
-    export prometheus_multiproc_dir=/tmp/test_multiproc
+    export PROMETHEUS_MULTIPROC_DIR=/tmp/test_multiproc
     poetry run pytest -k test_multiprocess --cov-append --cov=./ --cov-report=xml
     rm -rf /tmp/test_multiproc
-    unset prometheus_multiproc_dir
+    unset PROMETHEUS_MULTIPROC_DIR
 }
 
 function _test {

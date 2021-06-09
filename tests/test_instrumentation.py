@@ -73,17 +73,17 @@ def create_app() -> FastAPI:
 
 
 def expose_metrics(app: FastAPI) -> None:
-    if "prometheus_multiproc_dir" in os.environ:
-        pmd = os.environ["prometheus_multiproc_dir"]
-        print(f"Env var prometheus_multiproc_dir='{pmd}' detected.")
+    if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+        pmd = os.environ["PROMETHEUS_MULTIPROC_DIR"]
+        print(f"Env var PROMETHEUS_MULTIPROC_DIR='{pmd}' detected.")
         if os.path.isdir(pmd):
-            print(f"Env var prometheus_multiproc_dir='{pmd}' is a dir.")
+            print(f"Env var PROMETHEUS_MULTIPROC_DIR='{pmd}' is a dir.")
             from prometheus_client import CollectorRegistry, multiprocess
 
             registry = CollectorRegistry()
             multiprocess.MultiProcessCollector(registry)
         else:
-            raise ValueError(f"Env var prometheus_multiproc_dir='{pmd}' not a directory.")
+            raise ValueError(f"Env var PROMETHEUS_MULTIPROC_DIR='{pmd}' not a directory.")
     else:
         registry = REGISTRY
 
@@ -531,8 +531,8 @@ def test_rounding():
 
 
 def is_prometheus_multiproc_set():
-    if "prometheus_multiproc_dir" in os.environ:
-        pmd = os.environ["prometheus_multiproc_dir"]
+    if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+        pmd = os.environ["PROMETHEUS_MULTIPROC_DIR"]
         if os.path.isdir(pmd):
             return True
     else:
@@ -543,10 +543,10 @@ def is_prometheus_multiproc_set():
 # imported. That is why we cannot simply use `tempfile` or the fixtures
 # provided by pytest. Test with:
 #       mkdir -p /tmp/test_multiproc;
-#       export prometheus_multiproc_dir=/tmp/test_multiproc;
+#       export PROMETHEUS_MULTIPROC_DIR=/tmp/test_multiproc;
 #       pytest -k test_multiprocess_reg;
 #       rm -rf /tmp/test_multiproc;
-#       unset prometheus_multiproc_dir
+#       unset PROMETHEUS_MULTIPROC_DIR
 
 
 @pytest.mark.skipif(
@@ -577,7 +577,7 @@ def test_multiprocess_reg():
 
 @pytest.mark.skipif(is_prometheus_multiproc_set() is True, reason="Will never work.")
 def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
-    monkeypatch.setenv("prometheus_multiproc_dir", str(tmp_path))
+    monkeypatch.setenv("PROMETHEUS_MULTIPROC_DIR", str(tmp_path))
 
     app = create_app()
     Instrumentator(excluded_handlers=["/metrics"]).add(metrics.latency()).instrument(
@@ -597,7 +597,7 @@ def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
     is_prometheus_multiproc_set() is True, reason="Just test handling of env detection."
 )
 def test_multiprocess_env_folder(monkeypatch, tmp_path):
-    monkeypatch.setenv("prometheus_multiproc_dir", "DOES/NOT/EXIST")
+    monkeypatch.setenv("PROMETHEUS_MULTIPROC_DIR", "DOES/NOT/EXIST")
 
     app = create_app()
     with pytest.raises(Exception):

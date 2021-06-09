@@ -32,6 +32,7 @@
 import gzip
 import os
 import re
+import warnings
 from timeit import default_timer
 from typing import Callable, List, Optional, Pattern, Tuple
 
@@ -261,7 +262,7 @@ class PrometheusFastApiInstrumentator:
             kwargs: Will be passed to FastAPI route annotation.
 
         Raises:
-            ValueError: If `prometheus_multiproc_dir` env var is found but
+            ValueError: If `PROMETHEUS_MULTIPROC_DIR` env var is found but
                 doesn&#39;t point to a valid directory.
 
         Returns:
@@ -282,14 +283,26 @@ class PrometheusFastApiInstrumentator:
             multiprocess,
         )
 
-        if &#34;prometheus_multiproc_dir&#34; in os.environ:
-            pmd = os.environ[&#34;prometheus_multiproc_dir&#34;]
+        if (
+            &#34;prometheus_multiproc_dir&#34; in os.environ
+            and &#34;PROMETHEUS_MULTIPROC_DIR&#34; not in os.environ
+        ):
+            os.environ[&#34;PROMETHEUS_MULTIPROC_DIR&#34;] = os.environ[
+                &#34;prometheus_multiproc_dir&#34;
+            ]
+            warnings.warn(
+                &#34;prometheus_multiproc_dir variable has been deprecated in favor of the \
+upper case naming PROMETHEUS_MULTIPROC_DIR&#34;,
+                DeprecationWarning,
+            )
+        if &#34;PROMETHEUS_MULTIPROC_DIR&#34; in os.environ:
+            pmd = os.environ[&#34;PROMETHEUS_MULTIPROC_DIR&#34;]
             if os.path.isdir(pmd):
                 registry = CollectorRegistry()
                 multiprocess.MultiProcessCollector(registry)
             else:
                 raise ValueError(
-                    f&#34;Env var prometheus_multiproc_dir=&#39;{pmd}&#39; not a directory.&#34;
+                    f&#34;Env var PROMETHEUS_MULTIPROC_DIR=&#39;{pmd}&#39; not a directory.&#34;
                 )
         else:
             registry = REGISTRY
@@ -656,7 +669,7 @@ part of the inprogress label? Ignored unless
             kwargs: Will be passed to FastAPI route annotation.
 
         Raises:
-            ValueError: If `prometheus_multiproc_dir` env var is found but
+            ValueError: If `PROMETHEUS_MULTIPROC_DIR` env var is found but
                 doesn&#39;t point to a valid directory.
 
         Returns:
@@ -677,14 +690,26 @@ part of the inprogress label? Ignored unless
             multiprocess,
         )
 
-        if &#34;prometheus_multiproc_dir&#34; in os.environ:
-            pmd = os.environ[&#34;prometheus_multiproc_dir&#34;]
+        if (
+            &#34;prometheus_multiproc_dir&#34; in os.environ
+            and &#34;PROMETHEUS_MULTIPROC_DIR&#34; not in os.environ
+        ):
+            os.environ[&#34;PROMETHEUS_MULTIPROC_DIR&#34;] = os.environ[
+                &#34;prometheus_multiproc_dir&#34;
+            ]
+            warnings.warn(
+                &#34;prometheus_multiproc_dir variable has been deprecated in favor of the \
+upper case naming PROMETHEUS_MULTIPROC_DIR&#34;,
+                DeprecationWarning,
+            )
+        if &#34;PROMETHEUS_MULTIPROC_DIR&#34; in os.environ:
+            pmd = os.environ[&#34;PROMETHEUS_MULTIPROC_DIR&#34;]
             if os.path.isdir(pmd):
                 registry = CollectorRegistry()
                 multiprocess.MultiProcessCollector(registry)
             else:
                 raise ValueError(
-                    f&#34;Env var prometheus_multiproc_dir=&#39;{pmd}&#39; not a directory.&#34;
+                    f&#34;Env var PROMETHEUS_MULTIPROC_DIR=&#39;{pmd}&#39; not a directory.&#34;
                 )
         else:
             registry = REGISTRY
@@ -836,7 +861,7 @@ Defaults to None.</dd>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
-<dd>If <code>prometheus_multiproc_dir</code> env var is found but
+<dd>If <code>PROMETHEUS_MULTIPROC_DIR</code> env var is found but
 doesn't point to a valid directory.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
@@ -848,84 +873,96 @@ doesn't point to a valid directory.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def expose(
-    self,
-    app: FastAPI,
-    should_gzip: bool = False,
-    endpoint: str = &#34;/metrics&#34;,
-    include_in_schema: bool = True,
-    tags: Optional[List[str]] = None,
-    **kwargs,
-):
-    &#34;&#34;&#34;Exposes endpoint for metrics.
-
-    Args:
-        app: FastAPI app instance. Endpoint will be added to this app.
-
-        should_gzip: Should the endpoint return compressed data? It will
-            also check for `gzip` in the `Accept-Encoding` header.
-            Compression consumes more CPU cycles. In most cases it&#39;s best
-            to just leave this option off since network bandwith is usually
-            cheaper than CPU cycles. Defaults to `False`.
-
-        endpoint: Endpoint on which metrics should be exposed.
-
-        include_in_schema: Should the endpoint show up in the documentation?
-
-        tags (List[str], optional): If you manage your routes with tags.
-            Defaults to None.
-
-        kwargs: Will be passed to FastAPI route annotation.
-
-    Raises:
-        ValueError: If `prometheus_multiproc_dir` env var is found but
-            doesn&#39;t point to a valid directory.
-
-    Returns:
-        self: Instrumentator. Builder Pattern.
-    &#34;&#34;&#34;
-
-    if (
-        self.should_respect_env_var
-        and os.environ.get(self.env_var_name, &#34;false&#34;) != &#34;true&#34;
+<pre><code class="python">    def expose(
+        self,
+        app: FastAPI,
+        should_gzip: bool = False,
+        endpoint: str = &#34;/metrics&#34;,
+        include_in_schema: bool = True,
+        tags: Optional[List[str]] = None,
+        **kwargs,
     ):
-        return self
+        &#34;&#34;&#34;Exposes endpoint for metrics.
 
-    from prometheus_client import (
-        CONTENT_TYPE_LATEST,
-        REGISTRY,
-        CollectorRegistry,
-        generate_latest,
-        multiprocess,
-    )
+        Args:
+            app: FastAPI app instance. Endpoint will be added to this app.
 
-    if &#34;prometheus_multiproc_dir&#34; in os.environ:
-        pmd = os.environ[&#34;prometheus_multiproc_dir&#34;]
-        if os.path.isdir(pmd):
-            registry = CollectorRegistry()
-            multiprocess.MultiProcessCollector(registry)
-        else:
-            raise ValueError(
-                f&#34;Env var prometheus_multiproc_dir=&#39;{pmd}&#39; not a directory.&#34;
+            should_gzip: Should the endpoint return compressed data? It will
+                also check for `gzip` in the `Accept-Encoding` header.
+                Compression consumes more CPU cycles. In most cases it&#39;s best
+                to just leave this option off since network bandwith is usually
+                cheaper than CPU cycles. Defaults to `False`.
+
+            endpoint: Endpoint on which metrics should be exposed.
+
+            include_in_schema: Should the endpoint show up in the documentation?
+
+            tags (List[str], optional): If you manage your routes with tags.
+                Defaults to None.
+
+            kwargs: Will be passed to FastAPI route annotation.
+
+        Raises:
+            ValueError: If `PROMETHEUS_MULTIPROC_DIR` env var is found but
+                doesn&#39;t point to a valid directory.
+
+        Returns:
+            self: Instrumentator. Builder Pattern.
+        &#34;&#34;&#34;
+
+        if (
+            self.should_respect_env_var
+            and os.environ.get(self.env_var_name, &#34;false&#34;) != &#34;true&#34;
+        ):
+            return self
+
+        from prometheus_client import (
+            CONTENT_TYPE_LATEST,
+            REGISTRY,
+            CollectorRegistry,
+            generate_latest,
+            multiprocess,
+        )
+
+        if (
+            &#34;prometheus_multiproc_dir&#34; in os.environ
+            and &#34;PROMETHEUS_MULTIPROC_DIR&#34; not in os.environ
+        ):
+            os.environ[&#34;PROMETHEUS_MULTIPROC_DIR&#34;] = os.environ[
+                &#34;prometheus_multiproc_dir&#34;
+            ]
+            warnings.warn(
+                &#34;prometheus_multiproc_dir variable has been deprecated in favor of the \
+upper case naming PROMETHEUS_MULTIPROC_DIR&#34;,
+                DeprecationWarning,
             )
-    else:
-        registry = REGISTRY
-
-    @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
-    def metrics(request: Request):
-        &#34;&#34;&#34;Endpoint that serves Prometheus metrics.&#34;&#34;&#34;
-
-        if should_gzip and &#34;gzip&#34; in request.headers.get(&#34;Accept-Encoding&#34;, &#34;&#34;):
-            resp = Response(content=gzip.compress(generate_latest(registry)))
-            resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
-            resp.headers[&#34;Content-Encoding&#34;] = &#34;gzip&#34;
-            return resp
+        if &#34;PROMETHEUS_MULTIPROC_DIR&#34; in os.environ:
+            pmd = os.environ[&#34;PROMETHEUS_MULTIPROC_DIR&#34;]
+            if os.path.isdir(pmd):
+                registry = CollectorRegistry()
+                multiprocess.MultiProcessCollector(registry)
+            else:
+                raise ValueError(
+                    f&#34;Env var PROMETHEUS_MULTIPROC_DIR=&#39;{pmd}&#39; not a directory.&#34;
+                )
         else:
-            resp = Response(content=generate_latest(registry))
-            resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
-            return resp
+            registry = REGISTRY
 
-    return self</code></pre>
+        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
+        def metrics(request: Request):
+            &#34;&#34;&#34;Endpoint that serves Prometheus metrics.&#34;&#34;&#34;
+
+            if should_gzip and &#34;gzip&#34; in request.headers.get(&#34;Accept-Encoding&#34;, &#34;&#34;):
+                resp = Response(content=gzip.compress(generate_latest(registry)))
+                resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
+                resp.headers[&#34;Content-Encoding&#34;] = &#34;gzip&#34;
+                return resp
+            else:
+                resp = Response(content=generate_latest(registry))
+                resp.headers[&#34;Content-Type&#34;] = CONTENT_TYPE_LATEST
+                return resp
+
+        return self</code></pre>
 </details>
 </dd>
 <dt id="prometheus_fastapi_instrumentator.instrumentation.PrometheusFastApiInstrumentator.instrument"><code class="name flex">

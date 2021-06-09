@@ -4,6 +4,7 @@
 import gzip
 import os
 import re
+import warnings
 from timeit import default_timer
 from typing import Callable, List, Optional, Pattern, Tuple
 
@@ -233,7 +234,7 @@ class PrometheusFastApiInstrumentator:
             kwargs: Will be passed to FastAPI route annotation.
 
         Raises:
-            ValueError: If `prometheus_multiproc_dir` env var is found but
+            ValueError: If `PROMETHEUS_MULTIPROC_DIR` env var is found but
                 doesn't point to a valid directory.
 
         Returns:
@@ -254,14 +255,26 @@ class PrometheusFastApiInstrumentator:
             multiprocess,
         )
 
-        if "prometheus_multiproc_dir" in os.environ:
-            pmd = os.environ["prometheus_multiproc_dir"]
+        if (
+            "prometheus_multiproc_dir" in os.environ
+            and "PROMETHEUS_MULTIPROC_DIR" not in os.environ
+        ):
+            os.environ["PROMETHEUS_MULTIPROC_DIR"] = os.environ[
+                "prometheus_multiproc_dir"
+            ]
+            warnings.warn(
+                "prometheus_multiproc_dir variable has been deprecated in favor of the \
+upper case naming PROMETHEUS_MULTIPROC_DIR",
+                DeprecationWarning,
+            )
+        if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+            pmd = os.environ["PROMETHEUS_MULTIPROC_DIR"]
             if os.path.isdir(pmd):
                 registry = CollectorRegistry()
                 multiprocess.MultiProcessCollector(registry)
             else:
                 raise ValueError(
-                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
+                    f"Env var PROMETHEUS_MULTIPROC_DIR='{pmd}' not a directory."
                 )
         else:
             registry = REGISTRY
