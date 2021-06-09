@@ -1,6 +1,7 @@
 import gzip
 import os
 import re
+import warnings
 from enum import Enum
 from typing import Callable, List, Optional, Union
 
@@ -89,6 +90,10 @@ class PrometheusFastApiInstrumentator:
                 provided, the default `REGISTRY` will be used. This can be useful if
                 you need to run multiple apps at the same time, with their own
                 registries, for example during testing.
+
+        Raises:
+            ValueError: If `PROMETHEUS_MULTIPROC_DIR` env var is found but
+                doesn't point to a valid directory.
         """
 
         self.should_group_status_codes = should_group_status_codes
@@ -110,16 +115,28 @@ class PrometheusFastApiInstrumentator:
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
 
+        if (
+            "prometheus_multiproc_dir" in os.environ
+            and "PROMETHEUS_MULTIPROC_DIR" not in os.environ
+        ):
+            os.environ["PROMETHEUS_MULTIPROC_DIR"] = os.environ[
+                "prometheus_multiproc_dir"
+            ]
+            warnings.warn(
+                "prometheus_multiproc_dir variable has been deprecated in favor of the upper case naming PROMETHEUS_MULTIPROC_DIR",
+                DeprecationWarning,
+            )
+
         if registry:
             self.registry = registry
-        elif "prometheus_multiproc_dir" in os.environ:
-            pmd = os.environ["prometheus_multiproc_dir"]
+        elif "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+            pmd = os.environ["PROMETHEUS_MULTIPROC_DIR"]
             if os.path.isdir(pmd):
                 self.registry = CollectorRegistry()
                 multiprocess.MultiProcessCollector(self.registry)
             else:
                 raise ValueError(
-                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
+                    f"Env var PROMETHEUS_MULTIPROC_DIR='{pmd}' not a directory."
                 )
         else:
             self.registry = REGISTRY
@@ -226,10 +243,6 @@ class PrometheusFastApiInstrumentator:
                 Defaults to None.
 
             kwargs: Will be passed to FastAPI route annotation.
-
-        Raises:
-            ValueError: If `prometheus_multiproc_dir` env var is found but
-                doesn't point to a valid directory.
 
         Returns:
             self: Instrumentator. Builder Pattern.
