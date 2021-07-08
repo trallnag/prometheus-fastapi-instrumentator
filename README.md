@@ -197,7 +197,7 @@ def http_requested_languages_total() -> Callable[[Info], None]:
     def instrumentation(info: Info) -> None:
         langs = set()
         lang_str = info.request.headers["Accept-Language"]
-        for element in lang_str.split(",")
+        for element in lang_str.split(","):
             element = element.split(";")[0].strip().lower()
             langs.add(element)
         for language in langs:
@@ -252,7 +252,7 @@ by default. Beware that network bandwith is often cheaper than CPU cycles.
 instrumentator.expose(app, include_in_schema=False, should_gzip=True)
 ```
 
-Notice that this will to nothing if `should_respect_env_var` has been set 
+Notice that this will do nothing if `should_respect_env_var` has been set 
 during construction of the instrumentator object and the respective env var 
 is not found.
 
