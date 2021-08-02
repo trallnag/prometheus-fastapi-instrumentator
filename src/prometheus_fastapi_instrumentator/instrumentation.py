@@ -1,9 +1,10 @@
+import asyncio
 import gzip
 import os
 import re
 import warnings
 from enum import Enum
-from typing import Callable, List, Optional, Union
+from typing import Awaitable, Callable, List, Optional, Union
 
 from fastapi import FastAPI
 from prometheus_client import (
@@ -264,7 +265,7 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    def add(self, instrumentation_function: Callable[[metrics.Info], None]):
+    def add(self, instrumentation_function: Callable[[metrics.Info], Union[None, Awaitable[None]]]):
         """Adds function to list of instrumentations.
 
         Args:
@@ -277,7 +278,10 @@ class PrometheusFastApiInstrumentator:
             self: Instrumentator. Builder Pattern.
         """
 
-        self.instrumentations.append(instrumentation_function)
+        if asyncio.iscoroutinefunction(instrumentation_function):
+            self.async_instrumentations.append(instrumentation_function)
+        else:
+            self.instrumentations.append(instrumentation_function)
 
         return self
 
