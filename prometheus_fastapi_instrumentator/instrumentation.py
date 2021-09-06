@@ -209,6 +209,7 @@ class PrometheusFastApiInstrumentator:
         should_gzip: bool = False,
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
+        multiproc_dir: Optional[str] = None,
         tags: Optional[List[str]] = None,
         **kwargs,
     ):
@@ -226,6 +227,9 @@ class PrometheusFastApiInstrumentator:
             endpoint: Endpoint on which metrics should be exposed.
 
             include_in_schema: Should the endpoint show up in the documentation?
+
+            multiproc_dir: prometheus multiprocess metrics directory.
+                This directory is used to share prometheus metrics across processes.
 
             tags (List[str], optional): If you manage your routes with tags.
                 Defaults to None.
@@ -254,14 +258,19 @@ class PrometheusFastApiInstrumentator:
             multiprocess,
         )
 
-        if "prometheus_multiproc_dir" in os.environ:
-            pmd = os.environ["prometheus_multiproc_dir"]
+        prom_dir_from_env = os.environ.get("prometheus_multiproc_dir") or os.environ.get(
+            "PROMETHEUS_MULTIPROC_DIR"
+        )
+        if multiproc_dir is not None or prom_dir_from_env is not None:
+            pmd = multiproc_dir
+            if multiproc_dir is None:
+                pmd = prom_dir_from_env
             if os.path.isdir(pmd):
                 registry = CollectorRegistry()
-                multiprocess.MultiProcessCollector(registry)
+                multiprocess.MultiProcessCollector(registry, path=pmd)
             else:
                 raise ValueError(
-                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
+                    f"Env var prometheus_multiproc_dir='{pmd}' is not a directory."
                 )
         else:
             registry = REGISTRY

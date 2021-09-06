@@ -531,8 +531,10 @@ def test_rounding():
 
 
 def is_prometheus_multiproc_set():
-    if "prometheus_multiproc_dir" in os.environ:
-        pmd = os.environ["prometheus_multiproc_dir"]
+    pmd = os.environ.get("prometheus_multiproc_dir") or os.environ.get(
+        "PROMETHEUS_MULTIPROC_DIR"
+    )
+    if pmd is not None:
         if os.path.isdir(pmd):
             return True
     else:
