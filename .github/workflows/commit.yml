@@ -62,7 +62,7 @@ jobs:
 
     # ==========================================================================
 
-    - uses: EndBug/add-and-commit@v5
+    - uses: EndBug/add-and-commit@v7.4.0
       if: matrix.python-version == 3.9
       with:
         message: 'ci: Apply automatic changes [skip ci]'
