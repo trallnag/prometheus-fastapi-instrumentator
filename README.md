@@ -49,7 +49,7 @@ If one of these presets does not suit your needs you can multiple things:
     and pass it to the instrumentator instance. See [here](#adding-metrics) how to do that.
 - Create your own instrumentation function that you can pass to an instrumentator
     instance. See [here](#creating-new-metrics) to learn how more.
-- Don't use this package at all and just use the sorce code as inspiration on
+- Don't use this package at all and just use the source code as inspiration on
     how to instrument your FastAPI.
 
 Important: This package is not made for generic Prometheus instrumentation in
