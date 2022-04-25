@@ -19,17 +19,19 @@ from prometheus_fastapi_instrumentator import metrics
 class PrometheusFastApiInstrumentator:
     def __init__(
         self,
-        should_group_status_codes: bool = True,
+        should_group_status_codes: bool = False,
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
         excluded_handlers: List[str] = [],
-        round_latency_decimals: int = 4,
+        round_latency_decimals: int = 6,
+        should_microsecond: bool = True,
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
+        service_name: str = "",
     ):
         """Create a Prometheus FastAPI Instrumentator.
 
@@ -91,6 +93,8 @@ class PrometheusFastApiInstrumentator:
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
+        self.service_name = service_name
+        self.should_microsecond = should_microsecond
 
         self.excluded_handlers: List[Pattern[str]]
         if excluded_handlers:
@@ -183,10 +187,14 @@ class PrometheusFastApiInstrumentator:
                     if self.should_group_status_codes:
                         status = status[0] + "xx"
 
+                    if self.should_microsecond:
+                        duration = duration * 1000000
+
                     info = metrics.Info(
                         request=request,
                         response=response,
-                        method=request.method,
+                        method=request.method.lower(),
+                        service=self.service_name,
                         modified_handler=handler,
                         modified_status=status,
                         modified_duration=duration,
