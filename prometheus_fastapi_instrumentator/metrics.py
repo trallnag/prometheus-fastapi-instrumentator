@@ -106,7 +106,15 @@ def latency(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
-    buckets: tuple = Histogram.DEFAULT_BUCKETS,
+    buckets: tuple = (
+        125000,
+        250000,
+        500000,
+        1000000,
+        2000000,
+        4000000,
+        8000000,
+    ),
 ) -> Callable[[Info], None]:
     """Default metric for the Prometheus FastAPI Instrumentator.
 
