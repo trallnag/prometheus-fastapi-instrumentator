@@ -28,6 +28,7 @@ class Info:
         request: Request,
         response: Optional[Response],
         method: str,
+        service: str,
         modified_handler: str,
         modified_status: str,
         modified_duration: float,
@@ -51,6 +52,7 @@ class Info:
         self.request = request
         self.response = response
         self.method = method
+        self.service = service
         self.modified_handler = modified_handler
         self.modified_status = modified_status
         self.modified_duration = modified_duration
@@ -60,6 +62,7 @@ def _build_label_attribute_names(
     should_include_handler: bool,
     should_include_method: bool,
     should_include_status: bool,
+    should_include_service: bool,
 ) -> Tuple[list, list]:
     """Builds up tuple with to be used label and attribute names.
 
@@ -67,6 +70,7 @@ def _build_label_attribute_names(
         should_include_handler (bool): Should the `handler` label be part of the metric?
         should_include_method (bool): Should the `method` label be part of the metric?
         should_include_status (bool): Should the `status` label be part of the metric?
+        should_include_service (bool): Should the `service` label be part of the metric?
 
     Returns:
         Tuple with two list elements.
@@ -91,6 +95,10 @@ def _build_label_attribute_names(
         label_names.append("status")
         info_attribute_names.append("modified_status")
 
+    if should_include_service:
+        label_names.append("service")
+        info_attribute_names.append("service")
+
     return label_names, info_attribute_names
 
 
@@ -106,6 +114,7 @@ def latency(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    should_include_service: bool = True,
     buckets: tuple = (
         125000,
         250000,
@@ -140,6 +149,9 @@ def latency(
         should_include_status: Should the `status` label be part of the
             metric? Defaults to `True`.
 
+        should_include_service: Should the `service` label be part of the
+            metric? Defaults to `True`.
+
         buckets: Buckets for the histogram. Defaults to Prometheus default.
             Defaults to default buckets from Prometheus client library.
 
@@ -151,7 +163,10 @@ def latency(
         buckets = buckets + (float("inf"),)
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler,
+        should_include_method,
+        should_include_status,
+        should_include_service,
     )
 
     if label_names:
@@ -195,6 +210,7 @@ def request_size(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    should_include_service: bool = True,
 ) -> Callable[[Info], None]:
     """Record the content length of incoming requests.
 
@@ -215,13 +231,18 @@ def request_size(
             metric? Defaults to `True`.
         should_include_status: Should the `status` label be part of the metric?
             Defaults to `True`.
+        should_include_service: Should the `service` label be part of the metric?
+            Defaults to `True`.
 
     Returns:
         Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler,
+        should_include_method,
+        should_include_status,
+        should_include_service,
     )
 
     if label_names:
@@ -264,6 +285,7 @@ def response_size(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    should_include_service: bool = True,
 ) -> Callable[[Info], None]:
     """Record the content length of outgoing responses.
 
@@ -291,12 +313,18 @@ def response_size(
         should_include_status: Should the `status` label be part of the metric?
             Defaults to `True`.
 
+        should_include_service: Should the `service` label be part of the metric?
+            Defaults to `True`.
+
     Returns:
         Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler,
+        should_include_method,
+        should_include_status,
+        should_include_service,
     )
 
     if label_names:
@@ -343,6 +371,7 @@ def combined_size(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    should_include_service: bool = True,
 ) -> Callable[[Info], None]:
     """Record the combined content length of requests and responses.
 
@@ -370,12 +399,18 @@ def combined_size(
         should_include_status: Should the `status` label be part of the metric?
             Defaults to `True`.
 
+        should_include_service: Should the `service` label be part of the metric?
+            Defaults to `True`.
+
     Returns:
         Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler,
+        should_include_method,
+        should_include_status,
+        should_include_service,
     )
 
     if label_names:
@@ -426,6 +461,7 @@ def requests(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    should_include_service: bool = True,
 ) -> Callable[[Info], None]:
     """Record the number of requests.
 
@@ -451,12 +487,18 @@ def requests(
         should_include_status (bool, optional): Should the `status` label be
             part of the metric? Defaults to `True`.
 
+        should_include_service (bool, optional): Should the `service` label be
+            part of the metric? Defaults to `True`.
+
     Returns:
         Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler,
+        should_include_method,
+        should_include_status,
+        should_include_service,
     )
 
     if label_names:

@@ -31,6 +31,7 @@ class PrometheusFastApiInstrumentator:
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
+        service_name: str = "",
     ):
         """Create a Prometheus FastAPI Instrumentator.
 
@@ -92,6 +93,7 @@ class PrometheusFastApiInstrumentator:
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
+        self.service_name = service_name
         self.should_microsecond = should_microsecond
 
         self.excluded_handlers: List[Pattern[str]]
@@ -192,6 +194,7 @@ class PrometheusFastApiInstrumentator:
                         request=request,
                         response=response,
                         method=request.method.lower(),
+                        service=self.service_name,
                         modified_handler=handler,
                         modified_status=status,
                         modified_duration=duration,
