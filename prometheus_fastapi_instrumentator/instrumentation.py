@@ -19,7 +19,7 @@ from prometheus_fastapi_instrumentator import metrics
 class PrometheusFastApiInstrumentator:
     def __init__(
         self,
-        should_group_status_codes: bool = True,
+        should_group_status_codes: bool = False,
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
         should_round_latency_decimals: bool = False,
