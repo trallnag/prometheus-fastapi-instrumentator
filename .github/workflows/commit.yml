@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.6, 3.9]
+        python-version: ["3.6", "3.10"]
 
     steps:
 
@@ -38,7 +38,7 @@ jobs:
     - run: bash run.sh test
 
     - uses: codecov/codecov-action@v1
-      if: matrix.python-version == 3.9
+      if: matrix.python-version == 3.10
       with:
         file: ./coverage.xml
         flags: unittests
@@ -49,21 +49,21 @@ jobs:
     # ==========================================================================
 
     - run: bash run.sh lint
-      if: matrix.python-version == 3.9
+      if: matrix.python-version == 3.10
 
     - run: bash run.sh requirements
-      if: matrix.python-version == 3.9
+      if: matrix.python-version == 3.10
 
     - run: bash run.sh format
-      if: matrix.python-version == 3.9
+      if: matrix.python-version == 3.10
 
     - run: bash run.sh docs
-      if: matrix.python-version == 3.9
+      if: matrix.python-version == 3.10
 
     # ==========================================================================
 
     - uses: EndBug/add-and-commit@v5
-      if: matrix.python-version == 3.9
+      if: matrix.python-version == 3.10
       with:
         message: 'ci: Apply automatic changes [skip ci]'
         signoff: true
