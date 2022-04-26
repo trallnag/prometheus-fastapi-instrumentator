@@ -116,13 +116,17 @@ def latency(
     should_include_status: bool = True,
     should_include_service: bool = True,
     buckets: tuple = (
-        125000,
+        5000,
+        10000,
+        25000,
+        50000,
+        100000,
         250000,
         500000,
         1000000,
-        2000000,
-        4000000,
-        8000000,
+        2500000,
+        5000000,
+        10000000,
     ),
 ) -> Callable[[Info], None]:
     """Default metric for the Prometheus FastAPI Instrumentator.
