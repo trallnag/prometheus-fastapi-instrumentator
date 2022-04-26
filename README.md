@@ -260,7 +260,7 @@ is not found.
 
 You can always check [`pyproject.toml`](/pyproject.toml) for dependencies.
 
-* `python = "^3.6"` (tested with 3.6 and 3.9)
+* `python = "^3.6"` (tested with 3.6 and 3.10)
 * `fastapi = ">=0.38.1, <=1.0.0"` (tested with 0.38.1 and 0.61.0)
 
 ## Development

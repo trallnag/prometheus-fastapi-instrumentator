@@ -19,6 +19,7 @@ Only relevant for CI:
 
 * Bumped lowest required Python version from `3.6.0` to `3.6.2` due to Black
   requirements.
+* Updated CI to test with Python 3.10 instead of 3.9.
 
 Only relevant for development:
 
