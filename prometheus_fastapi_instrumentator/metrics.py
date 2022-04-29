@@ -13,9 +13,9 @@ create your own instrumentation function instead of combining several functions
 from this module.
 """
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Iterable, Literal, Optional, Set, Tuple, Union
 
-from prometheus_client import Counter, Histogram, Summary
+from prometheus_client import REGISTRY, CollectorRegistry, Counter, Histogram, Summary
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -107,8 +107,11 @@ def latency(
     should_include_method: bool = True,
     should_include_status: bool = True,
     buckets: tuple = Histogram.DEFAULT_BUCKETS,
+    registry: CollectorRegistry = REGISTRY,
 ) -> Callable[[Info], None]:
-    """Default metric for the Prometheus FastAPI Instrumentator.
+    """Summarizes request handling time. Can be a histogram with specified
+    buckets. When using (many) buckets, you should probably disable some labels
+    to keep the amount of metrics reasonable.
 
     Args:
         metric_name (str, optional): Name of the metric to be created. Must be
@@ -134,37 +137,44 @@ def latency(
 
         buckets: Buckets for the histogram. Defaults to Prometheus default.
             Defaults to default buckets from Prometheus client library.
+            May be an empty tuple, then produces a Summary instead of a
+            Histogram.
 
     Returns:
         Function that takes a single parameter `Info`.
     """
 
-    if buckets[-1] != float("inf"):
-        buckets = buckets + (float("inf"),)
+    if len(buckets) > 0:
+        if buckets[-1] != float("inf"):
+            buckets = buckets + (float("inf"),)
 
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
 
-    if label_names:
+    METRIC: Union[Histogram, Summary]
+    if len(buckets) > 0:
         METRIC = Histogram(
             metric_name,
             metric_doc,
+            registry=registry,
             labelnames=label_names,
             buckets=buckets,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
         )
     else:
-        METRIC = Histogram(
+        METRIC = Summary(
             metric_name,
             metric_doc,
-            buckets=buckets,
+            labelnames=label_names,
+            registry=registry,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
         )
 
     def instrumentation(info: Info) -> None:
+        # For a metric without labels, METRIC.labels([]) will still throw an exception
         if label_names:
             label_values = []
             for attribute_name in info_attribute_names:
@@ -187,6 +197,7 @@ def request_size(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    registry: CollectorRegistry = REGISTRY,
 ) -> Callable[[Info], None]:
     """Record the content length of incoming requests.
 
@@ -220,6 +231,7 @@ def request_size(
         METRIC = Summary(
             metric_name,
             metric_doc,
+            registry=registry,
             labelnames=label_names,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
@@ -228,6 +240,7 @@ def request_size(
         METRIC = Summary(
             metric_name,
             metric_doc,
+            registry=registry,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
         )
@@ -256,6 +269,7 @@ def response_size(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    registry: CollectorRegistry = REGISTRY,
 ) -> Callable[[Info], None]:
     """Record the content length of outgoing responses.
 
@@ -295,6 +309,7 @@ def response_size(
         METRIC = Summary(
             metric_name,
             metric_doc,
+            registry=registry,
             labelnames=label_names,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
@@ -303,6 +318,7 @@ def response_size(
         METRIC = Summary(
             metric_name,
             metric_doc,
+            registry=registry,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
         )
@@ -418,6 +434,7 @@ def requests(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    registry: CollectorRegistry = REGISTRY,
 ) -> Callable[[Info], None]:
     """Record the number of requests.
 
@@ -455,6 +472,7 @@ def requests(
         METRIC = Counter(
             metric_name,
             metric_doc,
+            registry=registry,
             labelnames=label_names,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
@@ -463,6 +481,7 @@ def requests(
         METRIC = Counter(
             metric_name,
             metric_doc,
+            registry=registry,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
         )
@@ -633,7 +652,9 @@ def default(
         else:
             OUT_SIZE.labels(info.modified_handler).observe(0)
 
-        if not should_only_respect_2xx_for_highr or info.modified_status.startswith("2"):
+        if not should_only_respect_2xx_for_highr or info.modified_status.startswith(
+            "2"
+        ):
             LATENCY_HIGHR.observe(info.modified_duration)
 
         LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
@@ -642,3 +663,69 @@ def default(
 
 
 # ==============================================================================
+
+
+def default_metrics(
+    registry: CollectorRegistry,
+    metric_namespace: str = "",
+    metric_subsystem: str = "",
+    latency_buckets: tuple = (0.1, 0.5, 1),
+    latency_labels: Set[Literal["handler", "method", "status"]] = {"handler"},
+) -> Iterable[Callable[[Info], None]]:
+    """Default metrics to cover multiple things.
+
+    You get the following:
+
+    * `http_request_size_bytes`: Total number of incoming bytes.
+    * `http_response_size_bytes`: Total number of outgoing bytes.
+    * `http_request_duration_seconds`: Seconds processing requests.
+
+    Each metric has labels (`handler`, `status`, `method`), except the
+    `http_request_duration_seconds` one who has the specified ones.
+
+    Args:
+        registry (CollectorRegistry): Registry to add the metrics to
+
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to "".
+
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to "".
+
+        latency_buckets (tuple[float], optional): Buckets tuple for latency
+            histogram. Defaults to `(0.1, 0.5, 1)`.
+
+    Returns:
+        Function that takes a single parameter `Info`.
+    """
+
+    # TOTAL just is a repetition of _count of the other metrics.
+    # TOTAL = requests(
+    #     registry=registry,
+    #     metric_namespace=metric_namespace,
+    #     metric_subsystem=metric_subsystem,
+    # )
+
+    LATENCY = latency(
+        registry=registry,
+        buckets=latency_buckets,
+        should_include_handler="handler" in latency_labels,
+        should_include_method="method" in latency_labels,
+        should_include_status="status" in latency_labels,
+        metric_namespace=metric_namespace,
+        metric_subsystem=metric_subsystem,
+    )
+
+    IN_SIZE = request_size(
+        registry=registry,
+        metric_namespace=metric_namespace,
+        metric_subsystem=metric_subsystem,
+    )
+
+    OUT_SIZE = response_size(
+        registry=registry,
+        metric_namespace=metric_namespace,
+        metric_subsystem=metric_subsystem,
+    )
+
+    return [IN_SIZE, OUT_SIZE, LATENCY]

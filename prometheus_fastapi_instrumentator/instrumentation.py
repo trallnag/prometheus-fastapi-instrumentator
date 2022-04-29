@@ -5,10 +5,11 @@ import gzip
 import os
 import re
 from timeit import default_timer
-from typing import Callable, List, Optional, Pattern, Tuple
+from typing import Callable, Generator, Iterable, List, Optional, Pattern, Tuple
 
-from fastapi import FastAPI
-from prometheus_client import Gauge
+from fastapi import APIRouter, FastAPI
+from prometheus_client import REGISTRY, CollectorRegistry, Gauge
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Match
@@ -30,6 +31,7 @@ class PrometheusFastApiInstrumentator:
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
+        custom_registry: CollectorRegistry = None,
     ):
         """Create a Prometheus FastAPI Instrumentator.
 
@@ -78,6 +80,10 @@ class PrometheusFastApiInstrumentator:
             inprogress_labels (bool): Should labels `method` and `handler` be
                 part of the inprogress label? Ignored unless
                 `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
+
+            custom_registry (CollectorRegistry): use the following registry to
+                register metrics. If none provided uses the default registry or
+                creates a multiproc registry (depending on environment variables)
         """
 
         self.should_group_status_codes = should_group_status_codes
@@ -85,12 +91,16 @@ class PrometheusFastApiInstrumentator:
         self.should_group_untemplated = should_group_untemplated
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
-        self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
+        self.should_instrument_requests_inprogress = (
+            should_instrument_requests_inprogress
+        )
 
         self.round_latency_decimals = round_latency_decimals
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
+
+        self.registry = self._create_registry(custom_registry)
 
         self.excluded_handlers: List[Pattern[str]]
         if excluded_handlers:
@@ -102,21 +112,7 @@ class PrometheusFastApiInstrumentator:
 
     # ==========================================================================
 
-    def instrument(self, app: FastAPI):
-        """Performs the instrumentation by adding middleware.
-
-        The middleware iterates through all `instrumentations` and executes them.
-
-        Args:
-            app (FastAPI): FastAPI app instance.
-
-        Raises:
-            e: Only raised if FastAPI itself throws an exception.
-
-        Returns:
-            self: Instrumentator. Builder Pattern.
-        """
-
+    def get_middleware(self):
         if (
             self.should_respect_env_var
             and os.environ.get(self.env_var_name, "false") != "true"
@@ -144,14 +140,15 @@ class PrometheusFastApiInstrumentator:
 
         # ----------------------------------------------------------------------
 
-        @app.middleware("http")
-        async def dispatch_middleware(request: Request, call_next) -> Response:
+        async def dispatch_middleware(request: Request, call_next):
             start_time = default_timer()
 
             handler, is_templated = self._get_handler(request)
             is_excluded = self._is_handler_excluded(handler, is_templated)
             handler = (
-                "none" if not is_templated and self.should_group_untemplated else handler
+                "none"
+                if not is_templated and self.should_group_untemplated
+                else handler
             )
 
             if not is_excluded and self.should_instrument_requests_inprogress:
@@ -168,8 +165,6 @@ class PrometheusFastApiInstrumentator:
             try:
                 response = await call_next(request)
                 status = str(response.status_code)
-            except Exception as e:
-                raise e from None
             finally:
                 if not is_excluded:
                     duration = max(default_timer() - start_time, 0)
@@ -199,9 +194,77 @@ class PrometheusFastApiInstrumentator:
 
         # ----------------------------------------------------------------------
 
+        return {"middleware_class": BaseHTTPMiddleware, "dispatch": dispatch_middleware}
+
+    def instrument(self, app: FastAPI):
+        """Performs the instrumentation by adding middleware.
+
+        The middleware iterates through all `instrumentations` and executes them.
+
+        Args:
+            app (FastAPI): FastAPI app instance.
+
+        Raises:
+            e: Only raised if FastAPI itself throws an exception.
+
+        Returns:
+            self: Instrumentator. Builder Pattern.
+        """
+        app.add_middleware(**self.get_middleware())
+
         return self
 
     # ==========================================================================
+
+    def _create_registry(self, registry: CollectorRegistry = None) -> CollectorRegistry:
+        if registry:
+            return registry
+
+        if "prometheus_multiproc_dir" in os.environ:
+            pmd = os.environ["prometheus_multiproc_dir"]
+            if os.path.isdir(pmd):
+                from prometheus_client import multiprocess
+
+                registry = CollectorRegistry()
+                multiprocess.MultiProcessCollector(registry)
+                return registry
+            else:
+                raise ValueError(
+                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
+                )
+        else:
+            return REGISTRY
+
+    def get_router(
+        self,
+        endpoint: str = "/metrics",
+        tags: Optional[Iterable[str]] = None,
+        should_gzip: bool = False,
+        router: Optional[APIRouter] = None,
+        **kwargs,
+    ) -> APIRouter:
+        if not router:
+            router = APIRouter()
+
+        from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+        registry = self.registry
+
+        @router.get(endpoint, tags=tags, **kwargs)
+        def metrics(request: Request):
+            """Endpoint that serves Prometheus metrics."""
+
+            if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
+                resp = Response(content=gzip.compress(generate_latest(registry)))
+                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
+                resp.headers["Content-Encoding"] = "gzip"
+                return resp
+            else:
+                resp = Response(content=generate_latest(registry))
+                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
+                return resp
+
+        return router
 
     def expose(
         self,
@@ -246,39 +309,12 @@ class PrometheusFastApiInstrumentator:
         ):
             return self
 
-        from prometheus_client import (
-            CONTENT_TYPE_LATEST,
-            REGISTRY,
-            CollectorRegistry,
-            generate_latest,
-            multiprocess,
+        app.include_router(
+            self.get_router(endpoint, tags, should_gzip, **kwargs),
+            prefix="",
+            include_in_schema=include_in_schema,
+            **kwargs,
         )
-
-        if "prometheus_multiproc_dir" in os.environ:
-            pmd = os.environ["prometheus_multiproc_dir"]
-            if os.path.isdir(pmd):
-                registry = CollectorRegistry()
-                multiprocess.MultiProcessCollector(registry)
-            else:
-                raise ValueError(
-                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
-                )
-        else:
-            registry = REGISTRY
-
-        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
-        def metrics(request: Request):
-            """Endpoint that serves Prometheus metrics."""
-
-            if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
-                resp = Response(content=gzip.compress(generate_latest(registry)))
-                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
-                resp.headers["Content-Encoding"] = "gzip"
-                return resp
-            else:
-                resp = Response(content=generate_latest(registry))
-                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
-                return resp
 
         return self
 
@@ -298,6 +334,24 @@ class PrometheusFastApiInstrumentator:
         """
 
         self.instrumentations.append(instrumentation_function)
+
+        return self
+
+    def add_recorder(self, *recorders: Callable[[metrics.Info], None]):
+        """Adds function to record request results.
+
+        Args:
+            recorders (*Callable[[metrics.Info], None]): Functions
+                that will be executed during every request handler call (if
+                not excluded). See above for detailed information on the
+                interface of the function.
+
+        Returns:
+            self: Instrumentator. Builder Pattern.
+        """
+
+        for r in recorders:
+            self.instrumentations.append(r)
 
         return self
 
