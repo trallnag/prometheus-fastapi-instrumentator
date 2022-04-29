@@ -5,7 +5,7 @@ import gzip
 import os
 import re
 from timeit import default_timer
-from typing import Callable, Iterable, List, Optional, Pattern, Tuple
+from typing import Callable, Generator, Iterable, List, Optional, Pattern, Tuple
 
 from fastapi import APIRouter, FastAPI
 from prometheus_client import REGISTRY, CollectorRegistry, Gauge
@@ -336,6 +336,24 @@ class PrometheusFastApiInstrumentator:
         """
 
         self.instrumentations.append(instrumentation_function)
+
+        return self
+
+    def add_recorder(self, *recorders: Callable[[metrics.Info], None]):
+        """Adds function to record request results.
+
+        Args:
+            recorders (*Callable[[metrics.Info], None]): Functions
+                that will be executed during every request handler call (if
+                not excluded). See above for detailed information on the
+                interface of the function.
+
+        Returns:
+            self: Instrumentator. Builder Pattern.
+        """
+
+        for r in recorders:
+            self.instrumentations.append(r)
 
         return self
 
