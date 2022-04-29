@@ -5,10 +5,10 @@ import gzip
 import os
 import re
 from timeit import default_timer
-from typing import Callable, List, Optional, Pattern, Tuple
+from typing import Callable, Iterable, List, Optional, Pattern, Tuple
 
-from fastapi import FastAPI, APIRouter
-from prometheus_client import Gauge, CollectorRegistry
+from fastapi import APIRouter, FastAPI
+from prometheus_client import REGISTRY, CollectorRegistry, Gauge
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
@@ -31,6 +31,7 @@ class PrometheusFastApiInstrumentator:
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
+        custom_registry: CollectorRegistry = None,
     ):
         """Create a Prometheus FastAPI Instrumentator.
 
@@ -79,6 +80,10 @@ class PrometheusFastApiInstrumentator:
             inprogress_labels (bool): Should labels `method` and `handler` be
                 part of the inprogress label? Ignored unless
                 `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
+
+            custom_registry (CollectorRegistry): use the following registry to
+                register metrics. If none provided uses the default registry or
+                creates a multiproc registry (depending on environment variables)
         """
 
         self.should_group_status_codes = should_group_status_codes
@@ -94,6 +99,8 @@ class PrometheusFastApiInstrumentator:
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
+
+        self.registry = self._create_registry(custom_registry)
 
         self.excluded_handlers: List[Pattern[str]]
         if excluded_handlers:
@@ -211,7 +218,10 @@ class PrometheusFastApiInstrumentator:
 
     # ==========================================================================
 
-    def get_registry(self) -> CollectorRegistry:
+    def _create_registry(self, registry: CollectorRegistry = None) -> CollectorRegistry:
+        if registry:
+            return registry
+
         if "prometheus_multiproc_dir" in os.environ:
             pmd = os.environ["prometheus_multiproc_dir"]
             if os.path.isdir(pmd):
@@ -225,14 +235,12 @@ class PrometheusFastApiInstrumentator:
                     f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
                 )
         else:
-            from prometheus_client import REGISTRY
-
             return REGISTRY
 
     def get_router(
         self,
         endpoint: str = "/metrics",
-        tags: Optional[List[str]] = None,
+        tags: Optional[Iterable[str]] = None,
         should_gzip: bool = False,
         router: Optional[APIRouter] = None,
         **kwargs,
@@ -240,12 +248,9 @@ class PrometheusFastApiInstrumentator:
         if not router:
             router = APIRouter()
 
-        from prometheus_client import (
-            CONTENT_TYPE_LATEST,
-            generate_latest,
-        )
+        from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
-        registry = self.get_registry()
+        registry = self.registry
 
         @router.get(endpoint, tags=tags, **kwargs)
         def metrics(request: Request):
