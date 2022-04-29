@@ -7,8 +7,8 @@ import re
 from timeit import default_timer
 from typing import Callable, List, Optional, Pattern, Tuple
 
-from fastapi import FastAPI
-from prometheus_client import Gauge
+from fastapi import FastAPI, APIRouter
+from prometheus_client import Gauge, CollectorRegistry
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
@@ -211,6 +211,58 @@ class PrometheusFastApiInstrumentator:
 
     # ==========================================================================
 
+    def get_registry(self) -> CollectorRegistry:
+        if "prometheus_multiproc_dir" in os.environ:
+            pmd = os.environ["prometheus_multiproc_dir"]
+            if os.path.isdir(pmd):
+                from prometheus_client import multiprocess
+
+                registry = CollectorRegistry()
+                multiprocess.MultiProcessCollector(registry)
+                return registry
+            else:
+                raise ValueError(
+                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
+                )
+        else:
+            from prometheus_client import REGISTRY
+
+            return REGISTRY
+
+    def get_router(
+        self,
+        endpoint: str = "/metrics",
+        tags: Optional[List[str]] = None,
+        should_gzip: bool = False,
+        router: Optional[APIRouter] = None,
+        **kwargs,
+    ) -> APIRouter:
+        if not router:
+            router = APIRouter()
+
+        from prometheus_client import (
+            CONTENT_TYPE_LATEST,
+            generate_latest,
+        )
+
+        registry = self.get_registry()
+
+        @router.get(endpoint, tags=tags, **kwargs)
+        def metrics(request: Request):
+            """Endpoint that serves Prometheus metrics."""
+
+            if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
+                resp = Response(content=gzip.compress(generate_latest(registry)))
+                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
+                resp.headers["Content-Encoding"] = "gzip"
+                return resp
+            else:
+                resp = Response(content=generate_latest(registry))
+                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
+                return resp
+
+        return router
+
     def expose(
         self,
         app: FastAPI,
@@ -254,39 +306,12 @@ class PrometheusFastApiInstrumentator:
         ):
             return self
 
-        from prometheus_client import (
-            CONTENT_TYPE_LATEST,
-            REGISTRY,
-            CollectorRegistry,
-            generate_latest,
-            multiprocess,
+        app.include_router(
+            self.get_router(endpoint, tags, should_gzip, **kwargs),
+            prefix="",
+            include_in_schema=include_in_schema,
+            **kwargs,
         )
-
-        if "prometheus_multiproc_dir" in os.environ:
-            pmd = os.environ["prometheus_multiproc_dir"]
-            if os.path.isdir(pmd):
-                registry = CollectorRegistry()
-                multiprocess.MultiProcessCollector(registry)
-            else:
-                raise ValueError(
-                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
-                )
-        else:
-            registry = REGISTRY
-
-        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
-        def metrics(request: Request):
-            """Endpoint that serves Prometheus metrics."""
-
-            if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
-                resp = Response(content=gzip.compress(generate_latest(registry)))
-                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
-                resp.headers["Content-Encoding"] = "gzip"
-                return resp
-            else:
-                resp = Response(content=generate_latest(registry))
-                resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
-                return resp
 
         return self
 
