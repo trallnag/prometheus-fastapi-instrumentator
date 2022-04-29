@@ -9,6 +9,7 @@ from typing import Callable, List, Optional, Pattern, Tuple
 
 from fastapi import FastAPI
 from prometheus_client import Gauge
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Match
@@ -85,7 +86,9 @@ class PrometheusFastApiInstrumentator:
         self.should_group_untemplated = should_group_untemplated
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
-        self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
+        self.should_instrument_requests_inprogress = (
+            should_instrument_requests_inprogress
+        )
 
         self.round_latency_decimals = round_latency_decimals
         self.env_var_name = env_var_name
@@ -102,21 +105,7 @@ class PrometheusFastApiInstrumentator:
 
     # ==========================================================================
 
-    def instrument(self, app: FastAPI):
-        """Performs the instrumentation by adding middleware.
-
-        The middleware iterates through all `instrumentations` and executes them.
-
-        Args:
-            app (FastAPI): FastAPI app instance.
-
-        Raises:
-            e: Only raised if FastAPI itself throws an exception.
-
-        Returns:
-            self: Instrumentator. Builder Pattern.
-        """
-
+    def get_middleware(self):
         if (
             self.should_respect_env_var
             and os.environ.get(self.env_var_name, "false") != "true"
@@ -144,14 +133,15 @@ class PrometheusFastApiInstrumentator:
 
         # ----------------------------------------------------------------------
 
-        @app.middleware("http")
-        async def dispatch_middleware(request: Request, call_next) -> Response:
+        async def dispatch_middleware(request: Request, call_next):
             start_time = default_timer()
 
             handler, is_templated = self._get_handler(request)
             is_excluded = self._is_handler_excluded(handler, is_templated)
             handler = (
-                "none" if not is_templated and self.should_group_untemplated else handler
+                "none"
+                if not is_templated and self.should_group_untemplated
+                else handler
             )
 
             if not is_excluded and self.should_instrument_requests_inprogress:
@@ -198,6 +188,24 @@ class PrometheusFastApiInstrumentator:
             return response
 
         # ----------------------------------------------------------------------
+
+        return {"middleware_class": BaseHTTPMiddleware, "dispatch": dispatch_middleware}
+
+    def instrument(self, app: FastAPI):
+        """Performs the instrumentation by adding middleware.
+
+        The middleware iterates through all `instrumentations` and executes them.
+
+        Args:
+            app (FastAPI): FastAPI app instance.
+
+        Raises:
+            e: Only raised if FastAPI itself throws an exception.
+
+        Returns:
+            self: Instrumentator. Builder Pattern.
+        """
+        app.add_middleware(**self.get_middleware())
 
         return self
 
