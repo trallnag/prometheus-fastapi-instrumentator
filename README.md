@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/)
 [![PyPI](https://img.shields.io/pypi/pyversions/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
 [![downloads](https://pepy.tech/badge/prometheus-fastapi-instrumentator/month)](https://pepy.tech/project/prometheus-fastapi-instrumentator/month)
-[![primary](https://github.com/trallnag/prometheus-fastapi-instrumentator/actions/workflows/primary.yml/badge.svg)](https://github.com/trallnag/prometheus-fastapi-instrumentator/actions/workflows/primary.yml)
+[![primary](https://github.com/trallnag/prometheus-fastapi-instrumentator/actions/workflows/primary.yaml/badge.svg)](https://github.com/trallnag/prometheus-fastapi-instrumentator/actions/workflows/primary.yaml)
 [![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator)
 
 A configurable and modular Prometheus Instrumentator for your FastAPI. Install
