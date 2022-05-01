@@ -15,7 +15,7 @@ keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
 [tool.poetry.dependencies]
 python = "^3.7.0"
 fastapi = "^0.38.1"
-prometheus-client = "^0.8.0"
+prometheus-client = ">=0.8,<0.15"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
