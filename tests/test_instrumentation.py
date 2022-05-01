@@ -1,11 +1,7 @@
-# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
-# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
-
 import asyncio
 import os
 from typing import Any, Dict, Optional
 
-import pytest
 from fastapi import FastAPI, HTTPException
 from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
 from starlette.responses import Response
@@ -13,7 +9,7 @@ from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Setup
 
 
@@ -130,7 +126,7 @@ def assert_request_count(
     assert result + 1.0 != expected
 
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Tests
 
 
@@ -524,118 +520,3 @@ def test_rounding():
     entropy = calc_entropy(str(result).split(".")[1][4:])
 
     assert entropy < 10
-
-
-# ==============================================================================
-# Test with multiprocess reg.
-
-
-def is_prometheus_multiproc_set():
-    if "prometheus_multiproc_dir" in os.environ:
-        pmd = os.environ["prometheus_multiproc_dir"]
-        if os.path.isdir(pmd):
-            return True
-    else:
-        return False
-
-
-# The environment variable MUST be set before anything regarding Prometheus is
-# imported. That is why we cannot simply use `tempfile` or the fixtures
-# provided by pytest. Test with:
-#       mkdir -p /tmp/test_multiproc;
-#       export prometheus_multiproc_dir=/tmp/test_multiproc;
-#       pytest -k test_multiprocess_reg;
-#       rm -rf /tmp/test_multiproc;
-#       unset prometheus_multiproc_dir
-
-
-@pytest.mark.skipif(
-    is_prometheus_multiproc_set() is False,
-    reason="Environment variable must be set before starting Python process.",
-)
-def test_multiprocess_reg():
-    app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(
-        metrics.latency(
-            buckets=(
-                1,
-                2,
-                3,
-            )
-        )
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    get_response(client, "/")
-
-    response = get_response(client, "/metrics")
-    assert response.status_code == 200
-    assert b"Multiprocess" in response.content
-    assert b"# HELP process_cpu_seconds_total" not in response.content
-    assert b"http_request_duration_seconds" in response.content
-
-
-@pytest.mark.skipif(is_prometheus_multiproc_set() is True, reason="Will never work.")
-def test_multiprocess_reg_is_not(monkeypatch, tmp_path):
-    monkeypatch.setenv("prometheus_multiproc_dir", str(tmp_path))
-
-    app = create_app()
-    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.latency()).instrument(
-        app
-    ).expose(app)
-
-    client = TestClient(app)
-
-    get_response(client, "/")
-
-    response = get_response(client, "/metrics")
-    assert response.status_code == 200
-    assert b"" == response.content
-
-
-@pytest.mark.skipif(
-    is_prometheus_multiproc_set() is True, reason="Just test handling of env detection."
-)
-def test_multiprocess_env_folder(monkeypatch, tmp_path):
-    monkeypatch.setenv("prometheus_multiproc_dir", "DOES/NOT/EXIST")
-
-    app = create_app()
-    with pytest.raises(Exception):
-        Instrumentator(buckets=(1, 2, 3,)).add(
-            metrics.latency()
-        ).instrument(app)
-
-
-# ------------------------------------------------------------------------------
-# Test inprogress.
-
-
-@pytest.mark.skipif(
-    is_prometheus_multiproc_set() is False,
-    reason="Environment variable must be set before starting Python process.",
-)
-def test_multiprocess_inprogress():
-    app = create_app()
-    Instrumentator(
-        should_instrument_requests_inprogress=True, inprogress_labels=True
-    ).instrument(app).expose(app)
-    client = TestClient(app)
-
-    async def main():
-        loop = asyncio.get_event_loop()
-        futures = [
-            loop.run_in_executor(None, get_response, client, "/sleep?seconds=0.1")
-            for i in range(5)
-        ]
-        for response in await asyncio.gather(*futures):
-            assert response.status_code == 200
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-
-    response = get_response(client, "/metrics")
-    assert response.status_code == 200
-    assert b"Multiprocess" in response.content
-    assert b"# HELP process_cpu_seconds_total" not in response.content
-    assert b"http_request_duration_seconds" in response.content
-    assert b'http_requests_inprogress{handler="/sleep",method="GET"}' in response.content

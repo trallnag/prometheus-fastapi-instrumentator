@@ -2,7 +2,4 @@
 exclude = .git,.lock
 max-complexity = 10
 max-line-length = 90
-ignore=E501,W503,E203,E701
-per-file-ignores = 
-    __init__.py:F401
-    main.py:C901
+ignore=E501,W503

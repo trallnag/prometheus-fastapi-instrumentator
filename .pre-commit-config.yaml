@@ -1,0 +1,93 @@
+repos:
+
+  # ----------------------------------------------------------------------------
+  # Remote
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v4.2.0"
+    hooks:
+      - id: check-ast
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: "v8.0.0"
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        additional_dependencies: ['@commitlint/config-conventional']
+
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: "v0.4.0"
+    hooks:
+      - id: markdownlint-cli2
+        name: markdownlint-cli2
+
+  - repo: https://github.com/frnmst/md-toc
+    rev: "8.1.2"
+    hooks:
+      - id: md-toc
+        name: md-toc
+        args: [-p, -s, "1", github]
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v2.6.2"
+    hooks:
+    - id: prettier
+      args: [--prose-wrap, always]
+      types: [markdown]
+
+  # ----------------------------------------------------------------------------
+  # Local
+
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        language: system
+        entry: poetry run black
+        require_serial: true
+        types: [python]
+
+      - id: isort
+        name: isort
+        language: system
+        entry: poetry run isort
+        require_serial: true
+        types: [python]
+
+      - id: flake8
+        name: flake8
+        language: system
+        entry: poetry run flake8 --config .flake8 --statistics
+        require_serial: false
+        types: [python]
+
+      - id: mypy
+        name: mypy
+        language: system
+        entry: >-
+          poetry run dmypy run
+          --timeout 3600
+          -- prometheus_fastapi_instrumentator
+        require_serial: false
+        pass_filenames: false
+        types: [python]
+
+      - id: requirements
+        name: requirements
+        language: system
+        entry: poetry run python scripts/requirements.py
+        require_serial: false
+        pass_filenames: false
+        files: ^poetry\.lock$
+
+  # ----------------------------------------------------------------------------
+
+exclude: |
+  (?x)(
+    ^CHANGELOG.md$
+  )

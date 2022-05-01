@@ -1,15 +1,12 @@
-# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
-# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
-
 import asyncio
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Setup
 
 
@@ -67,7 +64,7 @@ def reset_prometheus() -> None:
     gc_collector.GCCollector()
 
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Tests
 
 
@@ -83,6 +80,3 @@ def test_expose_default_content_type():
         "text/plain; version=0.0.4; charset=utf-8; charset=utf-8"
         not in response.headers.values()
     )
-
-
-# ==============================================================================

@@ -1,6 +1,3 @@
-# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
-# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
-
 from fastapi import FastAPI
 from prometheus_client import REGISTRY
 from starlette.responses import Response
@@ -8,7 +5,7 @@ from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Setup
 
 
@@ -49,7 +46,7 @@ def get_response(client: TestClient, path: str) -> Response:
     return response
 
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Tests
 
 

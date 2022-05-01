@@ -1,6 +1,3 @@
-# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
-# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
-
 """
 This module contains ready-to-use functions that can be passed on to the
 instrumentator instance with the `add()` method. The idea behind this is to
@@ -19,9 +16,8 @@ from prometheus_client import Counter, Histogram, Summary
 from starlette.requests import Request
 from starlette.responses import Response
 
-# ==============================================================================
 
-
+# ------------------------------------------------------------------------------
 class Info:
     def __init__(
         self,
@@ -94,7 +90,7 @@ def _build_label_attribute_names(
     return label_names, info_attribute_names
 
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Instrumentation / Metrics functions
 
 
@@ -176,9 +172,6 @@ def latency(
     return instrumentation
 
 
-# ------------------------------------------------------------------------------
-
-
 def request_size(
     metric_name: str = "http_request_size_bytes",
     metric_doc: str = "Content bytes of requests.",
@@ -243,9 +236,6 @@ def request_size(
             METRIC.observe(int(content_length))
 
     return instrumentation
-
-
-# ------------------------------------------------------------------------------
 
 
 def response_size(
@@ -322,9 +312,6 @@ def response_size(
             METRIC.observe(int(content_length))
 
     return instrumentation
-
-
-# ------------------------------------------------------------------------------
 
 
 def combined_size(
@@ -407,9 +394,6 @@ def combined_size(
     return instrumentation
 
 
-# ------------------------------------------------------------------------------
-
-
 def requests(
     metric_name: str = "http_requests_total",
     metric_doc: str = "Total number of requests by method, status and handler.",
@@ -477,9 +461,6 @@ def requests(
             METRIC.inc()
 
     return instrumentation
-
-
-# ------------------------------------------------------------------------------
 
 
 def default(
@@ -639,6 +620,3 @@ def default(
         LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
 
     return instrumentation
-
-
-# ==============================================================================

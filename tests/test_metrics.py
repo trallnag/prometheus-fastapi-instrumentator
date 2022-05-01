@@ -1,6 +1,3 @@
-# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
-# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
-
 from typing import Any, Dict, Optional
 
 import pytest
@@ -11,7 +8,7 @@ from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Setup
 
 
@@ -79,7 +76,7 @@ def get_response(client: TestClient, path: str) -> Response:
     return response
 
 
-# ==============================================================================
+# ------------------------------------------------------------------------------
 # Test helpers / misc
 
 
@@ -139,10 +136,6 @@ def test_api_throwing_error():
     client = TestClient(app)
     with pytest.raises(RuntimeError):
         get_response(client, "/runtime_error")
-
-
-# ==============================================================================
-# Tests for metrics / metric function builders
 
 
 # ------------------------------------------------------------------------------

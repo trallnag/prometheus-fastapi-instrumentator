@@ -1,6 +1,3 @@
-# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
-# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
-
 import gzip
 import os
 import re
@@ -100,8 +97,6 @@ class PrometheusFastApiInstrumentator:
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
 
-    # ==========================================================================
-
     def instrument(self, app: FastAPI):
         """Performs the instrumentation by adding middleware.
 
@@ -141,8 +136,6 @@ class PrometheusFastApiInstrumentator:
                 labelnames=labels,
                 multiprocess_mode="livesum",
             )
-
-        # ----------------------------------------------------------------------
 
         @app.middleware("http")
         async def dispatch_middleware(request: Request, call_next) -> Response:
@@ -197,11 +190,7 @@ class PrometheusFastApiInstrumentator:
 
             return response
 
-        # ----------------------------------------------------------------------
-
         return self
-
-    # ==========================================================================
 
     def expose(
         self,
@@ -282,8 +271,6 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    # ==========================================================================
-
     def add(self, instrumentation_function: Callable[[metrics.Info], None]):
         """Adds function to list of instrumentations.
 
@@ -300,8 +287,6 @@ class PrometheusFastApiInstrumentator:
         self.instrumentations.append(instrumentation_function)
 
         return self
-
-    # ==========================================================================
 
     def _get_handler(self, request: Request) -> Tuple[str, bool]:
         """Extracts either template or (if no template) path.
@@ -321,8 +306,6 @@ class PrometheusFastApiInstrumentator:
                 return route.path, True
 
         return request.url.path, False
-
-    # ==========================================================================
 
     def _is_handler_excluded(self, handler: str, is_templated: bool) -> bool:
         """Determines if the handler should be ignored.

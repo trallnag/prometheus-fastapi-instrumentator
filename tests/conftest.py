@@ -1,6 +1,3 @@
-# Copyright © 2020 Tim Schwenke <tim.and.trallnag+code@gmail.com>
-# Licensed under Apache License 2.0 <http://www.apache.org/licenses/LICENSE-2.0>
-
 import os
 import pathlib
 import shutil
@@ -8,8 +5,6 @@ from typing import Optional
 
 import pytest
 from devtools import debug
-
-# ==============================================================================
 
 
 class Helpers:
@@ -53,9 +48,6 @@ def helpers():
     return Helpers
 
 
-# ==============================================================================
-
-
 FILE = __file__
 
 
@@ -88,6 +80,3 @@ def data_path(tmp_path: pathlib.Path):
                 shutil.copy2(s, d)
 
     return tmp_path
-
-
-# ==============================================================================
