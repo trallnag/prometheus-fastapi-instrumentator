@@ -1,3 +1,21 @@
+## [5.8.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.7.1...v5.8.0) (2022-05-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removed support for Python 3.6 and overall cleanup
+* **dev:** Switch from underscores to dashes for function names
+
+### Features
+
+* **ci:** Add `dependabot.yml` ([a6d6406](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/a6d640613a89972df4de7fe8dde06bf1457f93b8))
+
+
+### Code Refactoring
+
+* **dev:** Switch from underscores to dashes for function names ([1dc0bb3](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/1dc0bb331ff2484931030fe802d0ee19a84e13d4))
+* remove support for python 3.6 and clean ([363d353](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/363d3534b78cafe50d288901890650d95a64e109))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
