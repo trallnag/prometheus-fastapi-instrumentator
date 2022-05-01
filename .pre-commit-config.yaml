@@ -77,14 +77,6 @@ repos:
         pass_filenames: false
         types: [python]
 
-      - id: requirements
-        name: requirements
-        language: system
-        entry: poetry run python scripts/requirements.py
-        require_serial: false
-        pass_filenames: false
-        files: ^poetry\.lock$
-
   # ----------------------------------------------------------------------------
 
 exclude: |
