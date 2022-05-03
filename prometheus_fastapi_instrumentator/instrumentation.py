@@ -1,8 +1,9 @@
 import gzip
 import os
 import re
+from enum import Enum
 from timeit import default_timer
-from typing import Callable, List, Optional, Pattern, Tuple
+from typing import Callable, List, Optional, Pattern, Tuple, Union
 
 from fastapi import FastAPI
 from prometheus_client import Gauge
@@ -198,7 +199,7 @@ class PrometheusFastApiInstrumentator:
         should_gzip: bool = False,
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
-        tags: Optional[List[str]] = None,
+        tags: Optional[List[Union[str, Enum]]] = None,
         **kwargs,
     ):
         """Exposes endpoint for metrics.
