@@ -163,7 +163,7 @@ class PrometheusFastApiInstrumentator:
                 response = await call_next(request)
                 status = str(response.status_code)
             except Exception as e:
-                raise e from None
+                raise e
             finally:
                 if not is_excluded:
                     duration = max(default_timer() - start_time, 0)
