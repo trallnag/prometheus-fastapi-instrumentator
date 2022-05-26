@@ -28,6 +28,7 @@ isort = "^5.10.1"
 mypy = "^0.950"
 devtools = "^0.8.0"
 pre-commit = "^2.18.1"
+asgiref = "^3.5.2"
 
 [tool.black]
 line-length = 90
