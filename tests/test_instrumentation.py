@@ -106,7 +106,7 @@ def get_response(client: TestClient, path: str) -> TestClientResponse:
 def assert_is_not_multiprocess(response: TestClientResponse) -> None:
     assert response.status_code == 200
     assert b"Multiprocess" not in response.content
-    # assert b"# HELP process_cpu_seconds_total" in response.content
+    assert b"# HELP process_cpu_seconds_total" in response.content
 
 
 def assert_request_count(
