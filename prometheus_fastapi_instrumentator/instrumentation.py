@@ -2,14 +2,11 @@ import gzip
 import os
 import re
 from enum import Enum
-from timeit import default_timer
-from typing import Callable, List, Optional, Pattern, Tuple, Union
+from typing import Callable, List, Optional, Pattern, Union
 
 from fastapi import FastAPI
-from prometheus_client import Gauge
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import Match
 
 from prometheus_fastapi_instrumentator import metrics
 from prometheus_fastapi_instrumentator.middleware import (
@@ -233,41 +230,3 @@ class PrometheusFastApiInstrumentator:
         self.instrumentations.append(instrumentation_function)
 
         return self
-
-    def _get_handler(self, request: Request) -> Tuple[str, bool]:
-        """Extracts either template or (if no template) path.
-
-        Args:
-            request (Request): Python Requests request object.
-
-        Returns:
-            Tuple[str, bool]: Tuple with two elements. First element is either
-                template or if no template the path. Second element tells you
-                if the path is templated or not.
-        """
-
-        for route in request.app.routes:
-            match, _ = route.matches(request.scope)
-            if match == Match.FULL:
-                return route.path, True
-
-        return request.url.path, False
-
-    def _is_handler_excluded(self, handler: str, is_templated: bool) -> bool:
-        """Determines if the handler should be ignored.
-
-        Args:
-            handler (str): Handler that handles the request.
-            is_templated (bool): Shows if the request is templated.
-
-        Returns:
-            bool: `True` if excluded, `False` if not.
-        """
-
-        if is_templated is False and self.should_ignore_untemplated:
-            return True
-
-        if any(pattern.search(handler) for pattern in self.excluded_handlers):
-            return True
-
-        return False
