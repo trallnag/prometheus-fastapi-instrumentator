@@ -1,3 +1,15 @@
+> Disclaimer: I'm happy to see that people find use in this project. In 2020 I
+> created it to handle instrumentation of a bunch of microservices I was working
+> on. Since then I (mostly) moved on to other things.
+>
+> The project is **still maintained** and good at doing what it's supposed to
+> do. At the same time, please **don't expect exciting new features** anytime
+> soon. If you know of any good alternatives, feel free to point them out in
+> [#140][project-status-issue] and I'll gladly include them in this document.
+
+[project-status-issue]:
+  https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/140
+
 # Prometheus FastAPI Instrumentator
 
 [![PyPI version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/)
@@ -55,16 +67,17 @@ well.
 
 <!--TOC-->
 
-- [Table of Contents](#table-of-contents)
-- [Features](#features)
-- [Advanced Usage](#advanced-usage)
-  - [Creating the Instrumentator](#creating-the-instrumentator)
-  - [Adding metrics](#adding-metrics)
-  - [Creating new metrics](#creating-new-metrics)
-  - [Perform instrumentation](#perform-instrumentation)
-  - [Exposing endpoint](#exposing-endpoint)
-- [Prerequesites](#prerequesites)
-- [Contributing](#contributing)
+- [Prometheus FastAPI Instrumentator](#prometheus-fastapi-instrumentator)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Advanced Usage](#advanced-usage)
+    - [Creating the Instrumentator](#creating-the-instrumentator)
+    - [Adding metrics](#adding-metrics)
+    - [Creating new metrics](#creating-new-metrics)
+    - [Perform instrumentation](#perform-instrumentation)
+    - [Exposing endpoint](#exposing-endpoint)
+  - [Prerequesites](#prerequesites)
+  - [Contributing](#contributing)
 
 <!--TOC-->
 
