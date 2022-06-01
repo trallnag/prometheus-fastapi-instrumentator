@@ -27,7 +27,7 @@ rope = "^1.0.0"
 isort = "^5.10.1"
 mypy = "^0.950"
 devtools = "^0.8.0"
-pre-commit = "^2.18.1"
+pre-commit = "^2.19.0"
 
 [tool.black]
 line-length = 90
