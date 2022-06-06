@@ -39,3 +39,4 @@ profile = "black"
 
 [tool.mypy]
 allow_redefinition = true
+ignore_missing_imports = true

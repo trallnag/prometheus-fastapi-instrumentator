@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from timeit import default_timer
-from typing import TYPE_CHECKING, Callable, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Callable, Optional, Sequence, Tuple
 
 from prometheus_client import Gauge
 from starlette.datastructures import Headers
@@ -89,12 +89,12 @@ class PrometheusInstrumentatorMiddleware:
             inprogress.inc()
 
         status_code = 500
-        headers = []
+        headers = []  # type: ignore
 
         async def send_wrapper(event: ASGISendEvent) -> None:
             if event["type"] == "http.response.start":
                 nonlocal status_code, headers
-                headers = event["headers"]
+                headers = event["headers"]  # type: ignore
                 status_code = event["status"]
             await send(event)
 
@@ -117,7 +117,7 @@ class PrometheusInstrumentatorMiddleware:
                 if self.should_group_status_codes:
                     status = status[0] + "xx"
 
-                response = Response(headers=Headers(raw=headers), status_code=status_code)
+                response = Response(headers=Headers(raw=headers), status_code=status_code)  # type: ignore
 
                 info = metrics.Info(
                     request=request,
