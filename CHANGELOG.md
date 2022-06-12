@@ -2,7 +2,9 @@
 
 ## [5.8.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.1...v5.8.2) (2022-06-12)
 
-### [5.8.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.0...v5.8.1) (2022-05-03)
+Refactored the middleware to an ASGI implementation. Thanks to @Kludex and @adriangb. #139.
+
+## [5.8.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.0...v5.8.1) (2022-05-03)
 
 
 ### Bug Fixes
