@@ -132,6 +132,7 @@ class PrometheusFastApiInstrumentator:
             inprogress_name=self.inprogress_name,
             inprogress_labels=self.inprogress_labels,
             instrumentations=self.instrumentations,
+            excluded_handlers=self.excluded_handlers,
         )
         return self
 
