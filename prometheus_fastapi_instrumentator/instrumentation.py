@@ -2,16 +2,16 @@ import gzip
 import os
 import re
 from enum import Enum
-from timeit import default_timer
-from typing import Callable, List, Optional, Pattern, Tuple, Union
+from typing import Callable, List, Optional, Pattern, Union
 
 from fastapi import FastAPI
-from prometheus_client import Gauge
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import Match
 
 from prometheus_fastapi_instrumentator import metrics
+from prometheus_fastapi_instrumentator.middleware import (
+    PrometheusInstrumentatorMiddleware,
+)
 
 
 class PrometheusFastApiInstrumentator:
@@ -119,78 +119,21 @@ class PrometheusFastApiInstrumentator:
         ):
             return self
 
-        if len(self.instrumentations) == 0:
-            self.instrumentations.append(metrics.default())
-
-        if self.should_instrument_requests_inprogress:
-            labels = (
-                (
-                    "method",
-                    "handler",
-                )
-                if self.inprogress_labels
-                else ()
-            )
-            self.inprogress = Gauge(
-                name=self.inprogress_name,
-                documentation="Number of HTTP requests in progress.",
-                labelnames=labels,
-                multiprocess_mode="livesum",
-            )
-
-        @app.middleware("http")
-        async def dispatch_middleware(request: Request, call_next) -> Response:
-            start_time = default_timer()
-
-            handler, is_templated = self._get_handler(request)
-            is_excluded = self._is_handler_excluded(handler, is_templated)
-            handler = (
-                "none" if not is_templated and self.should_group_untemplated else handler
-            )
-
-            if not is_excluded and self.should_instrument_requests_inprogress:
-                inprogress: Gauge
-                if self.inprogress_labels:
-                    inprogress = self.inprogress.labels(request.method, handler)
-                else:
-                    inprogress = self.inprogress
-                inprogress.inc()
-
-            response = None
-            status = "500"
-
-            try:
-                response = await call_next(request)
-                status = str(response.status_code)
-            except Exception as e:
-                raise e from None
-            finally:
-                if not is_excluded:
-                    duration = max(default_timer() - start_time, 0)
-
-                    if self.should_instrument_requests_inprogress:
-                        inprogress.dec()  # type: ignore
-
-                    if self.should_round_latency_decimals:
-                        duration = round(duration, self.round_latency_decimals)
-
-                    if self.should_group_status_codes:
-                        status = status[0] + "xx"
-
-                    info = metrics.Info(
-                        request=request,
-                        response=response,
-                        method=request.method,
-                        modified_handler=handler,
-                        modified_status=status,
-                        modified_duration=duration,
-                    )
-
-                    for instrumentation in self.instrumentations:
-                        instrumentation(info)
-
-            return response
-
+        app.add_middleware(
+            PrometheusInstrumentatorMiddleware,
+            should_group_status_codes=self.should_group_status_codes,
+            should_ignore_untemplated=self.should_ignore_untemplated,
+            should_group_untemplated=self.should_group_untemplated,
+            should_round_latency_decimals=self.should_round_latency_decimals,
+            should_respect_env_var=self.should_respect_env_var,
+            should_instrument_requests_inprogress=self.should_instrument_requests_inprogress,
+            round_latency_decimals=self.round_latency_decimals,
+            env_var_name=self.env_var_name,
+            inprogress_name=self.inprogress_name,
+            inprogress_labels=self.inprogress_labels,
+            instrumentations=self.instrumentations,
+            excluded_handlers=self.excluded_handlers,
+        )
         return self
 
     def expose(
@@ -288,41 +231,3 @@ class PrometheusFastApiInstrumentator:
         self.instrumentations.append(instrumentation_function)
 
         return self
-
-    def _get_handler(self, request: Request) -> Tuple[str, bool]:
-        """Extracts either template or (if no template) path.
-
-        Args:
-            request (Request): Python Requests request object.
-
-        Returns:
-            Tuple[str, bool]: Tuple with two elements. First element is either
-                template or if no template the path. Second element tells you
-                if the path is templated or not.
-        """
-
-        for route in request.app.routes:
-            match, _ = route.matches(request.scope)
-            if match == Match.FULL:
-                return route.path, True
-
-        return request.url.path, False
-
-    def _is_handler_excluded(self, handler: str, is_templated: bool) -> bool:
-        """Determines if the handler should be ignored.
-
-        Args:
-            handler (str): Handler that handles the request.
-            is_templated (bool): Shows if the request is templated.
-
-        Returns:
-            bool: `True` if excluded, `False` if not.
-        """
-
-        if is_templated is False and self.should_ignore_untemplated:
-            return True
-
-        if any(pattern.search(handler) for pattern in self.excluded_handlers):
-            return True
-
-        return False

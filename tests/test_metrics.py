@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 import pytest
 from fastapi import FastAPI, HTTPException
 from prometheus_client import REGISTRY
-from starlette.responses import Response
+from requests import Response as TestClientResponse
 from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
@@ -66,7 +66,7 @@ def create_app() -> FastAPI:
     return app
 
 
-def get_response(client: TestClient, path: str) -> Response:
+def get_response(client: TestClient, path: str) -> TestClientResponse:
     response = client.get(path)
 
     print(f"\nResponse  path='{path}' status='{response.status_code}':\n")

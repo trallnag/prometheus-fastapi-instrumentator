@@ -4,10 +4,13 @@ from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
 from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
+from requests import Response as TestClientResponse
 from starlette.responses import Response
 from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
+
+setattr(TestClientResponse, "__test__", False)
 
 # ------------------------------------------------------------------------------
 # Setup
@@ -90,7 +93,7 @@ def expose_metrics(app: FastAPI) -> None:
     return registry
 
 
-def get_response(client: TestClient, path: str) -> Response:
+def get_response(client: TestClient, path: str) -> TestClientResponse:
     response = client.get(path)
 
     print(f"\nResponse  path='{path}' status='{response.status_code}':\n")
@@ -100,7 +103,7 @@ def get_response(client: TestClient, path: str) -> Response:
     return response
 
 
-def assert_is_not_multiprocess(response: Response) -> None:
+def assert_is_not_multiprocess(response: TestClientResponse) -> None:
     assert response.status_code == 200
     assert b"Multiprocess" not in response.content
     assert b"# HELP process_cpu_seconds_total" in response.content
