@@ -547,69 +547,81 @@ def default(
     if latency_lowr_buckets[-1] != float("inf"):
         latency_lowr_buckets = latency_lowr_buckets + (float("inf"),)
 
-    TOTAL = Counter(
-        name="http_requests_total",
-        documentation="Total number of requests by method, status and handler.",
-        labelnames=(
-            "method",
-            "status",
-            "handler",
-        ),
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-        registry=registry,
-    )
+    registry_names = registry._get_names(registry)
 
-    IN_SIZE = Summary(
-        name="http_request_size_bytes",
-        documentation=(
-            "Content length of incoming requests by handler. "
-            "Only value of header is respected. Otherwise ignored. "
-            "No percentile calculated. "
-        ),
-        labelnames=("handler",),
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-        registry=registry,
-    )
+    total_name = "http_requests_total"
+    if total_name not in registry_names:
+        TOTAL = Counter(
+            name=total_name,
+            documentation="Total number of requests by method, status and handler.",
+            labelnames=(
+                "method",
+                "status",
+                "handler",
+            ),
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
 
-    OUT_SIZE = Summary(
-        name="http_response_size_bytes",
-        documentation=(
-            "Content length of outgoing responses by handler. "
-            "Only value of header is respected. Otherwise ignored. "
-            "No percentile calculated. "
-        ),
-        labelnames=("handler",),
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-        registry=registry,
-    )
+    in_size_name = "http_request_size_bytes"
+    if in_size_name not in registry_names:
+        IN_SIZE = Summary(
+            name=in_size_name,
+            documentation=(
+                "Content length of incoming requests by handler. "
+                "Only value of header is respected. Otherwise ignored. "
+                "No percentile calculated. "
+            ),
+            labelnames=("handler",),
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
 
-    LATENCY_HIGHR = Histogram(
-        name="http_request_duration_highr_seconds",
-        documentation=(
-            "Latency with many buckets but no API specific labels. "
-            "Made for more accurate percentile calculations. "
-        ),
-        buckets=latency_highr_buckets,
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-        registry=registry,
-    )
+    out_size_name = "http_response_size_bytes"
+    if out_size_name not in registry_names:
+        OUT_SIZE = Summary(
+            name=out_size_name,
+            documentation=(
+                "Content length of outgoing responses by handler. "
+                "Only value of header is respected. Otherwise ignored. "
+                "No percentile calculated. "
+            ),
+            labelnames=("handler",),
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
 
-    LATENCY_LOWR = Histogram(
-        name="http_request_duration_seconds",
-        documentation=(
-            "Latency with only few buckets by handler. "
-            "Made to be only used if aggregation by handler is important. "
-        ),
-        buckets=latency_lowr_buckets,
-        labelnames=("handler",),
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-        registry=registry,
-    )
+    latency_highr_name = "http_request_duration_highr_seconds"
+    if latency_highr_name not in registry_names:
+        LATENCY_HIGHR = Histogram(
+            name=latency_highr_name,
+            documentation=(
+                "Latency with many buckets but no API specific labels. "
+                "Made for more accurate percentile calculations. "
+            ),
+            buckets=latency_highr_buckets,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
+
+    latency_lowr_name = "http_request_duration_seconds"
+    if latency_lowr_name not in registry_names:
+        LATENCY_LOWR = Histogram(
+            name=latency_lowr_name,
+            documentation=(
+                "Latency with only few buckets by handler. "
+                "Made to be only used if aggregation by handler is important. "
+            ),
+            buckets=latency_lowr_buckets,
+            labelnames=("handler",),
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
 
     def instrumentation(info: Info) -> None:
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
