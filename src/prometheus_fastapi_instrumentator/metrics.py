@@ -547,12 +547,15 @@ def default(
     if latency_lowr_buckets[-1] != float("inf"):
         latency_lowr_buckets = latency_lowr_buckets + (float("inf"),)
 
-    registry_names = registry._get_names(registry)
-
-    total_name = "http_requests_total"
-    if total_name not in registry_names:
+    try:
+        # Starlette will call app.build_middleware_stack() with every new middleware
+        # added, which will call all this again, which will make the registry complain
+        # about duplicated metrics.
+        # The Python Prometheus client currently doesn't seem to have a way to verify
+        # if adding a metric will cause errors or not, so the only way to handle it
+        # seems to be with this try block.
         TOTAL = Counter(
-            name=total_name,
+            name="http_requests_total",
             documentation="Total number of requests by method, status and handler.",
             labelnames=(
                 "method",
@@ -564,10 +567,8 @@ def default(
             registry=registry,
         )
 
-    in_size_name = "http_request_size_bytes"
-    if in_size_name not in registry_names:
         IN_SIZE = Summary(
-            name=in_size_name,
+            name="http_request_size_bytes",
             documentation=(
                 "Content length of incoming requests by handler. "
                 "Only value of header is respected. Otherwise ignored. "
@@ -579,10 +580,8 @@ def default(
             registry=registry,
         )
 
-    out_size_name = "http_response_size_bytes"
-    if out_size_name not in registry_names:
         OUT_SIZE = Summary(
-            name=out_size_name,
+            name="http_response_size_bytes",
             documentation=(
                 "Content length of outgoing responses by handler. "
                 "Only value of header is respected. Otherwise ignored. "
@@ -594,10 +593,8 @@ def default(
             registry=registry,
         )
 
-    latency_highr_name = "http_request_duration_highr_seconds"
-    if latency_highr_name not in registry_names:
         LATENCY_HIGHR = Histogram(
-            name=latency_highr_name,
+            name="http_request_duration_highr_seconds",
             documentation=(
                 "Latency with many buckets but no API specific labels. "
                 "Made for more accurate percentile calculations. "
@@ -608,10 +605,8 @@ def default(
             registry=registry,
         )
 
-    latency_lowr_name = "http_request_duration_seconds"
-    if latency_lowr_name not in registry_names:
         LATENCY_LOWR = Histogram(
-            name=latency_lowr_name,
+            name="http_request_duration_seconds",
             documentation=(
                 "Latency with only few buckets by handler. "
                 "Made to be only used if aggregation by handler is important. "
@@ -622,6 +617,9 @@ def default(
             subsystem=metric_subsystem,
             registry=registry,
         )
+    except ValueError as e:
+        if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
+            raise e
 
     def instrumentation(info: Info) -> None:
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
