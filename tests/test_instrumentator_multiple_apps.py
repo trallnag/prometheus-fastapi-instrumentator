@@ -40,6 +40,17 @@ def test_expose_defaults():
     registry2 = CollectorRegistry(auto_describe=True)
     Instrumentator(registry=registry1).instrument(app1).expose(app1)
     Instrumentator(registry=registry2).instrument(app2).expose(app2)
+
+    # Add middlewares after adding the instrumentator, this triggers another
+    # app.build_middleware_stack(), which creates the middleware again, but it will use
+    # the same Prometheus registry again, which could try to create the same metrics
+    # again causing duplication errors
+    @app1.middleware("http")
+    @app2.middleware("http")
+    async def no_op_middleware(request, call_next):
+        response = await call_next(request)
+        return response
+
     client1 = TestClient(app1)
     client2 = TestClient(app2)
 
