@@ -12,7 +12,7 @@ from this module.
 
 from typing import Callable, Optional, Tuple
 
-from prometheus_client import Counter, Histogram, Summary
+from prometheus_client import REGISTRY, CollectorRegistry, Counter, Histogram, Summary
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -496,6 +496,7 @@ def default(
         60,
     ),
     latency_lowr_buckets: tuple = (0.1, 0.5, 1),
+    registry: CollectorRegistry = REGISTRY,
 ) -> Callable[[Info], None]:
     """Contains multiple metrics to cover multiple things.
 
@@ -556,6 +557,7 @@ def default(
         ),
         namespace=metric_namespace,
         subsystem=metric_subsystem,
+        registry=registry,
     )
 
     IN_SIZE = Summary(
@@ -568,6 +570,7 @@ def default(
         labelnames=("handler",),
         namespace=metric_namespace,
         subsystem=metric_subsystem,
+        registry=registry,
     )
 
     OUT_SIZE = Summary(
@@ -580,6 +583,7 @@ def default(
         labelnames=("handler",),
         namespace=metric_namespace,
         subsystem=metric_subsystem,
+        registry=registry,
     )
 
     LATENCY_HIGHR = Histogram(
@@ -591,6 +595,7 @@ def default(
         buckets=latency_highr_buckets,
         namespace=metric_namespace,
         subsystem=metric_subsystem,
+        registry=registry,
     )
 
     LATENCY_LOWR = Histogram(
@@ -603,6 +608,7 @@ def default(
         labelnames=("handler",),
         namespace=metric_namespace,
         subsystem=metric_subsystem,
+        registry=registry,
     )
 
     def instrumentation(info: Info) -> None:

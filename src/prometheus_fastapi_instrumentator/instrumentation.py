@@ -180,6 +180,7 @@ class PrometheusFastApiInstrumentator:
             should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
             latency_highr_buckets=latency_highr_buckets,
             latency_lowr_buckets=latency_lowr_buckets,
+            registry=self.registry,
         )
         return self
 

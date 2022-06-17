@@ -5,7 +5,7 @@ from http import HTTPStatus
 from timeit import default_timer
 from typing import TYPE_CHECKING, Callable, Optional, Sequence, Tuple
 
-from prometheus_client import Gauge
+from prometheus_client import REGISTRY, CollectorRegistry, Gauge
 from starlette.datastructures import Headers
 from starlette.requests import Request
 from starlette.responses import Response
@@ -60,6 +60,7 @@ class PrometheusInstrumentatorMiddleware:
             60,
         ),
         latency_lowr_buckets: tuple = (0.1, 0.5, 1),
+        registry: CollectorRegistry = REGISTRY,
     ) -> None:
         self.app = app
 
@@ -74,6 +75,7 @@ class PrometheusInstrumentatorMiddleware:
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
+        self.registry = registry
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
         self.instrumentations = instrumentations or [
@@ -83,6 +85,7 @@ class PrometheusInstrumentatorMiddleware:
                 should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
                 latency_highr_buckets=latency_highr_buckets,
                 latency_lowr_buckets=latency_lowr_buckets,
+                registry=self.registry,
             )
         ]
 
