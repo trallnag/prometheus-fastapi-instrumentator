@@ -48,7 +48,7 @@ In addition, following behaviour is active:
 - Status codes are grouped into `2xx`, `3xx` and so on.
 - Requests without a matching template are grouped into the handler `none`.
 
-If one of these presets does not suit your needs you can multiple things:
+If one of these presets does not suit your needs you can do one of multiple things:
 
 - Pick one of the already existing closures from
   [`metrics`](https://trallnag.github.io/prometheus-fastapi-instrumentator/metrics.html)
