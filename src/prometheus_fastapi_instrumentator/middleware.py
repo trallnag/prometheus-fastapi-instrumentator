@@ -160,7 +160,7 @@ class PrometheusInstrumentatorMiddleware:
             bool: `True` if excluded, `False` if not.
         """
 
-        if is_templated is False and self.should_ignore_untemplated:
+        if not is_templated and self.should_ignore_untemplated:
             return True
 
         if any(pattern.search(handler) for pattern in self.excluded_handlers):

@@ -456,11 +456,7 @@ def test_should_respect_env_var_existence_not_exists():
 def calc_entropy(decimal_str: str):
     decimals = [int(x) for x in decimal_str]
     print(decimals)
-    entropy = 0
-    for i in range(len(decimals)):
-        if i != 0:
-            entropy += abs(decimals[i] - decimals[i - 1])
-    return entropy
+    return sum(abs(decimals[i] - decimals[i - 1]) for i in range(len(decimals)) if i != 0)
 
 
 def test_entropy():

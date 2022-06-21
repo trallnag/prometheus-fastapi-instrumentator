@@ -162,9 +162,10 @@ def latency(
 
     def instrumentation(info: Info) -> None:
         if label_names:
-            label_values = []
-            for attribute_name in info_attribute_names:
-                label_values.append(getattr(info, attribute_name))
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
             METRIC.labels(*label_values).observe(info.modified_duration)
         else:
             METRIC.observe(info.modified_duration)
@@ -228,9 +229,10 @@ def request_size(
     def instrumentation(info: Info) -> None:
         content_length = info.request.headers.get("Content-Length", 0)
         if label_names:
-            label_values = []
-            for attribute_name in info_attribute_names:
-                label_values.append(getattr(info, attribute_name))
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
             METRIC.labels(*label_values).observe(int(content_length))
         else:
             METRIC.observe(int(content_length))
@@ -304,9 +306,10 @@ def response_size(
             content_length = 0
 
         if label_names:
-            label_values = []
-            for attribute_name in info_attribute_names:
-                label_values.append(getattr(info, attribute_name))
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
             METRIC.labels(*label_values).observe(int(content_length))
         else:
             METRIC.observe(int(content_length))
@@ -384,9 +387,10 @@ def combined_size(
         content_length = int(request_cl) + int(response_cl)
 
         if label_names:
-            label_values = []
-            for attribute_name in info_attribute_names:
-                label_values.append(getattr(info, attribute_name))
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
             METRIC.labels(*label_values).observe(int(content_length))
         else:
             METRIC.observe(int(content_length))
@@ -453,9 +457,10 @@ def requests(
 
     def instrumentation(info: Info) -> None:
         if label_names:
-            label_values = []
-            for attribute_name in info_attribute_names:
-                label_values.append(getattr(info, attribute_name))
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
             METRIC.labels(*label_values).inc()
         else:
             METRIC.inc()

@@ -23,7 +23,7 @@ class PrometheusFastApiInstrumentator:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
-        excluded_handlers: List[str] = [],
+        excluded_handlers: List[str] = None,
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
@@ -78,6 +78,8 @@ class PrometheusFastApiInstrumentator:
                 `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
         """
 
+        if excluded_handlers is None:
+            excluded_handlers = []
         self.should_group_status_codes = should_group_status_codes
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
@@ -207,11 +209,11 @@ class PrometheusFastApiInstrumentator:
                 resp = Response(content=gzip.compress(generate_latest(registry)))
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
                 resp.headers["Content-Encoding"] = "gzip"
-                return resp
             else:
                 resp = Response(content=generate_latest(registry))
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
-                return resp
+
+            return resp
 
         return self
 
