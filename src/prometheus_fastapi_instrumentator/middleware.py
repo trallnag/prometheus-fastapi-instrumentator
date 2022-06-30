@@ -77,7 +77,6 @@ class PrometheusInstrumentatorMiddleware:
 
         handler, is_templated = self._get_handler(request)
         is_excluded = self._is_handler_excluded(handler, is_templated)
-        print(is_excluded)
         handler = (
             "none" if not is_templated and self.should_group_untemplated else handler
         )
