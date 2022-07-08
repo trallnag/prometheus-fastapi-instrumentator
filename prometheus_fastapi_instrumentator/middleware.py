@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from timeit import default_timer
-from typing import TYPE_CHECKING, Callable, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Callable, Optional, Sequence, Tuple, Dict
 
 from prometheus_client import Gauge
 from starlette.datastructures import Headers
@@ -33,6 +33,7 @@ class PrometheusInstrumentatorMiddleware:
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
         instrumentations: Sequence[Callable[[metrics.Info], None]] = (),
+        additional_labels: Dict[str, str] = {},
     ) -> None:
         self.app = app
 
@@ -49,9 +50,12 @@ class PrometheusInstrumentatorMiddleware:
         self.inprogress_labels = inprogress_labels
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
-        self.instrumentations = instrumentations or [metrics.default()]
+        self.instrumentations = instrumentations or [metrics.default(additional_labels=additional_labels)]
 
         self.inprogress: Optional[Gauge] = None
+
+        self.additional_labels = additional_labels
+
         if self.should_instrument_requests_inprogress:
             labels = (
                 (
@@ -127,6 +131,8 @@ class PrometheusInstrumentatorMiddleware:
                     modified_status=status,
                     modified_duration=duration,
                 )
+                for k, v in self.additional_labels:
+                    setattr(info, k, v)
 
                 for instrumentation in self.instrumentations:
                     instrumentation(info)

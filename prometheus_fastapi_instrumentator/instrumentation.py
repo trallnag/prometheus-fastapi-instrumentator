@@ -2,7 +2,7 @@ import gzip
 import os
 import re
 from enum import Enum
-from typing import Callable, List, Optional, Pattern, Union
+from typing import Callable, List, Optional, Pattern, Union, Dict
 
 from fastapi import FastAPI
 from starlette.requests import Request
@@ -28,6 +28,7 @@ class PrometheusFastApiInstrumentator:
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
+        additional_labels: Dict[str, str] = {},
     ):
         """Create a Prometheus FastAPI Instrumentator.
 
@@ -76,6 +77,9 @@ class PrometheusFastApiInstrumentator:
             inprogress_labels (bool): Should labels `method` and `handler` be
                 part of the inprogress label? Ignored unless
                 `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
+
+            additional_labels (Dict[str, str]): Dictionary of additional labels
+                to be added to all metrics. Defaults to `{}`.
         """
 
         self.should_group_status_codes = should_group_status_codes
@@ -89,6 +93,8 @@ class PrometheusFastApiInstrumentator:
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
+
+        self.additional_labels = additional_labels
 
         self.excluded_handlers: List[Pattern[str]]
         if excluded_handlers:
@@ -133,6 +139,7 @@ class PrometheusFastApiInstrumentator:
             inprogress_labels=self.inprogress_labels,
             instrumentations=self.instrumentations,
             excluded_handlers=self.excluded_handlers,
+            additional_labels=self.additional_labels,
         )
         return self
 

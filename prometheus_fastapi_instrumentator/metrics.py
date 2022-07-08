@@ -10,7 +10,7 @@ create your own instrumentation function instead of combining several functions
 from this module.
 """
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Dict
 
 from prometheus_client import Counter, Histogram, Summary
 from starlette.requests import Request
@@ -56,6 +56,7 @@ def _build_label_attribute_names(
     should_include_handler: bool,
     should_include_method: bool,
     should_include_status: bool,
+    additional_labels: Dict[str, str] = {},
 ) -> Tuple[list, list]:
     """Builds up tuple with to be used label and attribute names.
 
@@ -63,6 +64,8 @@ def _build_label_attribute_names(
         should_include_handler (bool): Should the `handler` label be part of the metric?
         should_include_method (bool): Should the `method` label be part of the metric?
         should_include_status (bool): Should the `status` label be part of the metric?
+        additional_labels (Dict[str, str]): Dictionary of additional labels
+            to be added to all metrics. Defaults to `{}`.
 
     Returns:
         Tuple with two list elements.
@@ -87,6 +90,10 @@ def _build_label_attribute_names(
         label_names.append("status")
         info_attribute_names.append("modified_status")
 
+    for k, v in additional_labels.items():
+        label_names.append(k)
+        info_attribute_names.append(v)
+
     return label_names, info_attribute_names
 
 
@@ -103,6 +110,7 @@ def latency(
     should_include_method: bool = True,
     should_include_status: bool = True,
     buckets: tuple = Histogram.DEFAULT_BUCKETS,
+    additional_labels: Dict[str, str] = {},
 ) -> Callable[[Info], None]:
     """Default metric for the Prometheus FastAPI Instrumentator.
 
@@ -131,6 +139,9 @@ def latency(
         buckets: Buckets for the histogram. Defaults to Prometheus default.
             Defaults to default buckets from Prometheus client library.
 
+        additional_labels (Dict[str, str]): Dictionary of additional labels
+            to be added to all metrics. Defaults to `{}`.
+
     Returns:
         Function that takes a single parameter `Info`.
     """
@@ -139,7 +150,7 @@ def latency(
         buckets = buckets + (float("inf"),)
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler, should_include_method, should_include_status, additional_labels
     )
 
     if label_names:
@@ -180,6 +191,7 @@ def request_size(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    additional_labels: Dict[str, str] = {},
 ) -> Callable[[Info], None]:
     """Record the content length of incoming requests.
 
@@ -200,13 +212,15 @@ def request_size(
             metric? Defaults to `True`.
         should_include_status: Should the `status` label be part of the metric?
             Defaults to `True`.
+        additional_labels (Dict[str, str]): Dictionary of additional labels
+            to be added to all metrics. Defaults to `{}`.
 
     Returns:
         Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler, should_include_method, should_include_status, additional_labels
     )
 
     if label_names:
@@ -246,6 +260,7 @@ def response_size(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    additional_labels: Dict[str, str] = {},
 ) -> Callable[[Info], None]:
     """Record the content length of outgoing responses.
 
@@ -273,12 +288,15 @@ def response_size(
         should_include_status: Should the `status` label be part of the metric?
             Defaults to `True`.
 
+        additional_labels (Dict[str, str]): Dictionary of additional labels
+            to be added to all metrics. Defaults to `{}`.
+
     Returns:
         Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler, should_include_method, should_include_status, additional_labels
     )
 
     if label_names:
@@ -322,6 +340,7 @@ def combined_size(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    additional_labels: Dict[str, str] = {},
 ) -> Callable[[Info], None]:
     """Record the combined content length of requests and responses.
 
@@ -349,12 +368,15 @@ def combined_size(
         should_include_status: Should the `status` label be part of the metric?
             Defaults to `True`.
 
+        additional_labels (Dict[str, str]): Dictionary of additional labels
+            to be added to all metrics. Defaults to `{}`.
+
     Returns:
         Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler, should_include_method, should_include_status, additional_labels
     )
 
     if label_names:
@@ -402,6 +424,7 @@ def requests(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    additional_labels: Dict[str, str] = {},
 ) -> Callable[[Info], None]:
     """Record the number of requests.
 
@@ -427,12 +450,15 @@ def requests(
         should_include_status (bool, optional): Should the `status` label be
             part of the metric? Defaults to `True`.
 
+        additional_labels (Dict[str, str]): Dictionary of additional labels
+            to be added to all metrics. Defaults to `{}`.
+
     Returns:
         Function that takes a single parameter `Info`.
     """
 
     label_names, info_attribute_names = _build_label_attribute_names(
-        should_include_handler, should_include_method, should_include_status
+        should_include_handler, should_include_method, should_include_status, additional_labels
     )
 
     if label_names:
@@ -466,31 +492,15 @@ def requests(
 def default(
     metric_namespace: str = "",
     metric_subsystem: str = "",
-    should_only_respect_2xx_for_highr: bool = False,
-    latency_highr_buckets: tuple = (
-        0.01,
-        0.025,
-        0.05,
-        0.075,
-        0.1,
-        0.25,
-        0.5,
-        0.75,
-        1,
-        1.5,
-        2,
-        2.5,
-        3,
-        3.5,
-        4,
-        4.5,
-        5,
-        7.5,
-        10,
-        30,
-        60,
+    latency_buckets: tuple = (
+        0.005, 0.01, 0.015, 0.02, 0.025, 0.05, 0.075,
+        0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
+        0.5, 0.6, 0.7, 0.8, 0.9,
+        1, 2, 3, 4, 5, 6, 7, 8, 9,
+        10, 15, 20, 25,
+        30, 40, 50, 60,
     ),
-    latency_lowr_buckets: tuple = (0.1, 0.5, 1),
+    additional_labels: Dict[str, str] = {},
 ) -> Callable[[Info], None]:
     """Contains multiple metrics to cover multiple things.
 
@@ -505,10 +515,8 @@ def default(
         content length bytes by handler.
     * `http_response_size_bytes` (`handler`): Total number of outgoing
         content length bytes by handler.
-    * `http_request_duration_highr_seconds` (no labels): High number of buckets
+    * `http_request_duration_seconds` (`handler`, `status`, `method`): High number of buckets
         leading to more accurate calculation of percentiles.
-    * `http_request_duration_seconds` (`handler`):
-        Kepp the bucket count very low. Only put in SLIs.
 
     Args:
         metric_namespace (str, optional): Namespace of all  metrics in this
@@ -522,37 +530,39 @@ def default(
             requests / responses that have a status code starting with `2`?
             Defaults to `False`.
 
-        latency_highr_buckets (tuple[float], optional): Buckets tuple for high
-            res histogram. Can be large because no labels are used. Defaults to
-            (0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5,
-            3, 3.5, 4, 4.5, 5, 7.5, 10, 30, 60).
+        latency_buckets (tuple[float], optional): Buckets tuple for high
+            res histogram.
 
-        latency_lowr_buckets (tuple[float], optional): Buckets tuple for low
-            res histogram. Should be very small as all possible labels are
-            included. Defaults to `(0.1, 0.5, 1)`.
+        additional_labels (Dict[str, str]): Dictionary of additional labels
+                to be added to all metrics. Defaults to `{}`.
 
     Returns:
         Function that takes a single parameter `Info`.
     """
 
-    if latency_highr_buckets[-1] != float("inf"):
-        latency_highr_buckets = latency_highr_buckets + (float("inf"),)
+    if latency_buckets[-1] != float("inf"):
+        latency_buckets = latency_buckets + (float("inf"),)
 
-    if latency_lowr_buckets[-1] != float("inf"):
-        latency_lowr_buckets = latency_lowr_buckets + (float("inf"),)
-
+    label_names = [
+        "method",
+        "status",
+        "handler",
+    ]
+    for k in additional_labels.keys():
+        label_names.append(k)
     TOTAL = Counter(
         name="http_requests_total",
         documentation="Total number of requests by method, status and handler.",
-        labelnames=(
-            "method",
-            "status",
-            "handler",
-        ),
+        labelnames=label_names,
         namespace=metric_namespace,
         subsystem=metric_subsystem,
     )
 
+    label_names = [
+        "handler",
+    ]
+    for k in additional_labels.keys():
+        label_names.append(k)
     IN_SIZE = Summary(
         name="http_request_size_bytes",
         documentation=(
@@ -560,11 +570,16 @@ def default(
             "Only value of header is respected. Otherwise ignored. "
             "No percentile calculated. "
         ),
-        labelnames=("handler",),
+        labelnames=label_names,
         namespace=metric_namespace,
         subsystem=metric_subsystem,
     )
 
+    label_names = [
+        "handler",
+    ]
+    for k in additional_labels.keys():
+        label_names.append(k)
     OUT_SIZE = Summary(
         name="http_response_size_bytes",
         documentation=(
@@ -572,51 +587,56 @@ def default(
             "Only value of header is respected. Otherwise ignored. "
             "No percentile calculated. "
         ),
-        labelnames=("handler",),
+        labelnames=label_names,
         namespace=metric_namespace,
         subsystem=metric_subsystem,
     )
 
-    LATENCY_HIGHR = Histogram(
-        name="http_request_duration_highr_seconds",
-        documentation=(
-            "Latency with many buckets but no API specific labels. "
-            "Made for more accurate percentile calculations. "
-        ),
-        buckets=latency_highr_buckets,
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-    )
-
-    LATENCY_LOWR = Histogram(
+    label_names = [
+        "method",
+        "status",
+        "handler",
+    ]
+    for k in additional_labels.keys():
+        label_names.append(k)
+    LATENCY = Histogram(
         name="http_request_duration_seconds",
         documentation=(
-            "Latency with only few buckets by handler. "
-            "Made to be only used if aggregation by handler is important. "
+            "Latency with many buckets by method, status and handler..  "
+            "Made for more accurate percentile calculations.  "
         ),
-        buckets=latency_lowr_buckets,
-        labelnames=("handler",),
+        buckets=latency_buckets,
+        labelnames=label_names,
         namespace=metric_namespace,
         subsystem=metric_subsystem,
     )
 
     def instrumentation(info: Info) -> None:
-        TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+        label_values = [info.method, info.modified_status, info.modified_handler]
+        for k in additional_labels.keys():
+            label_values.append(getattr(info, k))
+        TOTAL.labels(*label_values).inc()
 
-        IN_SIZE.labels(info.modified_handler).observe(
+        label_values = [info.modified_handler]
+        for k in additional_labels.keys():
+            label_values.append(getattr(info, k))
+        IN_SIZE.labels(*label_values).observe(
             int(info.request.headers.get("Content-Length", 0))
         )
 
+        label_values = [info.modified_handler]
+        for k in additional_labels.keys():
+            label_values.append(getattr(info, k))
         if info.response and hasattr(info.response, "headers"):
-            OUT_SIZE.labels(info.modified_handler).observe(
+            OUT_SIZE.labels(*label_values).observe(
                 int(info.response.headers.get("Content-Length", 0))
             )
         else:
-            OUT_SIZE.labels(info.modified_handler).observe(0)
+            OUT_SIZE.labels(*label_values).observe(0)
 
-        if not should_only_respect_2xx_for_highr or info.modified_status.startswith("2"):
-            LATENCY_HIGHR.observe(info.modified_duration)
-
-        LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
+        label_values = [info.method, info.modified_status, info.modified_handler]
+        for k in additional_labels.keys():
+            label_values.append(getattr(info, k))
+        LATENCY.labels(label_values).observe(info.modified_duration)
 
     return instrumentation
