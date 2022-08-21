@@ -1,0 +1,63 @@
+name: Release Please
+
+#
+# Central release workflow.
+#
+# - Uses Google's Release Please for release management.
+# - Python Poetry used for publishing package to PyPI.
+# - Does not run any checks, tests, or scans.
+#
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [trunk]
+
+jobs:
+  primary:
+    name: Primary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release Please
+        uses: google-github-actions/release-please-action@v3
+        id: release_please
+        with:
+          release-type: python
+          bump-minor-pre-major: true
+          changelog-types: |
+            [
+              { "type": "feat",      "section": "Features",     "hidden": false },
+              { "type": "fix",       "section": "Bug Fixes",    "hidden": false },
+              { "type": "revert",    "section": "Reverts",      "hidden": false },
+              { "type": "perf",      "section": "Performance",  "hidden": false },
+              { "type": "refactor",  "section": "Refactor",     "hidden": false },
+              { "type": "test",      "section": "Tests",        "hidden": false },
+              { "type": "docs",      "section": "Docs",         "hidden": false },
+              { "type": "build",     "section": "Build",        "hidden": false },
+              { "type": "ci",        "section": "CI/CD",        "hidden": false },
+              { "type": "style",     "section": "Styles",       "hidden": false },
+              { "type": "chore",     "section": "Chores",       "hidden": true }
+            ]
+
+      - name: Checkout
+        if: ${{ steps.release_please.outputs.release_created }}
+        uses: actions/checkout@v3
+
+      - name: Cache Poetry installation
+        if: ${{ steps.release_please.outputs.release_created }}
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.local/bin/poetry
+            ~/.local/share/pypoetry
+          key: poetry-installation-0
+
+      - name: Install Poetry
+        if: ${{ steps.release_please.outputs.release_created }}
+        run: curl -sSL https://install.python-poetry.org | python -
+
+      - name: Publish to PyPI with Poetry
+        if: ${{ steps.release_please.outputs.release_created }}
+        run: poetry publish --build -n -u __token__ -p "$TOKEN"
+        env:
+          TOKEN: ${{ secrets.PYPI_TOKEN }}

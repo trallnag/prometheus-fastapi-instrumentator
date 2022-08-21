@@ -1,0 +1,32 @@
+
+name: CodeQL
+
+#
+# Scan code with CodeQL on a scheduled basis.
+#
+# - <https://codeql.github.com/>
+# - <https://github.com/github/codeql-action>
+#
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 1 6 8 * *
+
+jobs:
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v2

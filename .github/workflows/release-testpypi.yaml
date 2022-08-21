@@ -1,0 +1,38 @@
+name: Release TestPyPI
+
+#
+# Build and release package to TestPyPI using Poetry.
+#
+# - Can be used safely on all branches (even PRs).
+# - Will fail if the the version is already available on TestPyPI.
+#
+
+on:
+  workflow_dispatch:
+
+jobs:
+  primary:
+    name: Primary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Cache Poetry installation
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.local/bin/poetry
+            ~/.local/share/pypoetry
+          key: poetry-installation-0
+
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python -
+
+      - name: Configure Poetry repo for TestPyPI
+        run: poetry config repositories.test-pypi https://test.pypi.org/legacy/
+
+      - name: Publish to TestPyPI with Poetry
+        run: poetry publish --build -n -r test-pypi -u __token__ -p "$TOKEN"
+        env:
+          TOKEN: ${{ secrets.TESTPYPI_TOKEN }}
