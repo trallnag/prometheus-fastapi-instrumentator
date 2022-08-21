@@ -1,14 +1,13 @@
 # ------------------------------------------------------------------------------
-# Project specific part of '.gitignore'.
+# Project specific.
 
 
-node/node_modules/
-node_modules/
+.vscode/
 tmp/
 
 
 # ------------------------------------------------------------------------------
-# Generic part of '.gitignore' based on: <https://github.com/github/gitignore>.
+# Generic from <https://github.com/github/gitignore/blob/main/Python.gitignore>.
 
 
 # Byte-compiled / optimized / DLL files
