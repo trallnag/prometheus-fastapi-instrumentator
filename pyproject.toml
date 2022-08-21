@@ -10,7 +10,7 @@ authors = ["Tim Schwenke <tim.schwenke@trallnag.com>"]
 license = "ISC"
 readme = "README.md"
 repository = "https://github.com/trallnag/prometheus-fastapi-instrumentator"
-keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
+keywords = ["instrumentation", "observability", "metrics", "prometheus", "fastapi"]
 
 [tool.poetry.dependencies]
 python = ">= 3.7.0, < 4.0.0"
@@ -32,7 +32,6 @@ asgiref = "^3.5.2"
 
 [tool.black]
 line-length = 90
-exclude = "(requirements.txt)"
 
 [tool.isort]
 profile = "black"
