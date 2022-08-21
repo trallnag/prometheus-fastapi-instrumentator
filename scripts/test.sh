@@ -1,52 +1,68 @@
 #!/bin/sh
 
 help() {
-    cat <<EOF
-Run tests.
+    cat << EOF
+Wrapper for running tests with Pytest.
+
+- Includes code coverage report generation.
+- Used within GitHub Actions workflows.
+- Used for local and interactive development.
 
 Options:
-    -f, --fast, fast        Only run fast tests.
-    -s, --slow, slow        Only run slow tests.
+  -f, --fast, fast    Only run fast tests.
+  -s, --slow, slow    Only run slow tests.
 EOF
 }
 
-case $1 in -h|--help|help) help && exit ;; esac
+case $1 in -h | --help | help) help && exit ;; esac
 
-source_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-repo_dir="$(dirname "$source_dir")"
+# shellcheck disable=SC1007
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
-. "$source_dir/main.sh"
+. "$script_dir/base.sh"
+
+cd "$PROJECT_DIR" || exit 1
 
 # ------------------------------------------------------------------------------
 
-set -eu
-
-cd "$repo_dir"
-
 _run_fast_tests() {
-    loginfo "Run fast tests with Pytest."
+  loginfo "Running only fast tests with Pytest..."
 
-    poetry run pytest -m "not slow" --cov=./ --cov-report=xml --cov-append
+  poetry run pytest \
+    --cov-report=term-missing:skip-covered \
+    --cov-report=xml \
+    --cov=src/$PACKAGE_NAME \
+    -m "not slow" \
+    tests/
 }
 
 _run_slow_tests() {
-    loginfo "Run slow tests with Pytest."
+  loginfo "Running only slow tests with Pytest..."
 
-    poetry run pytest -m "slow" --cov=./ --cov-report=xml --cov-append
+  poetry run pytest \
+    --cov-report=term-missing:skip-covered \
+    --cov-report=xml \
+    --cov=src/$PACKAGE_NAME \
+    -m "slow" \
+    tests/
 }
 
-_run_tests() {
-    rm coverage.xml || true
-    _run_fast_tests
-    _run_slow_tests
+_run_all_tests() {
+  loginfo "Running all tests with Pytest..."
+
+  poetry run pytest \
+    --cov-report=term-missing:skip-covered \
+    --cov-report=xml \
+    --cov=src/$PACKAGE_NAME \
+    tests/
 }
 
 if [ $# -eq 1 ]; then
-    case $1 in
-        -f|--fast|fast)     (rm coverage.xml || true) && _run_fast_tests ;;
-        -s|--slow|slow)     (rm coverage.xml || true) && _run_slow_tests ;;
-        *)                  help
-    esac
+  case $1 in
+  -f | --fast | fast) _run_fast_tests ;;
+  -s | --slow | slow) _run_slow_tests ;;
+  *) help ;;
+  esac
 else
-    _run_tests
+  _run_all_tests
 fi
