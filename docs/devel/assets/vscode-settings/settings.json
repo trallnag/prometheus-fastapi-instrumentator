@@ -1,0 +1,18 @@
+{
+	"[python]": {
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": true
+		},
+		"editor.formatOnSave": true
+	},
+	"files.insertFinalNewline": true,
+	"files.trimTrailingWhitespace": true,
+	"python.formatting.provider": "black",
+	"python.testing.pytestArgs": [
+		"tests"
+	],
+	"python.testing.pytestEnabled": true,
+	"python.testing.unittestEnabled": false,
+	"markdown.extension.toc.unorderedList.marker": "-",
+	"markdown.extension.toc.updateOnSave": true
+}
