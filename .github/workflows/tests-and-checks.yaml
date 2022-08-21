@@ -9,7 +9,7 @@ on:
   pull_request:
     branches-ignore: [release-please--**]
   push:
-    branches: [trunk]
+    branches: [master]
 
 jobs:
   primary:

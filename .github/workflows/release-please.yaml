@@ -11,7 +11,7 @@ name: Release Please
 on:
   workflow_dispatch:
   push:
-    branches: [trunk]
+    branches: [master]
 
 jobs:
   primary:
