@@ -30,9 +30,9 @@ jobs:
         run: curl -sSL https://install.python-poetry.org | python -
 
       - name: Configure Poetry repo for TestPyPI
-        run: poetry config repositories.test-pypi https://test.pypi.org/legacy/
+        run: poetry config repositories.testpypi https://test.pypi.org/legacy/
 
       - name: Publish to TestPyPI with Poetry
-        run: poetry publish --build -n -r test-pypi -u __token__ -p "$TOKEN"
+        run: poetry publish --build -n -r testpypi -u __token__ -p "$TOKEN"
         env:
           TOKEN: ${{ secrets.TESTPYPI_TOKEN }}
