@@ -2,7 +2,7 @@ import gzip
 import os
 import re
 from enum import Enum
-from typing import Callable, List, Optional, Pattern, Union
+from typing import Callable, List, Optional, Union
 
 from fastapi import FastAPI
 from starlette.requests import Request
@@ -23,7 +23,7 @@ class PrometheusFastApiInstrumentator:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
-        excluded_handlers: List[str] = [],
+        excluded_handlers: List[str] = None,
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
@@ -90,11 +90,10 @@ class PrometheusFastApiInstrumentator:
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
 
-        self.excluded_handlers: List[Pattern[str]]
-        if excluded_handlers:
-            self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
-        else:
-            self.excluded_handlers = []
+        if excluded_handlers is None:
+            excluded_handlers = []
+
+        self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
 
@@ -207,11 +206,11 @@ class PrometheusFastApiInstrumentator:
                 resp = Response(content=gzip.compress(generate_latest(registry)))
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
                 resp.headers["Content-Encoding"] = "gzip"
-                return resp
             else:
                 resp = Response(content=generate_latest(registry))
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
-                return resp
+
+            return resp
 
         return self
 

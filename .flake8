@@ -2,4 +2,4 @@
 exclude = .git,.lock
 max-complexity = 10
 max-line-length = 90
-ignore=E501
+ignore=E501,W503
