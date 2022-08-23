@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.9.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.0...v5.9.1) (2022-08-23)
+
+
+### CI/CD
+
+* Pin poetry version and improve caching configuration ([6337459](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/6337459156a9cd87d868953e6c6c8dabea064eb1))
+
+
+### Docs
+
+* Improve example in README on how to instrument app ([#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/168)) ([dc36aac](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/dc36aac1a530faa3970b19c1c68be4ee18c7c34b))
+
 ## [5.9.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.2...v5.9.0) (2022-08-23)
 
 
