@@ -3,6 +3,22 @@
 ## [5.9.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.2...v5.9.0) (2022-08-23)
 
 
+### 🍀 Summary 🍀
+
+This release fixes a small but annoying bug. Beyond that the release includes small internal improvements and bigger changes to CI/CD.
+
+
+### ✨ Highlights ✨
+
+* Removed print statement polluting logs ([#157](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/157)). Thanks to all the people raising this issue and to @nikstuckenbrock for fixing it.
+* Added `py.typed` file to package to improve typing annotations ([#137](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/137)). Thanks to @mmaslowskicc for proposing and implementing this.
+* Changed license from MIT to ISC, which is just like MIT but shorter.
+* Migrated from Semantic Release to Release Please as release management tool.
+* Overall refactoring of project structure to match my (@trallnag) template Python repo.
+* Several improvements to the documentation. Thanks to @jabertuhin, @frodrigo, and @murphp15.
+* Coding style improvements ([#155](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/155)). Replaced a few for loops with list comprehensions. Defaulting an argument to None instead of an empty list. Thanks to @yezz123.
+
+
 ### Features
 
 * Add py.typed for enhanced typing annotations ([#37](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/37)) ([0c67d1b](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/0c67d1b8f51348979c00fd00d9457d3dd238df87))
