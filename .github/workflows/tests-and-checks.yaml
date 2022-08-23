@@ -11,6 +11,9 @@ on:
   push:
     branches: [master]
 
+env:
+  poetry_version: "1.1.15"
+
 jobs:
   primary:
     name: Primary
@@ -37,16 +40,21 @@ jobs:
           path: |
             ~/.local/bin/poetry
             ~/.local/share/pypoetry
-          key: poetry-installation-${{ matrix.python-version }}-0
+          key: ${{ runner.os }}-poetry-installation-${{ matrix.python-version }}-${{ env.poetry_version }}-0
 
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python -
+        env:
+          POETRY_VERSION: ${{ env.poetry_version }}
 
       - name: Cache Poetry cache
         uses: actions/cache@v3
         with:
           path: ~/.cache/pypoetry
-          key: poetry-cache-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}-0
+          key: ${{ runner.os }}-poetry-cache-${{ matrix.python-version }}-${{ env.poetry_version }}-${{ hashFiles('poetry.lock') }}-0
+          restore-keys: |
+            ${{ runner.os }}-poetry-cache-${{ matrix.python-version }}-${{ env.poetry_version }}-
+            ${{ runner.os }}-poetry-cache-${{ matrix.python-version }}-
 
       - name: Install deps with Poetry
         run: poetry install --no-interaction
@@ -73,7 +81,9 @@ jobs:
           path: |
             ~/.cache/pre-commit
             .mypy_cache
-          key: pre-commit-${{ matrix.python-version }}-0
+          key: ${{ runner.os }}-pre-commit-${{ matrix.python-version }}-${{ hashFiles('.pre-commit-config.yaml') }}-0
+          restore-keys: |
+            ${{ runner.os }}-pre-commit-${{ matrix.python-version }}-
 
       - name: Setup Pre-commit
         run: poetry run pre-commit install
@@ -93,7 +103,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.asdf
-          key: asdf-${{ hashFiles('**/.tool-versions') }}-0
+          key: ${{ runner.os }}-asdf-${{ matrix.python-version }}-${{ hashFiles('.tool-versions') }}-0
+          restore-keys: |
+            ${{ runner.os }}-asdf-${{ matrix.python-version }}-
 
       - name: Install tools with asdf
         if: strategy.job-index == 0 && steps.cache-asdf.outputs.cache-hit != 'true'

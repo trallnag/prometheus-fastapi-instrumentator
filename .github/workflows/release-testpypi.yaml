@@ -10,6 +10,9 @@ name: Release TestPyPI
 on:
   workflow_dispatch:
 
+env:
+  poetry_version: "1.1.15"
+
 jobs:
   primary:
     name: Primary
@@ -24,10 +27,12 @@ jobs:
           path: |
             ~/.local/bin/poetry
             ~/.local/share/pypoetry
-          key: poetry-installation-0
+          key: ${{ runner.os }}-poetry-installation-${{ env.poetry_version }}-0
 
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python -
+        env:
+          POETRY_VERSION: ${{ env.poetry_version }}
 
       - name: Configure Poetry repo for TestPyPI
         run: poetry config repositories.testpypi https://test.pypi.org/legacy/
