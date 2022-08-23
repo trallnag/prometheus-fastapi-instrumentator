@@ -5,7 +5,8 @@
 
 ### 🍀 Summary 🍀
 
-No bug fixes or new features. Just an important improvement of the documentation and CI/CD related things.
+No bug fixes or new features. Just an important improvement of the documentation.
+
 
 ### ✨ Highlights ✨
 
