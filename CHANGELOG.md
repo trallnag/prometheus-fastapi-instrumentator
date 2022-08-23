@@ -1,5 +1,28 @@
 # Changelog
 
+## [5.9.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.0...v5.9.1) (2022-08-23)
+
+
+### 🍀 Summary 🍀
+
+No bug fixes or new features. Just an important improvement of the documentation.
+
+
+### ✨ Highlights ✨
+
+* Fix / Improve documentation of how to use package ([#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/168)). Instrumentation should happen in a function decorated with `@app.on_event("startup")` to prevent crashes on startup. Thanks to @mdczaplicki and others.
+
+
+### CI/CD
+
+* Pin poetry version and improve caching configuration ([6337459](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/6337459156a9cd87d868953e6c6c8dabea064eb1))
+
+
+### Docs
+
+* Improve example in README on how to instrument app ([#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/168)) ([dc36aac](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/dc36aac1a530faa3970b19c1c68be4ee18c7c34b))
+
+
 ## [5.9.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.2...v5.9.0) (2022-08-23)
 
 
@@ -68,16 +91,12 @@ This release fixes a small but annoying bug. Beyond that the release includes sm
 
 * Improve coding style ([#155](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/155)) ([623d83b](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/623d83b86278d2627084b9fe9547f1af07531042))
 
+
 ## [5.8.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.1...v5.8.2) (2022-06-12)
 
-Refactored the middleware to an ASGI implementation
-([#139](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/139)).
-Thanks to @Kludex and @adriangb for the proposal and implementation.
+Refactored the middleware to an ASGI implementation ([#139](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/139)). Thanks to @Kludex and @adriangb for the proposal and implementation.
+
 
 ## [5.8.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.0...v5.8.1) (2022-05-03)
 
-Fixed a regression that made the required FastAPI version too strict for no
-reason
-([#136](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/136))
-([36bc045](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/36bc045c5eb247fa7a83c25cc161f95b5d4b314d)).
-Thanks to @graipher for raising this issue.
+Fixed a regression that made the required FastAPI version too strict for no reason ([#136](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/136)) ([36bc045](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/36bc045c5eb247fa7a83c25cc161f95b5d4b314d)). Thanks to @graipher for raising this issue.
