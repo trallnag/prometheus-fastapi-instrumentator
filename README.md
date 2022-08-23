@@ -26,7 +26,9 @@ the fast track to get started with a preconfigured instrumentator:
 ```python
 from prometheus_fastapi_instrumentator import Instrumentator
 
-Instrumentator().instrument(app).expose(app)
+@app.on_event("startup")
+async def startup():
+    Instrumentator().instrument(app).expose(app)
 ```
 
 With this, your FastAPI is instrumented and metrics are ready to be scraped. The
