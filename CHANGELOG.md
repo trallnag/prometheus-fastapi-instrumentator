@@ -9,7 +9,7 @@ No bug fixes or new features. Just an important improvement of the documentation
 
 ### ✨ Highlights ✨
 
-* Fix / Improve documentation of how to use package ([#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/168)). Instrumentation should happen in a function decorated with `@app.on_event("startup")` to prevent crashes on startup. Thanks to @mdczaplicki.
+* Fix / Improve documentation of how to use package ([#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/168)). Instrumentation should happen in a function decorated with `@app.on_event("startup")` to prevent crashes on startup. Thanks to @mdczaplicki and others.
 
 
 ### CI/CD
