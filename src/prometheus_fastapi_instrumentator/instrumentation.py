@@ -2,7 +2,7 @@ import gzip
 import os
 import re
 from enum import Enum
-from typing import Callable, List, Optional, Pattern, Union
+from typing import Callable, List, Optional, Union
 
 from fastapi import FastAPI
 from starlette.requests import Request
@@ -78,8 +78,6 @@ class PrometheusFastApiInstrumentator:
                 `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
         """
 
-        if excluded_handlers is None:
-            excluded_handlers = []
         self.should_group_status_codes = should_group_status_codes
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
@@ -92,11 +90,10 @@ class PrometheusFastApiInstrumentator:
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
 
-        self.excluded_handlers: List[Pattern[str]]
-        if excluded_handlers:
-            self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
-        else:
-            self.excluded_handlers = []
+        if excluded_handlers is None:
+            excluded_handlers = []
+
+        self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
 
