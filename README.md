@@ -254,6 +254,26 @@ Notice that this will do nothing if `should_respect_env_var` has been set during
 construction of the instrumentator object and the respective env var is not
 found.
 
+### Specify namespace and subsystem
+
+You can specify the namespace and subsystem of the metrics by passing them in
+the instrument method.
+
+```python
+from prometheus_fastapi_instrumentator import Instrumentator
+
+@app.on_event("startup")
+async def startup():
+    Instrumentator().instrument(app, metric_namespace='myproject', metric_subsystem='myservice').expose(app)
+```
+
+Then your metrics will contain the namespace and subsystem in the metric name.
+
+```bash
+# TYPE myproject_myservice_http_request_duration_highr_seconds histogram
+myproject_myservice_http_request_duration_highr_seconds_bucket{le="0.01"} 0.0
+```
+
 ### Exposing endpoint
 
 To expose an endpoint for the metrics either follow

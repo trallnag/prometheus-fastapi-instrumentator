@@ -97,7 +97,37 @@ class PrometheusFastApiInstrumentator:
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
 
-    def instrument(self, app: FastAPI):
+    def instrument(
+        self,
+        app: FastAPI,
+        metric_namespace: str = "",
+        metric_subsystem: str = "",
+        should_only_respect_2xx_for_highr: bool = False,
+        latency_highr_buckets: tuple = (
+            0.01,
+            0.025,
+            0.05,
+            0.075,
+            0.1,
+            0.25,
+            0.5,
+            0.75,
+            1,
+            1.5,
+            2,
+            2.5,
+            3,
+            3.5,
+            4,
+            4.5,
+            5,
+            7.5,
+            10,
+            30,
+            60,
+        ),
+        latency_lowr_buckets: tuple = (0.1, 0.5, 1),
+    ):
         """Performs the instrumentation by adding middleware.
 
         The middleware iterates through all `instrumentations` and executes them.
@@ -132,6 +162,11 @@ class PrometheusFastApiInstrumentator:
             inprogress_labels=self.inprogress_labels,
             instrumentations=self.instrumentations,
             excluded_handlers=self.excluded_handlers,
+            metric_namespace=metric_namespace,
+            metric_subsystem=metric_subsystem,
+            should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
+            latency_highr_buckets=latency_highr_buckets,
+            latency_lowr_buckets=latency_lowr_buckets,
         )
         return self
 
