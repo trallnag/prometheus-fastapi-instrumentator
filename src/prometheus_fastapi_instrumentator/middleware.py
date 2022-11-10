@@ -89,12 +89,15 @@ class PrometheusInstrumentatorMiddleware:
 
         status_code = 500
         headers = []  # type: ignore
+        body = b""
 
         async def send_wrapper(event: ASGISendEvent) -> None:
             if event["type"] == "http.response.start":
-                nonlocal status_code, headers
+                nonlocal status_code, headers, body
                 headers = event["headers"]  # type: ignore
                 status_code = event["status"]
+            elif event["type"] == "http.response.body":
+                body = event["body"]
             await send(event)
 
         try:
@@ -116,7 +119,7 @@ class PrometheusInstrumentatorMiddleware:
                 if self.should_group_status_codes:
                     status = status[0] + "xx"
 
-                response = Response(headers=Headers(raw=headers), status_code=status_code)  # type: ignore
+                response = Response(content=body, headers=Headers(raw=headers), status_code=status_code)  # type: ignore
 
                 info = metrics.Info(
                     request=request,
