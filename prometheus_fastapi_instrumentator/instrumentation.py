@@ -195,6 +195,7 @@ class PrometheusFastApiInstrumentator:
                         response=response,
                         method=request.method.lower(),
                         service=self.service_name,
+                        client_host_service=request.headers.get["X-Abema-Client-Service"],
                         modified_handler=handler,
                         modified_status=status,
                         modified_duration=duration,
