@@ -93,10 +93,11 @@ class PrometheusInstrumentatorMiddleware:
 
         async def send_wrapper(event: ASGISendEvent) -> None:
             if event["type"] == "http.response.start":
-                nonlocal status_code, headers, body
+                nonlocal status_code, headers
                 headers = event["headers"]  # type: ignore
                 status_code = event["status"]
-            elif event["type"] == "http.response.body":
+            elif event["type"] == "http.response.body" and event["more_body"]:
+                nonlocal body
                 body = event["body"]
             await send(event)
 
