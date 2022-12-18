@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.9.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.1...v5.9.2) (2022-12-18)
+
+
+### Tests
+
+* Fix failures due to changes in httpx ([1726297](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/172629796b11f35a7929a53c5ad9f2fa92abf7fe))
+* Replace deprecated httpx parameter ([09aa996](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/09aa996955b3a9a2e656cc5c5b5a8162f74f74a1))
+
+
+### CI/CD
+
+* Update Poetry to 1.3.0 ([8fef18e](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/8fef18e08ff5ad9b3428f9a7bd41ba9f650f3c95))
+
 ## [5.9.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.0...v5.9.1) (2022-08-23)
 
 
