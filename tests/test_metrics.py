@@ -147,7 +147,7 @@ def test_request_size_all_labels():
     Instrumentator().add(metrics.request_size()).instrument(app)
     client = TestClient(app)
 
-    client.request(method="GET", url="/", data="some data")
+    client.request(method="GET", url="/", content="some data")
 
     assert (
         REGISTRY.get_sample_value(
@@ -169,7 +169,7 @@ def test_request_size_no_labels():
     ).instrument(app)
     client = TestClient(app)
 
-    client.request(method="GET", url="/", data="some data")
+    client.request(method="GET", url="/", content="some data")
 
     assert REGISTRY.get_sample_value("http_request_size_bytes_sum", {}) == 9
 
@@ -293,7 +293,7 @@ def test_combined_size_all_labels_with_data():
     Instrumentator().add(metrics.combined_size()).instrument(app).expose(app)
     client = TestClient(app)
 
-    client.request(method="GET", url="/", data="fegfgeegeg")
+    client.request(method="GET", url="/", content="fegfgeegeg")
 
     _ = get_response(client, "/metrics")
 
@@ -420,7 +420,7 @@ def test_default():
     Instrumentator().add(metrics.default()).instrument(app).expose(app)
     client = TestClient(app)
 
-    client.request(method="GET", url="/", data="fefeef")
+    client.request(method="GET", url="/", content="fefeef")
     client.request(method="GET", url="/")
 
     _ = get_response(client, "/metrics")
@@ -469,7 +469,7 @@ def test_default_should_only_respect_2xx_for_highr():
     ).instrument(app).expose(app)
     client = TestClient(app)
 
-    client.request(method="GET", url="/efefewffe", data="fefeef")
+    client.request(method="GET", url="/efefewffe", content="fefeef")
     client.request(method="GET", url="/ffe04904nfiuo-ni")
 
     response = get_response(client, "/metrics")
