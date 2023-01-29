@@ -7,7 +7,22 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Added
+
+- Added smart handling of mounted apps. Previously the URL handler logic did not
+  handle mounted apps and always returned the prefix in that case. This is based
+  on code from
+  [elastic/apm-agent-python](https://github.com/elastic/apm-agent-python)
+  licensed under the permissive BSD-3-Clause License. Thanks to
+  [@LordGaav](https://github.com/LordGaav) for proposing this enhancement and
+  implementing it in
+  [#208](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/208).
+
+### Changed
+
+- Licensed part of the project under the BSD-3-Clause License. This is due to
+  code being used from a repo licensed under BSD-3-Clause (see the "Added"
+  section). The default ISC License and the BSD-3-Clause License are permissive.
 
 ## [5.9.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.0...v5.9.1) / 2022-08-23
 
