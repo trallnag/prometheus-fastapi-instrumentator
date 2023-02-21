@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.10"]
+        python-version: ["3.11", "3.7"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
