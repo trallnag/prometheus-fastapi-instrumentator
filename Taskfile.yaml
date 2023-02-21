@@ -1,0 +1,25 @@
+version: 3
+
+tasks:
+  default:
+    - task: fmt
+    - task: lint
+    - task: test
+
+  fmt:
+    desc: Run formatters.
+    cmds:
+      - poetry run black .
+      - poetry run isort .
+      - pre-commit run -a mdformat
+
+  lint:
+    desc: Run linters.
+    cmds:
+      - poetry run flake8 --config .flake8
+      - poetry run dmypy run --timeout 3600 src
+
+  test:
+    desc: Run tests.
+    cmds:
+      - poetry run pytest --cov src
