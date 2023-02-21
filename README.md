@@ -7,9 +7,6 @@
 > soon. If you know of any good alternatives, feel free to point them out in
 > [#140][project-status-issue] and I'll gladly include them in this document.
 
-[project-status-issue]:
-  https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/140
-
 # Prometheus FastAPI Instrumentator
 
 [![PyPI version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/)
@@ -50,7 +47,8 @@ In addition, following behaviour is active:
 - Status codes are grouped into `2xx`, `3xx` and so on.
 - Requests without a matching template are grouped into the handler `none`.
 
-If one of these presets does not suit your needs you can do one of multiple things:
+If one of these presets does not suit your needs you can do one of multiple
+things:
 
 - Pick one of the already existing closures from
   [`metrics`](https://trallnag.github.io/prometheus-fastapi-instrumentator/metrics.html)
@@ -283,3 +281,5 @@ You can always check [`pyproject.toml`](/pyproject.toml) for dependencies.
 ## Contributing
 
 Please refer to [`CONTRIBUTING.md`](CONTRIBUTING).
+
+[project-status-issue]: https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/140

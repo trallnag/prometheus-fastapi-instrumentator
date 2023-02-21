@@ -1,0 +1,81 @@
+name: Pre-commit
+
+#
+# Runs pre-commit hooks and auto commit fixes.
+#
+# - https://pre-commit.ci/lite.html
+# - https://github.com/pre-commit-ci/lite-action
+# - https://github.com/apps/pre-commit-ci-lite
+#
+# Relies on the pre-commit.ci lite GitHub app to be configured with this repo.
+#
+# Why is the non-lite pre-commit.ci not used instead? It does not support local
+# hooks using "system" as language which is heavily used within this project.
+#
+# Unlike the full version, lite does not perform automatic upgrades  of hooks.
+#
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [master, dev]
+  schedule:
+    # At 04:04 on Monday.
+    - cron: 4 4 * * 1
+
+env:
+  poetry_version: "1.3.2"
+  python_version: "3.11"
+
+jobs:
+  pre-commit:
+    name: Pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # ------------------------------------------------------------------------
+      # Python & Poetry.
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python_version }}
+
+      - name: Cache Poetry installation
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.local/bin/poetry
+            ~/.local/share/pypoetry
+          key: ${{ runner.os }}-poetry-installation-${{ env.python_version }}-${{ env.poetry_version }}-0
+
+      - name: Install Poetry
+        run: curl -sSL https://install.python-poetry.org | python -
+        env:
+          POETRY_VERSION: ${{ env.poetry_version }}
+
+      - name: Cache Poetry cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-cache-${{ env.python_version }}-${{ env.poetry_version }}-${{ hashFiles('poetry.lock') }}-0
+          restore-keys: |
+            ${{ runner.os }}-poetry-cache-${{ env.python_version }}-${{ env.poetry_version }}-
+            ${{ runner.os }}-poetry-cache-${{ env.python_version }}-
+
+      - name: Install deps with Poetry
+        run: poetry install --no-interaction
+
+      # ------------------------------------------------------------------------
+      # Pre-commit.
+
+      - name: Install, cache, and run pre-commit
+        uses: pre-commit/action@v3.0.0
+
+      - uses: pre-commit-ci/lite-action@v1.0.0
+        if: always()
+        with:
+          msg: "ci(pre-commit): Apply hook auto fixes"

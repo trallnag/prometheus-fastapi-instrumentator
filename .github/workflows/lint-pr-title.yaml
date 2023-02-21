@@ -1,0 +1,23 @@
+name: Lint PR Title
+
+#
+# Ensures that PR title matches the Conventional Commits spec.
+#
+# - https://github.com/amannn/action-semantic-pull-request
+#
+
+on:
+  pull_request_target:
+    types:
+      - edited
+      - opened
+      - synchronize
+
+jobs:
+  lint-pr-title:
+    name: Lint PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

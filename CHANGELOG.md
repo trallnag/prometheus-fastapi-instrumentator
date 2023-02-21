@@ -1,102 +1,341 @@
 # Changelog
 
-## [5.9.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.0...v5.9.1) (2022-08-23)
+All notable changes to this project are documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0),
+and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
-### 🍀 Summary 🍀
+## Unreleased
 
-No bug fixes or new features. Just an important improvement of the documentation.
+Nothing.
 
+## [5.9.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.0...v5.9.1) / 2022-08-23
 
-### ✨ Highlights ✨
+### Fixed
 
-* Fix / Improve documentation of how to use package ([#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/168)). Instrumentation should happen in a function decorated with `@app.on_event("startup")` to prevent crashes on startup. Thanks to @mdczaplicki and others.
+- Corrected documention on how to use package. Instrumentation should happen in
+  a function decorated with `@app.on_event("startup")` to prevent crashes on
+  startup in certain situations. Done in
+  [#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/168).
+  Thanks to [@mdczaplicki](https://github.com/mdczaplicki) and others.
 
+## [5.9.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.2...v5.9.0) / 2022-08-23
 
-### CI/CD
+### Added
 
-* Pin poetry version and improve caching configuration ([6337459](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/6337459156a9cd87d868953e6c6c8dabea064eb1))
+- Added `py.typed` file to package to improve typing annotations. Done in
+  [#137](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/137).
+  Thanks to [@mmaslowskicc](https://github.com/mmaslowskicc) for proposing and
+  implementing this.
 
+### Changed
 
-### Docs
+- Changed license from MIT to ISC, which is just like MIT but shorter.
+- Coding style improvements. Replaced a few for loops with list comprehensions.
+  Defaulting an argument to `None` instead of an empty list. Done in
+  [#155](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/155).
+  Thanks to [@yezz123](https://github.com/yezz123).
+- Several improvements to the documentation. Thanks to
+  [@jabertuhin](https://github.com/jabertuhin),
+  [@frodrigo](https://github.com/frodrigo), and
+  [@murphp15](https://github.com/murphp15).
 
-* Improve example in README on how to instrument app ([#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/168)) ([dc36aac](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/dc36aac1a530faa3970b19c1c68be4ee18c7c34b))
+### Fixed
 
+- Removed print statement polluting logs. Done in
+  [#157](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/157).
+  Thanks to [@nikstuckenbrock](https://github.com/nikstuckenbrock) and others.
 
-## [5.9.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.2...v5.9.0) (2022-08-23)
+## [5.8.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.1...v5.8.2) / 2022-06-12
 
+### Changed
 
-### 🍀 Summary 🍀
+- Refactored the middleware to an ASGI implementation. Related to
+  [#139](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/139).
+  Thanks to [@Kludex](https://github.com/Kludex) and
+  [@adriangb](https://github.com/adriangb) for the proposal and implementation.
 
-This release fixes a small but annoying bug. Beyond that the release includes small internal improvements and bigger changes to CI/CD.
+## [5.8.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.0...v5.8.1) / 2022-05-03
 
+### Fixed
 
-### ✨ Highlights ✨
+- Fixed a regression that made the required FastAPI version too strict for no
+  reason. Related to
+  [#136](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/136).
+  Thanks to [@graipher](https://github.com/graipher) for raising this issue.
 
-* Removed print statement polluting logs ([#157](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/157)). Thanks to all the people raising this issue and to @nikstuckenbrock for fixing it.
-* Added `py.typed` file to package to improve typing annotations ([#137](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/137)). Thanks to @mmaslowskicc for proposing and implementing this.
-* Changed license from MIT to ISC, which is just like MIT but shorter.
-* Migrated from Semantic Release to Release Please as release management tool.
-* Overall refactoring of project structure to match my (@trallnag) template Python repo.
-* Several improvements to the documentation. Thanks to @jabertuhin, @frodrigo, and @murphp15.
-* Coding style improvements ([#155](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/155)). Replaced a few for loops with list comprehensions. Defaulting an argument to None instead of an empty list. Thanks to @yezz123.
+## [5.8.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.7.1...v5.8.0) / 2022-05-01
 
+### Removed
 
-### Features
+- **BREAKING:** Dropped support for Python 3.6 which is has reached end-of-life.
 
-* Add py.typed for enhanced typing annotations ([#37](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/37)) ([0c67d1b](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/0c67d1b8f51348979c00fd00d9457d3dd238df87))
+## [5.7.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.7.0...v5.7.1) / 2021-01-12
 
+### Fixed
 
-### Bug Fixes
+- Updated `prometheus-client` dependency version constraint `^0.8.0` that only
+  allows versions in the range `[0.8.0, 0.9.0[`. This is not correct and leads
+  to conflicts when you want to install the newest prometheus client library
+  version and this package. Switched to explicit contraints to ensure this does
+  not happen again.
 
-* Remove print statement from middleware ([#157](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/157)) ([f89792b](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/f89792b63d286e2ffd9241dc0b04c927f1102d07))
+## [5.7.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.6.0...v5.7.0) / 2020-12-13
 
+## Added
 
-### Build
+- Added passthrough of Kwargs to FastAPI route that exposes metrics.
 
-* **deps-dev:** bump devtools from 0.8.0 to 0.9.0 ([#172](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/172)) ([24bb060](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/24bb060a44b82b3b8d621d01af66dbd39773f2c7))
-* **deps-dev:** bump flake8 from 4.0.1 to 5.0.4 ([#179](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/179)) ([8f72053](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/8f7205320ed648ef07fa21d7f699cf06cef3d4eb))
-* **deps-dev:** bump mypy from 0.950 to 0.971 ([#174](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/174)) ([60e324f](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/60e324fb24f262f01f3d36be38c4e5e705523425))
+## [5.6.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.5.1...v5.6.0) / 2020-12-03
 
+### Added
 
-### Docs
+- Added parameter `tags` to method `expose()`. Passthrough to FastAPI to support
+  tagging. Related to
+  [#17](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/17).
+  Thanks to [@chisaipete](https://github.com/chisaipete) for proposing this
+  enhancement.
 
-* Add missing colon to README ([#33](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/33)) ([faef24c](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/faef24c5aa4794cf1564ba871b15b736de303a86))
-* Adjust changelog formatting ([b8b7b3e](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/b8b7b3ea2319947d8d5f9b8fb10c559267838516))
-* Fix small typo in readme ([#154](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/154)) ([a569d4e](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/a569d4e58147a707c43e0fb698457c7ec7e13150))
-* Move docs-internal to docs/devel and adjust contributing ([1b446ca](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/1b446ca3283514dcfbdaf9a1c5aa0f3a031ace45))
-* Remove obsolete DEVELOPMENT.md ([1c18ff7](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/1c18ff72df97892680c9da7c0193997c6795dc83))
-* Switch license from MIT to ISC ([1b0294a](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/1b0294ac03b3369cae9b6cc675b9c94e1a4c0d76))
+## [5.5.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.5.0...v5.5.1) / 2020-11-13
 
+### Fixed
 
-### CI/CD
+- Fixed error "Duplicate mime type charset=utf-8 on Response Header". Done by
+  changing the way the content type header is set. Seems like when Starlette's
+  `media_type` parameter is used to provide content type, the charset is
+  appended again automatically even if it already is part of `Content-Type`.
+  Thanks to [@flobaader](https://github.com/flobaader) for raising this issue in
+  [#16](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/16).
 
-* Add .tool-versions ([255ba97](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/255ba97ee3dfbdada5fe300362b2725c075da0f8))
-* Add codecov.yaml ([008ef61](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/008ef6136eba8d133a69de6f15ff14c39966fa2f))
-* Add explicit codecov token ([b264184](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/b264184cea3bfdb318fb007ed0972814a41014eb))
-* Adjust commitlint to allow more subject case types ([8b630aa](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/8b630aa2734696effe78e95ab638b08fb594c908))
-* Correct default branch name ([5f141c5](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/5f141c59cc1b34b4cdbb2a77ba0edfc6c757356e))
-* Improve and update scripts ([e1d9982](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/e1d998213b811c20f09e9c717efd2a97165b7939))
-* Move to Release Please and refactor overall CI approach ([9977665](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/99776659515910a7c1369bcc7db916d440590ee7))
-* Remove flake8 ignore W503 ([6eab3b8](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/6eab3b87fac913cf36b0266255304a917dec7b4f))
-* Remove traces of semantic-release ([f0ab8ff](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/f0ab8ff070b620e5c9e6f69b3e5111e52f830427))
-* Remove unnecessary include of py.typed from pyproject.toml ([#37](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/37)) ([bbad45e](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/bbad45ec1ab5baa0aca02e06857ee97ad466ab19))
-* Rename poetry repo for TestPyPI ([3f1c500](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/3f1c500a69e90300056b7098b7a85ebe3efc19b5))
-* Restructure poetry project layout ([b439ceb](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/b439ceb073703804156fcd42734cae3c7ffee59e))
-* Update gitignore ([e0fa528](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/e0fa5286f841daac6486c0c3758c7edc1c30796e))
-* Update pre-commit config ([e725750](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/e72575009fc628e9ccc8f39b74b16cd2028dd1f8))
+## [5.5.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.4.1...v5.5.0) / 2020-11-01
 
+### Added
 
-### Refactor
+- Added new metrics closure `requests`. Thanks to
+  [@jpslopes](https://github.com/jpslopes) for proposing this enhancement in
+  [#15](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/15).
 
-* Improve coding style ([#155](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/155)) ([623d83b](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/623d83b86278d2627084b9fe9547f1af07531042))
+### Changed
 
+- Adjusted docstrings.
 
-## [5.8.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.1...v5.8.2) (2022-06-12)
+## [5.4.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.4.0...v5.4.1) / 2020-10-22
 
-Refactored the middleware to an ASGI implementation ([#139](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/139)). Thanks to @Kludex and @adriangb for the proposal and implementation.
+### Fixed
 
+- Fixed dependency regression introduced in 5.4.0 by pinning FastAPI dependency
+  to `fastapi = "0.38.1, <=1.0.0"` instead of `fastapi = ">=0.38.1, <=1.0.0"`.
+  Thanks to [@PaulFlanaganGenscape](https://github.com/PaulFlanaganGenscape) for
+  raising this issue in
+  [#14](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/14).
 
-## [5.8.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.8.0...v5.8.1) (2022-05-03)
+## [5.4.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.3.1...v5.4.0) / 2020-10-20
 
-Fixed a regression that made the required FastAPI version too strict for no reason ([#136](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/136)) ([36bc045](https://github.com/trallnag/prometheus-fastapi-instrumentator/commit/36bc045c5eb247fa7a83c25cc161f95b5d4b314d)). Thanks to @graipher for raising this issue.
+### Added
+
+- Added new metric that monitors the number of requests in progress. Can be
+  configured to have the labels `handler` and `method`. It can be activated with
+  `should_instrument_requests_inprogress` and configured with `inprogress_name`
+  and `inprogress_labels`.
+
+## [5.3.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.3.0...v5.3.1) / 2020-09-25
+
+### Fixed
+
+- Fixed `expose` method in the instrumentator ignoring the `endpoint` argument
+  and always creating the endpoint with on the `/metrics` path. Variable was
+  missing. Thanks to [@funkybase](https://github.com/funkybase) for raising this
+  issue in
+  [#9](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/9).
+
+## [5.3.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.2.3...v5.3.0) / 2020-09-09
+
+### Added
+
+- Added parameter `should_gzip` to `expose` method. It will check for `gzip` in
+  the `Accepted-Encoding` header and gzip the metrics data. You can expect a
+  reduction of around 90 % in bytes.
+
+## [5.2.3](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.2.2...v5.2.3) / 2020-09-03
+
+### Changed
+
+- Improved `README.md`.
+
+## [5.2.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.2.1...v5.2.2) / 2020-09-03
+
+### Changed
+
+- Improved `README.md`.
+
+## [5.2.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.2.0...v5.2.1) / 2020-08-27
+
+### Fixed
+
+- Fixed lack of error wrapping of a runtime error is raised inside the endpoint.
+  In addition this instrumentator assumed that `info.response` will always
+  contain the `headers` attribute which is not the case if a runtime error is
+  thrown. Now the metrics check if the response is `None` and that the `headers`
+  attribute actually exists. Tests have been added as well. Thanks to
+  [@stepf](https://github.com/stepf) for raising this issue in
+  [#7](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/7).
+
+### Changed
+
+- Adjusted behavior Metrics `response_size` and `combined_size` no longer skip
+  if content length is not found. Now the content length will default no zero
+  bytes.
+
+## [5.2.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.1.0...v5.2.0) / 2020-08-22
+
+### Added
+
+- Added parameter `should_only_respect_2xx_for_highr` to `default` metrics.
+  Allows you to only put successful requests into the high resolution bucket.
+
+## [5.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.0.0...v5.1.0) / 2020-08-19
+
+### Added
+
+- Added parameters to set namespace and subsystem to all available metrics.
+
+## [5.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v4.0.0...v5.0.0) / 2020-08-18
+
+### Added
+
+- Added labels `handler`, `status`, `method` to `http_requests_total` in
+  `default`.
+- Added label `handler` to `http_request_size_bytes`.
+- Added label `handler` to `http_response_size_bytes`.
+
+### Changed
+
+- **BREAKING:** Renamed instrumentation `full` to `default`.
+- **BREAKING:** Renamed `http_in_bytes_total` to `http_request_size_bytes`.
+- **BREAKING:** Renamed `http_out_bytes_total` to `http_response_size_bytes`.
+- **BREAKING:** Renamed `http_highr_request_duration_seconds` to
+  `http_request_duration_highr_seconds`.
+- **BREAKING:** Renamed `http_lowr_request_duration_seconds` to
+  `http_request_duration_seconds`.
+- **BREAKING:** Turned `http_request_size_bytes` and `http_response_size_bytes`
+  into summaries.
+
+### Removed
+
+- **BREAKING:** Removed labels `method` and `status` from
+  `http_request_duration_seconds`.
+
+## [4.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v3.0.0...v4.0.0) / 2020-08-16
+
+### Added
+
+- Added proper documentation.
+
+### Changed
+
+- **BREAKING:** Switched the default fast track metric to a more advanced one.
+- **BREAKING:** Reworked available metrics. Made them more modular while
+  improving code structure.
+
+## [3.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v2.0.1...v3.0.0) / 2020-08-15
+
+A lot of breaking changes in this release. Prometheus FastAPI Instrumentator is
+now more modular than before and there are multiple different metrics one can
+choose from out of the box or add custom metrics that will be automatically
+applied to the FastAPI.
+
+If you just use the default instrumentator without setting any parameters,
+nothing changes. The defaults stay the same.
+
+If you use any of the paramters that were available in the Instrumentator
+constructor you have to check if they are still available or not. Some of them
+have been moved to the corresponding `metric` closure / function.
+
+### Changed
+
+- **BREAKING:** Endpoint `/metrics` is not excluded by default anymore.
+- **BREAKING:** Rework instrumentator layout.
+
+## [2.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v2.0.0...v2.0.1) / 2020-08-14
+
+### Changed
+
+- Fixed wrong var name in `README.md`.
+
+## [2.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v1.3.0...v2.0.0) / 2020-08-14
+
+### Added
+
+- Added option to exclude optional `/metrics` endpoint from schema.
+
+### Changed
+
+- **BREAKING:** Renamed `should_respect_env_var_existence` to
+  `should_respect_env_var`.
+- **BREAKING:** If `should_respect_env_var` is `True`, the respective env var
+  must be `true` and not just any random value.
+- **BREAKING:** Renamed default env var if `should_respect_env_var` from
+  `PROMETHEUS` to `ENABLE_METRICS`.
+
+## [1.3.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v1.2.0...v1.3.0) / 2020-08-12
+
+### Added
+
+- Added option `should_respect_env_var_existence`. This makes it possible to
+  only instrument and expose your FastAPI if a given environment variable is
+  set. Use case: A base FastAPI app that is used by multiple distinct apps. The
+  apps only have to set the variable to be instrumented. Deactivated by default
+  and the default env var is `PROMETHEUS`.
+
+## [1.2.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v1.1.1...v1.2.0) / 2020-08-06
+
+### Added
+
+- The observed latency values can now be rounded to a certain number of decimals
+  as an opt-in feature. This can improve bytes per sample required in storage
+  solutions like VictoriaMetrics.
+
+## [1.1.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v1.1.0...v1.1.1) / 2020-07-19
+
+Nothing. Dummy release.
+
+## [1.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v1.0.2...v1.1.0) / 2020-07-16
+
+### Changed
+
+- Renamed project from *Prometheus FastAPI Exporter* to *Prometheus FastAPI
+  Instrumentator*. Reasoning behind this change: Focus of this project is the
+  instrumentation, not exposition of metrics.
+
+## [1.0.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v1.0.1...v1.0.2) / 2020-07-15
+
+### Changed
+
+- Updated README.md
+
+## [1.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v1.0.0...v1.0.1) / 2020-07-15
+
+### Changed
+
+- Updated README.md
+
+## [1.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/1d4421f66e0e3600e3607f353cf183096bc09304...v1.0.0) / 2020-07-15
+
+### Added
+
+- Explicit method to expose metrics by adding endpoint to an FastAPI app.
+
+### Changed
+
+- **BREAKING:** Switched to semantic versioning. All older versions have been
+  yanked.
+- **BREAKING:** Split instrumentation and exposition into two parts. Why? There
+  exist many ways to expose metrics. Now this package enables the
+  instrumentation of FastAPI without enforcing a certain method of exposition.
+  It is still possible with the new method `expose()`.
+- **BREAKING:** Moved pass of FastAPI object from constructor to `instrument()`
+  method.
+
+### Removed
+
+- **BREAKING:** Exposition of metrics endpoint from `ìnstrument()` call.
