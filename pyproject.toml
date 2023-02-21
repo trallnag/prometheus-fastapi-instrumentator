@@ -1,12 +1,12 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "prometheus-fastapi-instrumentator"
 version = "5.9.1"
-description = "Instrument your FastAPI with Prometheus metrics"
-authors = ["Tim Schwenke <tim.schwenke@trallnag.com>"]
+description = "Instrument your FastAPI with Prometheus metrics."
+authors = ["Tim Schwenke <tim@trallnag.com>"]
 license = "ISC"
 readme = "README.md"
 repository = "https://github.com/trallnag/prometheus-fastapi-instrumentator"
@@ -40,3 +40,8 @@ profile = "black"
 [tool.mypy]
 allow_redefinition = true
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+markers = [
+  "slow: mark test as slow."
+]
