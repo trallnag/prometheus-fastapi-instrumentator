@@ -8,9 +8,8 @@ from prometheus_client import Gauge
 from starlette.datastructures import Headers
 from starlette.requests import Request
 from starlette.responses import Response
-from starlette.routing import Match
 
-from prometheus_fastapi_instrumentator import metrics
+from prometheus_fastapi_instrumentator import metrics, routing
 
 if TYPE_CHECKING:
     from asgiref.typing import ASGISendEvent
@@ -80,6 +79,7 @@ class PrometheusInstrumentatorMiddleware:
         handler = (
             "none" if not is_templated and self.should_group_untemplated else handler
         )
+
         if not is_excluded and self.inprogress:
             if self.inprogress_labels:
                 inprogress = self.inprogress.labels(request.method, handler)
@@ -141,13 +141,8 @@ class PrometheusInstrumentatorMiddleware:
                 template or if no template the path. Second element tells you
                 if the path is templated or not.
         """
-
-        for route in request.app.routes:
-            match, _ = route.matches(request.scope)
-            if match == Match.FULL:
-                return route.path, True
-
-        return request.url.path, False
+        route_name = routing.get_route_name(request)
+        return route_name or request.url.path, True if route_name else False
 
     def _is_handler_excluded(self, handler: str, is_templated: bool) -> bool:
         """Determines if the handler should be ignored.

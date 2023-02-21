@@ -78,6 +78,7 @@ well.
     - [Exposing endpoint](#exposing-endpoint)
   - [Prerequesites](#prerequesites)
   - [Contributing](#contributing)
+  - [Licensing](#licensing)
 
 <!--TOC-->
 
@@ -281,5 +282,23 @@ You can always check [`pyproject.toml`](/pyproject.toml) for dependencies.
 ## Contributing
 
 Please refer to [`CONTRIBUTING.md`](CONTRIBUTING).
+
+## Licensing
+
+The default license for this project is the
+[ISC License](https://choosealicense.com/licenses/isc). A permissive license
+functionally equivalent to the BSD 2-Clause and MIT licenses, removing some
+language that is no longer necessary. See [`LICENSE`](LICENSE) for the license
+text.
+
+The [BSD 3-Clause License](https://choosealicense.com/licenses/bsd-3-clause) is
+used as the license for the
+[`routing`](src/prometheus_fastapi_instrumentator/routing.py) module. This is
+due to it containing code from
+[elastic/apm-agent-python](https://github.com/elastic/apm-agent-python). BSD
+3-Clause is permissive license similar to the BSD 2-Clause License, but with a
+3rd clause that prohibits others from using the name of the copyright holder or
+its contributors to promote derived products without written consent. The
+license text is included in the module itself.
 
 [project-status-issue]: https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/140
