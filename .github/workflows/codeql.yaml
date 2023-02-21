@@ -1,21 +1,25 @@
-
 name: CodeQL
 
 #
-# Scan code with CodeQL on a scheduled basis.
+# Scans code with CodeQL on a scheduled basis.
 #
-# - <https://codeql.github.com/>
-# - <https://github.com/github/codeql-action>
+# - https://codeql.github.com
+# - https://github.com/github/codeql-action
 #
 
 on:
   workflow_dispatch:
   schedule:
+    # At 06:01 on day-of-month 8.
     - cron: 1 6 8 * *
 
 jobs:
   codeql:
     name: CodeQL
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python]
     runs-on: ubuntu-latest
 
     permissions:
