@@ -22,4 +22,4 @@ tasks:
   test:
     desc: Run tests.
     cmds:
-      - poetry run pytest --cov src
+      - poetry run pytest --cov-report=term-missing --cov-report=xml --cov=src

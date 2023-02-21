@@ -65,7 +65,7 @@ jobs:
       # Tests.
 
       - name: Run tests with Pytest
-        run: poetry run pytest --cov
+        run: poetry run pytest --cov-report=term-missing --cov-report=xml --cov=src
 
       - name: Upload coverage to Codecov
         if: strategy.job-index == 0
