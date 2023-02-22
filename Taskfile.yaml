@@ -23,3 +23,13 @@ tasks:
     desc: Run tests.
     cmds:
       - poetry run pytest --cov-report=term-missing --cov-report=xml --cov=src
+
+  test-mp:
+    desc: Run multi process tests.
+    cmds:
+      - rm -rf $PROMETHEUS_MULTIPROC_DIR
+      - mkdir -p $PROMETHEUS_MULTIPROC_DIR
+      - poetry run pytest -k test_multiprocess
+        --cov-append --cov-report=term-missing --cov-report=xml --cov=src
+    env:
+      PROMETHEUS_MULTIPROC_DIR: /tmp/prometheus-fastapi-instrumentator/multiproc
