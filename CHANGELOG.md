@@ -28,6 +28,13 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   [#76](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/76)
   and to [@HadilD](https://github.com/HadilD) for implementing it in
   [#203](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/203).
+- Allowed passing a custom registry to be used instead of using the default one.
+  This would be useful in particular when testing multiple FastAPI apps (e.g.
+  microservices) in the same tests run. Note that there are issues with the
+  current implementation in certain corner cases. Thanks to
+  [@tiangolo](https://github.com/tiangolo) for for proposing this enhancement
+  and implementing it in
+  [#153](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/153).
 
 ### Changed
 
