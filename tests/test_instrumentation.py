@@ -1,5 +1,6 @@
 import asyncio
 import os
+from http import HTTPStatus
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -51,6 +52,12 @@ def create_app() -> FastAPI:
     @app.get("/always_error")
     def read_always_error():
         raise HTTPException(status_code=404, detail="Not really error")
+
+    @app.get("/always_error_httpstatus_enum")
+    def read_always_error_httpstatus_enum():
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Not really an error"
+        )
 
     @app.get("/ignore")
     def read_ignore():
@@ -144,6 +151,10 @@ def test_app():
     response = get_response(client, "/always_error")
     assert response.status_code == 404
     assert b"Not really error" in response.content
+
+    response = get_response(client, "/always_error_httpstatus_enum")
+    assert response.status_code == 404
+    assert b"Not really an error" in response.content
 
     response = get_response(client, "/items/678?q=43243")
     assert response.status_code == 200
@@ -270,6 +281,20 @@ def test_grouped_status_codes():
     assert_request_count(1)
     assert b'status="2xx"' in response.content
     assert b'status="200"' not in response.content
+
+
+def test_grouped_status_codes_with_enumeration():
+    app = create_app()
+    Instrumentator(excluded_handlers=["/metrics"]).add(metrics.latency()).instrument(app)
+    expose_metrics(app)
+    client = TestClient(app)
+
+    get_response(client, "/always_error_httpstatus_enum")
+
+    response = get_response(client, "/metrics")
+    assert_is_not_multiprocess(response)
+    assert b'status="4xx"' in response.content
+    assert b'status="H00"' not in response.content
 
 
 def test_ungrouped_status_codes():
