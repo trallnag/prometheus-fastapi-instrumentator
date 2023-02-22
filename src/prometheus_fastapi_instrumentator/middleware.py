@@ -131,7 +131,7 @@ class PrometheusInstrumentatorMiddleware:
                 nonlocal status_code, headers
                 headers = event["headers"]  # type: ignore
                 status_code = event["status"]
-            elif event["type"] == "http.response.body" and event["more_body"]:
+            elif event["type"] == "http.response.body" and event.get("more_body", False):
                 nonlocal body
                 body += event["body"]
             await send(event)
