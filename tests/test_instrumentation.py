@@ -1,8 +1,8 @@
 import asyncio
 import os
+from http import HTTPStatus
 from typing import Any, Dict, Optional
 
-from http import HTTPStatus
 from fastapi import FastAPI, HTTPException
 from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
 from requests import Response as TestClientResponse
@@ -55,7 +55,9 @@ def create_app() -> FastAPI:
 
     @app.get("/always_error_httpstatus_enum")
     def read_always_error_httpstatus_enum():
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Not really an error")
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail="Not really an error"
+        )
 
     @app.get("/ignore")
     def read_ignore():

@@ -142,7 +142,11 @@ class PrometheusInstrumentatorMiddleware:
         except Exception as exc:
             raise exc
         finally:
-            status = str(status_code.value) if isinstance(status_code, HTTPStatus) else str(status_code)
+            status = (
+                str(status_code.value)
+                if isinstance(status_code, HTTPStatus)
+                else str(status_code)
+            )
 
             if not is_excluded:
                 duration = max(default_timer() - start_time, 0)
