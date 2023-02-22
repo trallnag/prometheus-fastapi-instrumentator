@@ -554,3 +554,20 @@ def test_requests_no_labels():
         )
         == 2
     )
+
+
+def test_request_custom_namespace():
+    app = create_app()
+    Instrumentator(excluded_handlers=["/metrics"]).instrument(
+        app, metric_namespace="namespace", metric_subsystem="example"
+    ).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    response = get_response(client, "/metrics")
+
+    assert (
+        b"namespace_example_http_request_duration_highr_seconds_bucket"
+        in response.content
+    )
