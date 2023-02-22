@@ -12,7 +12,7 @@ from this module.
 
 from typing import Callable, Optional, Tuple
 
-from prometheus_client import Counter, Histogram, Summary
+from prometheus_client import REGISTRY, CollectorRegistry, Counter, Histogram, Summary
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -496,6 +496,7 @@ def default(
         60,
     ),
     latency_lowr_buckets: tuple = (0.1, 0.5, 1),
+    registry: CollectorRegistry = REGISTRY,
 ) -> Callable[[Info], None]:
     """Contains multiple metrics to cover multiple things.
 
@@ -546,64 +547,79 @@ def default(
     if latency_lowr_buckets[-1] != float("inf"):
         latency_lowr_buckets = latency_lowr_buckets + (float("inf"),)
 
-    TOTAL = Counter(
-        name="http_requests_total",
-        documentation="Total number of requests by method, status and handler.",
-        labelnames=(
-            "method",
-            "status",
-            "handler",
-        ),
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-    )
+    try:
+        # Starlette will call app.build_middleware_stack() with every new middleware
+        # added, which will call all this again, which will make the registry complain
+        # about duplicated metrics.
+        # The Python Prometheus client currently doesn't seem to have a way to verify
+        # if adding a metric will cause errors or not, so the only way to handle it
+        # seems to be with this try block.
+        TOTAL = Counter(
+            name="http_requests_total",
+            documentation="Total number of requests by method, status and handler.",
+            labelnames=(
+                "method",
+                "status",
+                "handler",
+            ),
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
 
-    IN_SIZE = Summary(
-        name="http_request_size_bytes",
-        documentation=(
-            "Content length of incoming requests by handler. "
-            "Only value of header is respected. Otherwise ignored. "
-            "No percentile calculated. "
-        ),
-        labelnames=("handler",),
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-    )
+        IN_SIZE = Summary(
+            name="http_request_size_bytes",
+            documentation=(
+                "Content length of incoming requests by handler. "
+                "Only value of header is respected. Otherwise ignored. "
+                "No percentile calculated. "
+            ),
+            labelnames=("handler",),
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
 
-    OUT_SIZE = Summary(
-        name="http_response_size_bytes",
-        documentation=(
-            "Content length of outgoing responses by handler. "
-            "Only value of header is respected. Otherwise ignored. "
-            "No percentile calculated. "
-        ),
-        labelnames=("handler",),
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-    )
+        OUT_SIZE = Summary(
+            name="http_response_size_bytes",
+            documentation=(
+                "Content length of outgoing responses by handler. "
+                "Only value of header is respected. Otherwise ignored. "
+                "No percentile calculated. "
+            ),
+            labelnames=("handler",),
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
 
-    LATENCY_HIGHR = Histogram(
-        name="http_request_duration_highr_seconds",
-        documentation=(
-            "Latency with many buckets but no API specific labels. "
-            "Made for more accurate percentile calculations. "
-        ),
-        buckets=latency_highr_buckets,
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-    )
+        LATENCY_HIGHR = Histogram(
+            name="http_request_duration_highr_seconds",
+            documentation=(
+                "Latency with many buckets but no API specific labels. "
+                "Made for more accurate percentile calculations. "
+            ),
+            buckets=latency_highr_buckets,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
 
-    LATENCY_LOWR = Histogram(
-        name="http_request_duration_seconds",
-        documentation=(
-            "Latency with only few buckets by handler. "
-            "Made to be only used if aggregation by handler is important. "
-        ),
-        buckets=latency_lowr_buckets,
-        labelnames=("handler",),
-        namespace=metric_namespace,
-        subsystem=metric_subsystem,
-    )
+        LATENCY_LOWR = Histogram(
+            name="http_request_duration_seconds",
+            documentation=(
+                "Latency with only few buckets by handler. "
+                "Made to be only used if aggregation by handler is important. "
+            ),
+            buckets=latency_lowr_buckets,
+            labelnames=("handler",),
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
+    except ValueError as e:
+        if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
+            raise e
 
     def instrumentation(info: Info) -> None:
         TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()

@@ -5,6 +5,13 @@ from enum import Enum
 from typing import Callable, List, Optional, Union
 
 from fastapi import FastAPI
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    REGISTRY,
+    CollectorRegistry,
+    generate_latest,
+    multiprocess,
+)
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -28,6 +35,7 @@ class PrometheusFastApiInstrumentator:
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
+        registry: Union[CollectorRegistry, None] = None,
     ):
         """Create a Prometheus FastAPI Instrumentator.
 
@@ -76,6 +84,11 @@ class PrometheusFastApiInstrumentator:
             inprogress_labels (bool): Should labels `method` and `handler` be
                 part of the inprogress label? Ignored unless
                 `should_instrument_requests_inprogress` is `True`. Defaults to `False`.
+
+            registry (CollectorRegistry): A custom Prometheus registry to use. If not
+                provided, the default `REGISTRY` will be used. This can be useful if
+                you need to run multiple apps at the same time, with their own
+                registries, for example during testing.
         """
 
         self.should_group_status_codes = should_group_status_codes
@@ -96,6 +109,20 @@ class PrometheusFastApiInstrumentator:
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
+
+        if registry:
+            self.registry = registry
+        elif "prometheus_multiproc_dir" in os.environ:
+            pmd = os.environ["prometheus_multiproc_dir"]
+            if os.path.isdir(pmd):
+                self.registry = CollectorRegistry()
+                multiprocess.MultiProcessCollector(self.registry)
+            else:
+                raise ValueError(
+                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
+                )
+        else:
+            self.registry = REGISTRY
 
     def instrument(
         self,
@@ -167,6 +194,7 @@ class PrometheusFastApiInstrumentator:
             should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
             latency_highr_buckets=latency_highr_buckets,
             latency_lowr_buckets=latency_lowr_buckets,
+            registry=self.registry,
         )
         return self
 
@@ -213,36 +241,16 @@ class PrometheusFastApiInstrumentator:
         ):
             return self
 
-        from prometheus_client import (
-            CONTENT_TYPE_LATEST,
-            REGISTRY,
-            CollectorRegistry,
-            generate_latest,
-            multiprocess,
-        )
-
-        if "prometheus_multiproc_dir" in os.environ:
-            pmd = os.environ["prometheus_multiproc_dir"]
-            if os.path.isdir(pmd):
-                registry = CollectorRegistry()
-                multiprocess.MultiProcessCollector(registry)
-            else:
-                raise ValueError(
-                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
-                )
-        else:
-            registry = REGISTRY
-
         @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
         def metrics(request: Request):
             """Endpoint that serves Prometheus metrics."""
 
             if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
-                resp = Response(content=gzip.compress(generate_latest(registry)))
+                resp = Response(content=gzip.compress(generate_latest(self.registry)))
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
                 resp.headers["Content-Encoding"] = "gzip"
             else:
-                resp = Response(content=generate_latest(registry))
+                resp = Response(content=generate_latest(self.registry))
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
 
             return resp
