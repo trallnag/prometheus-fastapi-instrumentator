@@ -52,6 +52,20 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   [@blag](https://github.com/blag) for fixing it in
   [#192](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/192).
 
+### Deprecated
+
+- Deprecated environment variable `prometheus_multiproc_dir` and replaced it
+  with `PROMETHEUS_MULTIPROC_DIR`. This matches the behavior of the Prometheus
+  Python client library. This fixes
+  [#89](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/89)
+  and
+  [#50](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/50).
+  Thanks to all the people who brought this up. Thanks to
+  [@michaelusner](https://github.com/michaelusner) for implementing the
+  deprecation in
+  [#42](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/42) /
+  [#217](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/217).
+
 ## [5.9.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.0...v5.9.1) / 2022-08-23
 
 ### Fixed
