@@ -110,6 +110,20 @@ class PrometheusFastApiInstrumentator:
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
 
+        if registry:
+            self.registry = registry
+        elif "prometheus_multiproc_dir" in os.environ:
+            pmd = os.environ["prometheus_multiproc_dir"]
+            if os.path.isdir(pmd):
+                self.registry = CollectorRegistry()
+                multiprocess.MultiProcessCollector(self.registry)
+            else:
+                raise ValueError(
+                    f"Env var prometheus_multiproc_dir='{pmd}' not a directory."
+                )
+        else:
+            self.registry = REGISTRY
+
     def instrument(
         self,
         app: FastAPI,
