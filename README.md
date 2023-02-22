@@ -75,6 +75,7 @@ well.
     - [Adding metrics](#adding-metrics)
     - [Creating new metrics](#creating-new-metrics)
     - [Perform instrumentation](#perform-instrumentation)
+    - [Specify namespace and subsystem](#specify-namespace-and-subsystem)
     - [Exposing endpoint](#exposing-endpoint)
   - [Prerequesites](#prerequesites)
   - [Contributing](#contributing)
@@ -269,7 +270,7 @@ async def startup():
 
 Then your metrics will contain the namespace and subsystem in the metric name.
 
-```bash
+```sh
 # TYPE myproject_myservice_http_request_duration_highr_seconds histogram
 myproject_myservice_http_request_duration_highr_seconds_bucket{le="0.01"} 0.0
 ```
