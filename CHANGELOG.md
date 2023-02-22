@@ -35,6 +35,16 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   code being used from a repo licensed under BSD-3-Clause (see the "Added"
   section). The default ISC License and the BSD-3-Clause License are permissive.
 
+### Fixed
+
+- Fixed status code in metric being "Hxx" when `http.HTTPStatus` enumeration is
+  used in combination with grouping of status codes. Thanks to
+  [@Leem0sh](https://github.com/Leem0sh) and others for raising the issue in
+  [#190](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/190).
+  Thanks to [@nikstuckenbrock](https://github.com/nikstuckenbrock) and
+  [@blag](https://github.com/blag) for fixing it in
+  [#192](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/192).
+
 ## [5.9.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.0...v5.9.1) / 2022-08-23
 
 ### Fixed
