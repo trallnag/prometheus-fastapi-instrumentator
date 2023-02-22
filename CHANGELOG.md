@@ -23,6 +23,11 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   more information. Thanks to [@phbernardes](https://github.com/phbernardes) for
   proposing this enhancement and implementing it in
   [#193](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/193).
+- Added passthrough of body to `info.response`. This enables metrics that work
+  based on data in the body. Thanks to everyone who brought this up in
+  [#76](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/76)
+  and to [@HadilD](https://github.com/HadilD) for implementing it in
+  [#203](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/203).
 
 ### Changed
 
