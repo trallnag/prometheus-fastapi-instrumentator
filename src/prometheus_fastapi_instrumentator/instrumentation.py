@@ -186,10 +186,7 @@ class PrometheusFastApiInstrumentator:
             self: Instrumentator. Builder Pattern.
         """
 
-        if (
-            self.should_respect_env_var
-            and os.environ.get(self.env_var_name, "false") != "true"
-        ):
+        if self.should_respect_env_var and not self._should_instrumentate():
             return self
 
         app.add_middleware(
@@ -248,10 +245,7 @@ class PrometheusFastApiInstrumentator:
             self: Instrumentator. Builder Pattern.
         """
 
-        if (
-            self.should_respect_env_var
-            and os.environ.get(self.env_var_name, "false") != "true"
-        ):
+        if self.should_respect_env_var and not self._should_instrumentate():
             return self
 
         @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
@@ -286,3 +280,8 @@ class PrometheusFastApiInstrumentator:
         self.instrumentations.append(instrumentation_function)
 
         return self
+
+    def _should_instrumentate(self):
+        """Checks if instrumentation should be performed based on env var."""
+
+        return os.getenv(self.env_var_name, "False").lower() in ["true", "1"]
