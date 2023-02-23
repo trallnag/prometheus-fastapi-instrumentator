@@ -231,7 +231,7 @@ class PrometheusFastApiInstrumentator:
             should_gzip: Should the endpoint return compressed data? It will
                 also check for `gzip` in the `Accept-Encoding` header.
                 Compression consumes more CPU cycles. In most cases it's best
-                to just leave this option off since network bandwith is usually
+                to just leave this option off since network bandwidth is usually
                 cheaper than CPU cycles. Defaults to `False`.
 
             endpoint: Endpoint on which metrics should be exposed.
@@ -273,7 +273,7 @@ class PrometheusFastApiInstrumentator:
         """Adds function to list of instrumentations.
 
         Args:
-            instrumentation_function (Callable[[metrics.Info], None]): Function
+            instrumentation_function: Function
                 that will be executed during every request handler call (if
                 not excluded). See above for detailed information on the
                 interface of the function.
