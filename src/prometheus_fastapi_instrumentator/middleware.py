@@ -1,6 +1,6 @@
 from __future__ import annotations
-import asyncio
 
+import asyncio
 import re
 from http import HTTPStatus
 from timeit import default_timer
@@ -180,9 +180,12 @@ class PrometheusInstrumentatorMiddleware:
                 for instrumentation in self.instrumentations:
                     instrumentation(info)
 
-                await asyncio.gather(*[
-                    instrumentation(info) for instrumentation in self.async_instrumentations
-                ])
+                await asyncio.gather(
+                    *[
+                        instrumentation(info)
+                        for instrumentation in self.async_instrumentations
+                    ]
+                )
 
     def _get_handler(self, request: Request) -> Tuple[str, bool]:
         """Extracts either template or (if no template) path.

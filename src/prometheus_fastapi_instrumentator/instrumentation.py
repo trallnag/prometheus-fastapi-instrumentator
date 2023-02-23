@@ -265,7 +265,10 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    def add(self, instrumentation_function: Callable[[metrics.Info], Union[None, Awaitable[None]]]):
+    def add(
+        self,
+        instrumentation_function: Callable[[metrics.Info], Union[None, Awaitable[None]]],
+    ):
         """Adds function to list of instrumentations.
 
         Args:
