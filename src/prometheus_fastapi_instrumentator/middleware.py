@@ -4,7 +4,7 @@ import asyncio
 import re
 from http import HTTPStatus
 from timeit import default_timer
-from typing import TYPE_CHECKING, Callable, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Awaitable, Callable, Optional, Sequence, Tuple
 
 from prometheus_client import REGISTRY, CollectorRegistry, Gauge
 from starlette.datastructures import Headers

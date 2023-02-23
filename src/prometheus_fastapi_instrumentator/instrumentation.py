@@ -4,7 +4,7 @@ import os
 import re
 import warnings
 from enum import Enum
-from typing import Awaitable, Callable, List, Optional, Union
+from typing import Awaitable, Callable, List, Optional, Union, cast
 
 from fastapi import FastAPI
 from prometheus_client import (
@@ -115,6 +115,7 @@ class PrometheusFastApiInstrumentator:
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
+        self.async_instrumentations: List[Callable[[metrics.Info], Awaitable[None]]] = []
 
         if (
             "prometheus_multiproc_dir" in os.environ
@@ -282,9 +283,13 @@ class PrometheusFastApiInstrumentator:
         """
 
         if asyncio.iscoroutinefunction(instrumentation_function):
-            self.async_instrumentations.append(instrumentation_function)
+            self.async_instrumentations.append(
+                cast(Callable[[metrics.Info], Awaitable[None]], instrumentation_function)
+            )
         else:
-            self.instrumentations.append(instrumentation_function)
+            self.instrumentations.append(
+                cast(Callable[[metrics.Info], None], instrumentation_function)
+            )
 
         return self
 
