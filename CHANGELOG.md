@@ -38,7 +38,9 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 - Environment variable used by `should_respect_env_var` (default
   `ENABLE_METRICS`) now accepts truthy values like `1` and `true` and not just
   `True`. Thanks to [@chbndrhnns](https://github.com/chbndrhnns) for proposing
-  this enhancement and implementing it in
+  this enhancement in
+  [#27](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/27)
+  and implementing it in
   [#28](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/28).
 
 ### Changed
