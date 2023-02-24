@@ -1,9 +1,10 @@
+import asyncio
 import gzip
 import os
 import re
 import warnings
 from enum import Enum
-from typing import Callable, List, Optional, Union
+from typing import Awaitable, Callable, List, Optional, Union, cast
 
 from fastapi import FastAPI
 from prometheus_client import (
@@ -114,6 +115,7 @@ class PrometheusFastApiInstrumentator:
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
+        self.async_instrumentations: List[Callable[[metrics.Info], Awaitable[None]]] = []
 
         if (
             "prometheus_multiproc_dir" in os.environ
@@ -202,6 +204,7 @@ class PrometheusFastApiInstrumentator:
             inprogress_name=self.inprogress_name,
             inprogress_labels=self.inprogress_labels,
             instrumentations=self.instrumentations,
+            async_instrumentations=self.async_instrumentations,
             excluded_handlers=self.excluded_handlers,
             metric_namespace=metric_namespace,
             metric_subsystem=metric_subsystem,
@@ -229,7 +232,7 @@ class PrometheusFastApiInstrumentator:
             should_gzip: Should the endpoint return compressed data? It will
                 also check for `gzip` in the `Accept-Encoding` header.
                 Compression consumes more CPU cycles. In most cases it's best
-                to just leave this option off since network bandwith is usually
+                to just leave this option off since network bandwidth is usually
                 cheaper than CPU cycles. Defaults to `False`.
 
             endpoint: Endpoint on which metrics should be exposed.
@@ -264,11 +267,14 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    def add(self, instrumentation_function: Callable[[metrics.Info], None]):
+    def add(
+        self,
+        instrumentation_function: Callable[[metrics.Info], Union[None, Awaitable[None]]],
+    ):
         """Adds function to list of instrumentations.
 
         Args:
-            instrumentation_function (Callable[[metrics.Info], None]): Function
+            instrumentation_function: Function
                 that will be executed during every request handler call (if
                 not excluded). See above for detailed information on the
                 interface of the function.
@@ -277,7 +283,14 @@ class PrometheusFastApiInstrumentator:
             self: Instrumentator. Builder Pattern.
         """
 
-        self.instrumentations.append(instrumentation_function)
+        if asyncio.iscoroutinefunction(instrumentation_function):
+            self.async_instrumentations.append(
+                cast(Callable[[metrics.Info], Awaitable[None]], instrumentation_function)
+            )
+        else:
+            self.instrumentations.append(
+                cast(Callable[[metrics.Info], None], instrumentation_function)
+            )
 
         return self
 

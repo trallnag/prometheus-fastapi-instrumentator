@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 import re
 from http import HTTPStatus
 from timeit import default_timer
-from typing import TYPE_CHECKING, Callable, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Awaitable, Callable, Optional, Sequence, Tuple
 
 from prometheus_client import REGISTRY, CollectorRegistry, Gauge
 from starlette.datastructures import Headers
@@ -33,6 +34,7 @@ class PrometheusInstrumentatorMiddleware:
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
         instrumentations: Sequence[Callable[[metrics.Info], None]] = (),
+        async_instrumentations: Sequence[Callable[[metrics.Info], Awaitable[None]]] = (),
         metric_namespace: str = "",
         metric_subsystem: str = "",
         should_only_respect_2xx_for_highr: bool = False,
@@ -88,6 +90,7 @@ class PrometheusInstrumentatorMiddleware:
                 registry=self.registry,
             )
         ]
+        self.async_instrumentations = async_instrumentations
 
         self.inprogress: Optional[Gauge] = None
         if self.should_instrument_requests_inprogress:
@@ -176,6 +179,13 @@ class PrometheusInstrumentatorMiddleware:
 
                 for instrumentation in self.instrumentations:
                     instrumentation(info)
+
+                await asyncio.gather(
+                    *[
+                        instrumentation(info)
+                        for instrumentation in self.async_instrumentations
+                    ]
+                )
 
     def _get_handler(self, request: Request) -> Tuple[str, bool]:
         """Extracts either template or (if no template) path.

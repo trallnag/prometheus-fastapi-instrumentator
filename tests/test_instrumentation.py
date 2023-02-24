@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 
 import pytest
 from fastapi import FastAPI, HTTPException
-from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, generate_latest
+from prometheus_client import CONTENT_TYPE_LATEST, REGISTRY, Info, generate_latest
 from requests import Response as TestClientResponse
 from starlette.responses import Response
 from starlette.testclient import TestClient
@@ -545,6 +545,46 @@ def test_rounding():
     entropy = calc_entropy(str(result).split(".")[1][4:])
 
     assert entropy < 10
+
+
+def test_custom_async_instrumentation():
+    app = create_app()
+    client = TestClient(app)
+
+    sync_metric = Info("sync_metric", "Documentation")
+    async_metric = Info("async_metric", "Documentation")
+
+    async def get_value():
+        return "X_ASYNC_X"
+
+    async def async_function(x):
+        value = await get_value()
+        async_metric.info({"type": value})
+
+    def sync_function(_):
+        sync_metric.info({"type": "X_SYNC_X"})
+
+    instrumentator = Instrumentator()
+    instrumentator.add(sync_function)
+    instrumentator.add(async_function)
+    instrumentator.instrument(app).expose(app)
+
+    get_response(client, "/")
+    get_response(client, "/metrics")
+
+    result_async = REGISTRY.get_sample_value(
+        "async_metric_info",
+        {"type": "X_ASYNC_X"},
+    )
+
+    assert result_async > 0
+
+    result_sync = REGISTRY.get_sample_value(
+        "sync_metric_info",
+        {"type": "X_SYNC_X"},
+    )
+
+    assert result_sync > 0
 
 
 # ==============================================================================
