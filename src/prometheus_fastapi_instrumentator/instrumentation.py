@@ -204,6 +204,7 @@ class PrometheusFastApiInstrumentator:
             inprogress_name=self.inprogress_name,
             inprogress_labels=self.inprogress_labels,
             instrumentations=self.instrumentations,
+            async_instrumentations=self.async_instrumentations,
             excluded_handlers=self.excluded_handlers,
             metric_namespace=metric_namespace,
             metric_subsystem=metric_subsystem,
