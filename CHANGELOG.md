@@ -42,6 +42,14 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   [#27](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/27)
   and implementing it in
   [#28](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/28).
+- Added support for asynchronous instrumentation functions. The `add()` method
+  now accepts them in addition to "normal" functions and the instrumentator
+  middleware will await them appropriately. Thanks to
+  [@AndreasPB](https://github.com/AndreasPB) for for proposing this enhancement
+  and implementing it in
+  [#61](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/61).
+  Thanks to [@Skeen](https://github.com/Skeen) for contributing to the
+  discussion.
 
 ### Changed
 
