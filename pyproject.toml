@@ -30,6 +30,7 @@ mypy = "^0.971"
 devtools = "^0.9.0"
 pre-commit = "^2.20.0"
 asgiref = "^3.5.2"
+uvicorn = "^0.20.0"
 
 [tool.black]
 line-length = 90
