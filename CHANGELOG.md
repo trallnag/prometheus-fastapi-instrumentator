@@ -17,6 +17,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   [@LordGaav](https://github.com/LordGaav) for proposing this enhancement and
   implementing it in
   [#208](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/208).
+  Related to
+  [#31](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/31)
+  and
+  [#121](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/121).
 - Added optional parameters `metric_namespace` and `metric_subsystem` to
   `instrument()` method to configure namespace and subsystem for all metric
   names. Check the [`README.md`](README.md#specify-namespace-and-subsystem) for
