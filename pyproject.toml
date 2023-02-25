@@ -43,6 +43,5 @@ allow_redefinition = true
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-markers = [
-  "slow: mark test as slow."
-]
+norecursedirs = "tests/helpers"
+markers = ["slow: mark test as slow."]
