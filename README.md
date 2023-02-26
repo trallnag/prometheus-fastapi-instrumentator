@@ -1,31 +1,35 @@
-> Disclaimer: I'm happy to see that people find use in this project. In 2020 I
-> created it to handle instrumentation of a bunch of microservices I was working
-> on. Since then I (mostly) moved on to other things.
->
-> The project is **still maintained** and good at doing what it's supposed to
-> do. At the same time, please **don't expect exciting new features** anytime
-> soon. If you know of any good alternatives, feel free to point them out in
-> [#140][project-status-issue] and I'll gladly include them in this document.
+# Prometheus FastAPI Instrumentator <!-- omit in toc -->
 
-# Prometheus FastAPI Instrumentator
-
-[![PyPI version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/)
-[![PyPI](https://img.shields.io/pypi/pyversions/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
+[![pypi-version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
+[![python-versions](https://img.shields.io/pypi/pyversions/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
 [![downloads](https://pepy.tech/badge/prometheus-fastapi-instrumentator/month)](https://pepy.tech/project/prometheus-fastapi-instrumentator/month)
-[![primary](https://github.com/trallnag/prometheus-fastapi-instrumentator/actions/workflows/primary.yaml/badge.svg)](https://github.com/trallnag/prometheus-fastapi-instrumentator/actions/workflows/primary.yaml)
+[![build](https://img.shields.io/github/actions/workflow/status/trallnag/kubestatus2cloudwatch/ci.yaml?branch=master)](https://github.com/trallnag/kubestatus2cloudwatch/actions)
 [![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator)
 
 A configurable and modular Prometheus Instrumentator for your FastAPI. Install
 `prometheus-fastapi-instrumentator` from
 [PyPI](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator/). Here is
-the fast track to get started with a preconfigured instrumentator:
+the fast track to get started with a pre-configured instrumentator. Import the
+instrumentator class:
 
 ```python
 from prometheus_fastapi_instrumentator import Instrumentator
+```
+
+Instrument your app with default metrics and expose the metrics:
+
+```python
+Instrumentator().instrument(app).expose(app)
+```
+
+Depending on your code you might have to use the following instead:
+
+```python
+instrumentator = Instrumentator().instrument(app)
 
 @app.on_event("startup")
-async def startup():
-    Instrumentator().instrument(app).expose(app)
+async def _startup():
+    instrumentator.expose(app)
 ```
 
 With this, your FastAPI is instrumented and metrics are ready to be scraped. The
@@ -42,7 +46,7 @@ defaults give you:
 - Histogram `http_request_duration_highr_seconds` without any labels. Large
   number of buckets (>20).
 
-In addition, following behaviour is active:
+In addition, following behavior is active:
 
 - Status codes are grouped into `2xx`, `3xx` and so on.
 - Requests without a matching template are grouped into the handler `none`.
@@ -51,35 +55,31 @@ If one of these presets does not suit your needs you can do one of multiple
 things:
 
 - Pick one of the already existing closures from
-  [`metrics`](https://trallnag.github.io/prometheus-fastapi-instrumentator/metrics.html)
-  and pass it to the instrumentator instance. See [here](#adding-metrics) how to
-  do that.
+  [`metrics`](./src/prometheus_fastapi_instrumentator/metrics.py) and pass it to
+  the instrumentator instance. See [here](#adding-metrics) how to do that.
 - Create your own instrumentation function that you can pass to an
   instrumentator instance. See [here](#creating-new-metrics) to learn how more.
-- Don't use this package at all and just use the sorce code as inspiration on
+- Don't use this package at all and just use the source code as inspiration on
   how to instrument your FastAPI.
 
 Important: This package is not made for generic Prometheus instrumentation in
 Python. Use the Prometheus client library for that. This packages uses it as
 well.
 
-## Table of Contents
+## Table of Contents <!-- omit in toc -->
 
 <!--TOC-->
 
-- [Prometheus FastAPI Instrumentator](#prometheus-fastapi-instrumentator)
-  - [Table of Contents](#table-of-contents)
-  - [Features](#features)
-  - [Advanced Usage](#advanced-usage)
-    - [Creating the Instrumentator](#creating-the-instrumentator)
-    - [Adding metrics](#adding-metrics)
-    - [Creating new metrics](#creating-new-metrics)
-    - [Perform instrumentation](#perform-instrumentation)
-    - [Specify namespace and subsystem](#specify-namespace-and-subsystem)
-    - [Exposing endpoint](#exposing-endpoint)
-  - [Prerequesites](#prerequesites)
-  - [Contributing](#contributing)
-  - [Licensing](#licensing)
+- [Features](#features)
+- [Advanced Usage](#advanced-usage)
+  - [Creating the Instrumentator](#creating-the-instrumentator)
+  - [Adding metrics](#adding-metrics)
+  - [Creating new metrics](#creating-new-metrics)
+  - [Perform instrumentation](#perform-instrumentation)
+  - [Specify namespace and subsystem](#specify-namespace-and-subsystem)
+  - [Exposing endpoint](#exposing-endpoint)
+- [Contributing](#contributing)
+- [Licensing](#licensing)
 
 <!--TOC-->
 
@@ -293,16 +293,13 @@ Notice that this will to nothing if `should_respect_env_var` has been set during
 construction of the instrumentator object and the respective env var is not
 found.
 
-## Prerequesites
-
-You can always check [`pyproject.toml`](/pyproject.toml) for dependencies.
-
-- `python = "^3.7"` (tested with 3.7 and 3.10)
-- `fastapi = ">=0.38.1, <=1.0.0"` (tested with 0.38.1 and 0.61.0)
-
 ## Contributing
 
 Please refer to [`CONTRIBUTING.md`](CONTRIBUTING).
+
+Consult [`DEVELOPMENT.md`](DEVELOPMENT.md) for guidance regarding development.
+
+Read [`RELEASE.md`](RELEASE.md) for details about the release process.
 
 ## Licensing
 
@@ -317,9 +314,7 @@ used as the license for the
 [`routing`](src/prometheus_fastapi_instrumentator/routing.py) module. This is
 due to it containing code from
 [elastic/apm-agent-python](https://github.com/elastic/apm-agent-python). BSD
-3-Clause is permissive license similar to the BSD 2-Clause License, but with a
+3-Clause is a permissive license similar to the BSD 2-Clause License, but with a
 3rd clause that prohibits others from using the name of the copyright holder or
 its contributors to promote derived products without written consent. The
 license text is included in the module itself.
-
-[project-status-issue]: https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/140
