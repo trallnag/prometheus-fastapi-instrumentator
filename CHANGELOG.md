@@ -16,6 +16,9 @@ contributors. Notable changes that might have an impact on existing setups is
 the automatic instrumentation of mounted apps and the deprecation of the
 lowercase `prometheus_multiproc_dir` environment variable.
 
+Ask or discuss anything quick about the release in the discussion
+[#221](https://github.com/trallnag/prometheus-fastapi-instrumentator/discussions/221).
+
 ### Added
 
 - Added smart **handling of mounted apps**. Previously the URL handler logic did
