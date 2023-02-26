@@ -7,48 +7,62 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [5.10.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.1...v5.10.0) / 2023-02-26
+
+First release in several months. Includes new features and fixes from various
+contributors. Notable changes that might have an impact on existing setups is
+the automatic instrumentation of mounted apps and the deprecation of the
+lowercase `prometheus_multiproc_dir` environment variable.
+
 ### Added
 
-- Added smart handling of mounted apps. Previously the URL handler logic did not
-  handle mounted apps and always returned the prefix in that case. This is based
-  on code from
+- Added smart **handling of mounted apps**. Previously the URL handler logic did
+  not handle mounted apps and always returned just the prefix in that case.
+  Based on code from
   [elastic/apm-agent-python](https://github.com/elastic/apm-agent-python)
   licensed under the permissive BSD-3-Clause License. Thanks to
-  [@LordGaav](https://github.com/LordGaav) for proposing this enhancement and
-  implementing it in
+  [@LordGaav](https://github.com/LordGaav) for proposing this enhancement / fix
+  and implementing it in
   [#208](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/208).
-  Related to
+  Related to issues
   [#31](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/31)
   and
   [#121](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/121).
+
 - Added optional parameters `metric_namespace` and `metric_subsystem` to
-  `instrument()` method to configure namespace and subsystem for all metric
+  `instrument()` method to **configure namespace and subsystem** for all metric
   names. Check the [`README.md`](README.md#specify-namespace-and-subsystem) for
   more information. Thanks to [@phbernardes](https://github.com/phbernardes) for
   proposing this enhancement and implementing it in
   [#193](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/193).
-- Added passthrough of body to `info.response`. This enables metrics that work
-  based on data in the body. Thanks to everyone who brought this up in
+
+- Added **passthrough of body** to `info.response`. This enables metrics that
+  work based on data in the body. Thanks to everyone who brought this up in
   [#76](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/76)
   and to [@HadilD](https://github.com/HadilD) for implementing it in
   [#203](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/203).
-- Allowed passing a custom registry to be used instead of using the default one.
-  This would be useful in particular when testing multiple FastAPI apps (e.g.
-  microservices) in the same tests run. Note that there are issues with the
-  current implementation in certain corner cases. Thanks to
+
+- Allowed **passing a custom registry** to be used instead of using the default
+  one. This would be useful in particular when testing multiple FastAPI apps
+  (e.g. microservices) in the same tests run. Note that there are issues with
+  the current implementation in certain corner cases. Thanks to
   [@tiangolo](https://github.com/tiangolo) for for proposing this enhancement
   and implementing it in
   [#153](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/153).
+
 - Environment variable used by `should_respect_env_var` (default
-  `ENABLE_METRICS`) now accepts truthy values like `1` and `true` and not just
-  `True`. Thanks to [@chbndrhnns](https://github.com/chbndrhnns) for proposing
-  this enhancement in
+  `ENABLE_METRICS`) now **accepts truthy values** like `1` and `true` and not
+  just `True`. Thanks to [@chbndrhnns](https://github.com/chbndrhnns) for
+  proposing this enhancement in
   [#27](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/27)
   and implementing it in
   [#28](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/28).
-- Added support for asynchronous instrumentation functions. The `add()` method
-  now accepts them in addition to "normal" functions and the instrumentator
-  middleware will await them appropriately. Thanks to
+
+- Added support for **asynchronous instrumentation functions**. The `add()`
+  method now accepts them in addition to "normal" functions and the
+  instrumentator middleware will await them appropriately. Thanks to
   [@AndreasPB](https://github.com/AndreasPB) for for proposing this enhancement
   and implementing it in
   [#61](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/61).
@@ -59,7 +73,8 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 - Licensed part of the project under the BSD-3-Clause License. This is due to
   code being used from a repo licensed under BSD-3-Clause (see the "Added"
-  section). The default ISC License and the BSD-3-Clause License are permissive.
+  section). The default ISC License and the BSD-3-Clause License are both
+  permissive. So there should be no user impact.
 
 ### Fixed
 
@@ -70,6 +85,15 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   Thanks to [@nikstuckenbrock](https://github.com/nikstuckenbrock) and
   [@blag](https://github.com/blag) for fixing it in
   [#192](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/192).
+
+- Fixed documentation in main README on how to use
+  prometheus-fastapi-instrumentator with current versions of FastAPI. Related to
+  issues
+  [#214](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/214)
+  and
+  [#80](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/80).
+  Thanks to [@alfaro28](https://github.com/alfaro28) and
+  [@harochau](https://github.com/harochau).
 
 ### Deprecated
 
