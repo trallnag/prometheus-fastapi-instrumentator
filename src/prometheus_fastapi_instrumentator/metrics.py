@@ -617,27 +617,30 @@ def default(
             subsystem=metric_subsystem,
             registry=registry,
         )
+
+        def instrumentation(info: Info) -> None:
+            TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+
+            IN_SIZE.labels(info.modified_handler).observe(
+                int(info.request.headers.get("Content-Length", 0))
+            )
+
+            if info.response and hasattr(info.response, "headers"):
+                OUT_SIZE.labels(info.modified_handler).observe(
+                    int(info.response.headers.get("Content-Length", 0))
+                )
+            else:
+                OUT_SIZE.labels(info.modified_handler).observe(0)
+
+            if not should_only_respect_2xx_for_highr or info.modified_status.startswith(
+                "2"
+            ):
+                LATENCY_HIGHR.observe(info.modified_duration)
+
+            LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
+
+        return instrumentation
+
     except ValueError as e:
         if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
             raise e
-
-    def instrumentation(info: Info) -> None:
-        TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
-
-        IN_SIZE.labels(info.modified_handler).observe(
-            int(info.request.headers.get("Content-Length", 0))
-        )
-
-        if info.response and hasattr(info.response, "headers"):
-            OUT_SIZE.labels(info.modified_handler).observe(
-                int(info.response.headers.get("Content-Length", 0))
-            )
-        else:
-            OUT_SIZE.labels(info.modified_handler).observe(0)
-
-        if not should_only_respect_2xx_for_highr or info.modified_status.startswith("2"):
-            LATENCY_HIGHR.observe(info.modified_duration)
-
-        LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
-
-    return instrumentation

@@ -178,12 +178,14 @@ class PrometheusInstrumentatorMiddleware:
                 )
 
                 for instrumentation in self.instrumentations:
-                    instrumentation(info)
+                    if instrumentation:
+                        instrumentation(info)
 
                 await asyncio.gather(
                     *[
                         instrumentation(info)
                         for instrumentation in self.async_instrumentations
+                        if instrumentation
                     ]
                 )
 
