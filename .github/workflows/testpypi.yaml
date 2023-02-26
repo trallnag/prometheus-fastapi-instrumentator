@@ -64,11 +64,11 @@ jobs:
           pversion="$(poetry version --short)"
           sed -i "/^__version__/c\__version__ = \"$pversion\"" src/*/__init__.py
 
-      - name: Check version equality
+      - name: Check version equality between Poetry and __version__
         run: |
           pattern="__version__ = \"$(poetry version --short)\""
           if ! grep -q -R -F --include="__init__.py" "$pattern" src; then
-            echo "::error::Version set with Poetry does not match __version__ variable."; exit 1
+            echo "::error::No version equality between Poetry and __version__."; exit 1
           fi
 
       - name: Configure Poetry repo for TestPyPI

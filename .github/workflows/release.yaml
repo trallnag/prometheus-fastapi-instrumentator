@@ -54,11 +54,19 @@ jobs:
       # ------------------------------------------------------------------------
       # Publishing & draft release.
 
-      - name: Check version equality
+      - name: Check version equality between Poetry and __version__
         run: |
           pattern="__version__ = \"$(poetry version --short)\""
           if ! grep -q -R -F --include="__init__.py" "$pattern" src; then
-            echo "::error::Version set with Poetry does not match __version__ variable."; exit 1
+            echo "::error::No version equality between Poetry and __version__."; exit 1
+          fi
+
+      - name: Check version equality between Poetry and Git tag
+        run: |
+          poetry_version=$(poetry version --short)
+          git_tag=${GITHUB_REF#refs/*/}
+          if [[ "v$poetry_version" != "$git_tag" ]]; then
+            echo "::error::No version equality between Poetry and Git tag."; exit 1
           fi
 
       - name: Publish to PyPI with Poetry
