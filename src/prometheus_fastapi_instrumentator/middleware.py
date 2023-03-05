@@ -80,8 +80,11 @@ class PrometheusInstrumentatorMiddleware:
         self.registry = registry
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
-        self.instrumentations = instrumentations or [
-            metrics.default(
+
+        if instrumentations:
+            self.instrumentations = instrumentations
+        else:
+            default_instrumentation = metrics.default(
                 metric_namespace=metric_namespace,
                 metric_subsystem=metric_subsystem,
                 should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
@@ -89,7 +92,11 @@ class PrometheusInstrumentatorMiddleware:
                 latency_lowr_buckets=latency_lowr_buckets,
                 registry=self.registry,
             )
-        ]
+            if default_instrumentation:
+                self.instrumentations = [default_instrumentation]
+            else:
+                self.instrumentations = []
+
         self.async_instrumentations = async_instrumentations
 
         self.inprogress: Optional[Gauge] = None
@@ -178,14 +185,12 @@ class PrometheusInstrumentatorMiddleware:
                 )
 
                 for instrumentation in self.instrumentations:
-                    if instrumentation:
-                        instrumentation(info)
+                    instrumentation(info)
 
                 await asyncio.gather(
                     *[
                         instrumentation(info)
                         for instrumentation in self.async_instrumentations
-                        if instrumentation
                     ]
                 )
 
