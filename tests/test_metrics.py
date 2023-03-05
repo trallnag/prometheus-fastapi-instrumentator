@@ -80,6 +80,17 @@ def get_response(client: TestClient, path: str) -> TestClientResponse:
 # Test helpers / misc
 
 
+def test_is_duplicated_time_series():
+    error = ValueError("xx Duplicated timeseries in CollectorRegistry: xx")
+    assert metrics._is_duplicated_time_series(error)
+
+    error = ValueError("xx Duplicated time series in CollectorRegistry: xx")
+    assert metrics._is_duplicated_time_series(error)
+
+    error = ValueError("xx xx")
+    assert not metrics._is_duplicated_time_series(error)
+
+
 def test_existence_of_attributes():
     info = metrics.Info(
         request=None,

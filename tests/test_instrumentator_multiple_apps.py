@@ -6,6 +6,12 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 
 def test_multiple_apps_custom_registry():
+    """
+    Tests instrumentation of multiple apps in combination with  middlewares
+    where each app gets it's own registry. In addition it tests that custom
+    metrics are not shared between app's metrics endpoints.
+    """
+
     app1 = FastAPI()
     app2 = FastAPI()
 
@@ -57,6 +63,8 @@ def test_multiple_apps_custom_registry():
 
 
 def test_multiple_apps_expose_defaults():
+    """Tests instrumentation of multiple apps in combination with  middlewares."""
+
     app1 = FastAPI()
     app2 = FastAPI()
 

@@ -90,6 +90,18 @@ def _build_label_attribute_names(
     return label_names, info_attribute_names
 
 
+def _is_duplicated_time_series(error: ValueError) -> bool:
+    return any(
+        map(
+            error.args[0].__contains__,
+            [
+                "Duplicated timeseries in CollectorRegistry:",
+                "Duplicated time series in CollectorRegistry:",
+            ],
+        )
+    )
+
+
 # ------------------------------------------------------------------------------
 # Instrumentation / Metrics functions
 
@@ -184,7 +196,7 @@ def latency(
 
         return instrumentation
     except ValueError as e:
-        if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
+        if not _is_duplicated_time_series(e):
             raise e
 
     return None
@@ -268,7 +280,7 @@ def request_size(
 
         return instrumentation
     except ValueError as e:
-        if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
+        if not _is_duplicated_time_series(e):
             raise e
 
     return None
@@ -362,7 +374,7 @@ def response_size(
 
         return instrumentation
     except ValueError as e:
-        if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
+        if not _is_duplicated_time_series(e):
             raise e
 
     return None
@@ -460,7 +472,7 @@ def combined_size(
 
         return instrumentation
     except ValueError as e:
-        if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
+        if not _is_duplicated_time_series(e):
             raise e
 
     return None
@@ -547,7 +559,7 @@ def requests(
 
         return instrumentation
     except ValueError as e:
-        if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
+        if not _is_duplicated_time_series(e):
             raise e
 
     return None
@@ -728,7 +740,7 @@ def default(
         return instrumentation
 
     except ValueError as e:
-        if "Duplicated timeseries in CollectorRegistry:" not in e.args[0]:
+        if not _is_duplicated_time_series(e):
             raise e
 
     return None
