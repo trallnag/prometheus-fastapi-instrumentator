@@ -9,6 +9,17 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ### Fixed
 
+- Fixed multi process mode in `expose()` method that handles the `/metrics`
+  endpoint. Due to reusing the registry assigned to the instrumentator it could
+  lead to duplicated metrics. Now the endpoint follows recommendation from
+  Prometheus client library documentation. Also improved multi process unit
+  tests. Closed issue
+  [#228](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/228)
+  and
+  [#227](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/227).
+  Fixed in pull request
+  [#229](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/229).
+
 - Fixed `NameError` and "Duplicated timeseries..." errors that started to occur
   with latest versions of Starlette / FastAPI in combination with multiple
   middlewares. Instrumentation closures are now optional and the instrumentator

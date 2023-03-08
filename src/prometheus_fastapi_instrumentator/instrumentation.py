@@ -32,7 +32,7 @@ class PrometheusFastApiInstrumentator:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
-        excluded_handlers: List[str] = None,
+        excluded_handlers: List[str] = [],
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
@@ -109,9 +109,6 @@ class PrometheusFastApiInstrumentator:
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
 
-        if excluded_handlers is None:
-            excluded_handlers = []
-
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
@@ -131,17 +128,15 @@ class PrometheusFastApiInstrumentator:
 
         if registry:
             self.registry = registry
-        elif "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+        else:
+            self.registry = REGISTRY
+
+        if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
             pmd = os.environ["PROMETHEUS_MULTIPROC_DIR"]
-            if os.path.isdir(pmd):
-                self.registry = CollectorRegistry()
-                multiprocess.MultiProcessCollector(self.registry)
-            else:
+            if not os.path.isdir(pmd):
                 raise ValueError(
                     f"Env var PROMETHEUS_MULTIPROC_DIR='{pmd}' not a directory."
                 )
-        else:
-            self.registry = REGISTRY
 
     def instrument(
         self,
@@ -255,12 +250,19 @@ class PrometheusFastApiInstrumentator:
         def metrics(request: Request):
             """Endpoint that serves Prometheus metrics."""
 
+            ephemeral_registry = self.registry
+            if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+                ephemeral_registry = CollectorRegistry()
+                multiprocess.MultiProcessCollector(ephemeral_registry)
+
             if should_gzip and "gzip" in request.headers.get("Accept-Encoding", ""):
-                resp = Response(content=gzip.compress(generate_latest(self.registry)))
+                resp = Response(
+                    content=gzip.compress(generate_latest(ephemeral_registry))
+                )
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
                 resp.headers["Content-Encoding"] = "gzip"
             else:
-                resp = Response(content=generate_latest(self.registry))
+                resp = Response(content=generate_latest(ephemeral_registry))
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
 
             return resp

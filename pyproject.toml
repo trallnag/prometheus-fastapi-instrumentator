@@ -16,22 +16,22 @@ keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
 python = ">= 3.7.0, < 4.0.0"
 fastapi = ">= 0.38.1, < 1.0.0"
 prometheus-client = ">= 0.8.0, < 1.0.0"
-starlette = "0.25.0"
 
 [tool.poetry.group.dev.dependencies]
-httpx = "^0.23.1"
-black = "^22.12.0"
+httpx = "^0.23.3"
+black = "^23.1.0"
 flake8 = "^5.0.4"
-requests = "^2.28.1"
-pytest = "^7.2.0"
-pytest-cov = "^3.0.0"
-rope = "^1.6.0"
+requests = "^2.28.2"
+pytest = "^7.2.2"
+pytest-cov = "^4.0.0"
+rope = "^1.7.0"
 isort = "^5.11.3"
-mypy = "^0.971"
-devtools = "^0.9.0"
-pre-commit = "^2.20.0"
-asgiref = "^3.5.2"
+mypy = "^1.1.1"
+devtools = "^0.10.0"
+asgiref = "^3.6.0"
 uvicorn = "^0.20.0"
+gunicorn = "^20.1.0"
+pytest-asyncio = "^0.20.3"
 
 [tool.black]
 line-length = 90
@@ -46,3 +46,4 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 norecursedirs = "tests/helpers"
 markers = ["slow: mark test as slow."]
+asyncio_mode = "auto"
