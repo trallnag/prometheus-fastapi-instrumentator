@@ -48,18 +48,3 @@ def delete_dir_content(dirpath):
             shutil.rmtree(filepath)
         except OSError:
             os.remove(filepath)
-
-
-UNIQUE_ID = 0
-
-
-def get_unique_id() -> str:
-    global UNIQUE_ID
-    UNIQUE_ID = UNIQUE_ID + 1
-    return str(UNIQUE_ID).rjust(4, "0")
-
-
-def build_sample(name: str, labels: dict[str, str], value: str) -> str:
-    sample = name
-    if labels:
-        sample = sample + "{"
