@@ -32,7 +32,7 @@ class PrometheusFastApiInstrumentator:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
-        excluded_handlers: List[str] = None,
+        excluded_handlers: List[str] = [],
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
@@ -108,9 +108,6 @@ class PrometheusFastApiInstrumentator:
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
-
-        if excluded_handlers is None:
-            excluded_handlers = []
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
 
