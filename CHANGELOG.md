@@ -7,6 +7,13 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+### Added
+
+- Adjusted the `add()` method to accept an arbitrary number of instrumentation
+  functions as arguments instead of a single one. Non-breaking change.
+  Implemented in pull request
+  [#230](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/230).
+
 ### Fixed
 
 - Fixed multi process mode in `expose()` method that handles the `/metrics`
