@@ -7,6 +7,18 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [5.11.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.10.0...v5.11.0) / 2023-03-08
+
+Minor release containing several fixes and a small enhancement. Fixes are
+related to multi process mode, a regression introduced with the previous
+release, and errors that started to occur with current versions of Starlette and
+FastAPI.
+
+Ask or discuss anything quick about the release in the discussion
+[#221](https://github.com/trallnag/prometheus-fastapi-instrumentator/discussions/221).
+
 ### Added
 
 - Adjusted the `add()` method to accept an arbitrary number of instrumentation
@@ -31,7 +43,9 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   with latest versions of Starlette / FastAPI in combination with multiple
   middlewares. Instrumentation closures are now optional and the instrumentator
   handles this accordingly. Thanks to [@alexted](https://github.com/alexted) and
-  others for reporting errors. Related to pull request
+  others for reporting errors. Thanks to
+  [@frankie567](https://github.com/frankie567) for pointing out the change in
+  Starlette. Related to pull request
   [#153](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/153)
   and issue
   [#214](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/214).
@@ -91,8 +105,8 @@ Ask or discuss anything quick about the release in the discussion
   one. This would be useful in particular when testing multiple FastAPI apps
   (e.g. microservices) in the same tests run. Note that there are issues with
   the current implementation in certain corner cases. Thanks to
-  [@tiangolo](https://github.com/tiangolo) for for proposing this enhancement
-  and implementing it in
+  [@tiangolo](https://github.com/tiangolo) for proposing this enhancement and
+  implementing it in
   [#153](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/153).
 
 - Environment variable used by `should_respect_env_var` (default
@@ -106,8 +120,8 @@ Ask or discuss anything quick about the release in the discussion
 - Added support for **asynchronous instrumentation functions**. The `add()`
   method now accepts them in addition to "normal" functions and the
   instrumentator middleware will await them appropriately. Thanks to
-  [@AndreasPB](https://github.com/AndreasPB) for for proposing this enhancement
-  and implementing it in
+  [@AndreasPB](https://github.com/AndreasPB) for proposing this enhancement and
+  implementing it in
   [#61](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/61).
   Thanks to [@Skeen](https://github.com/Skeen) for contributing to the
   discussion.
