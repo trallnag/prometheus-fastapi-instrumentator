@@ -269,7 +269,9 @@ class PrometheusFastApiInstrumentator:
 
     def add(
         self,
-        instrumentation_function: Callable[[metrics.Info], Union[None, Awaitable[None]]],
+        instrumentation_function: Optional[
+            Callable[[metrics.Info], Union[None, Awaitable[None]]]
+        ],
     ):
         """Adds function to list of instrumentations.
 
@@ -283,14 +285,18 @@ class PrometheusFastApiInstrumentator:
             self: Instrumentator. Builder Pattern.
         """
 
-        if asyncio.iscoroutinefunction(instrumentation_function):
-            self.async_instrumentations.append(
-                cast(Callable[[metrics.Info], Awaitable[None]], instrumentation_function)
-            )
-        else:
-            self.instrumentations.append(
-                cast(Callable[[metrics.Info], None], instrumentation_function)
-            )
+        if instrumentation_function:
+            if asyncio.iscoroutinefunction(instrumentation_function):
+                self.async_instrumentations.append(
+                    cast(
+                        Callable[[metrics.Info], Awaitable[None]],
+                        instrumentation_function,
+                    )
+                )
+            else:
+                self.instrumentations.append(
+                    cast(Callable[[metrics.Info], None], instrumentation_function)
+                )
 
         return self
 

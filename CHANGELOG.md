@@ -7,7 +7,29 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Fixed
+
+- Fixed `NameError` and "Duplicated timeseries..." errors that started to occur
+  with latest versions of Starlette / FastAPI in combination with multiple
+  middlewares. Instrumentation closures are now optional and the instrumentator
+  handles this accordingly. Thanks to [@alexted](https://github.com/alexted) and
+  others for reporting errors. Related to pull request
+  [#153](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/153)
+  and issue
+  [#214](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/214).
+  Closed issue
+  [#219](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/219).
+  Done in pull request
+  [#220](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/220).
+
+- Added missing `registry` parameter to remaining metrics functions. This
+  enables passing custom registry to other metrics functions than default.
+  Related to pull request
+  [#153](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/153).
+  Closed issue
+  [#219](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/219).
+  Done in pull request
+  [#220](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/220).
 
 ## [5.10.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.9.1...v5.10.0) / 2023-02-26
 
