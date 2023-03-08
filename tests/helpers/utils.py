@@ -1,3 +1,6 @@
+import os
+import shutil
+
 from prometheus_client import REGISTRY
 
 
@@ -25,3 +28,38 @@ def reset_collectors() -> None:
     gc_collector.GCCollector()
 
     print(f"after re-register collectors={list(REGISTRY._collector_to_names.keys())}")
+
+
+def is_prometheus_multiproc_valid() -> bool:
+    """Checks if PROMETHEUS_MULTIPROC_DIR is set and a directory."""
+
+    if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
+        pmd = os.environ["PROMETHEUS_MULTIPROC_DIR"]
+        if os.path.isdir(pmd):
+            return True
+    else:
+        return False
+
+
+def delete_dir_content(dirpath):
+    for filename in os.listdir(dirpath):
+        filepath = os.path.join(dirpath, filename)
+        try:
+            shutil.rmtree(filepath)
+        except OSError:
+            os.remove(filepath)
+
+
+UNIQUE_ID = 0
+
+
+def get_unique_id() -> str:
+    global UNIQUE_ID
+    UNIQUE_ID = UNIQUE_ID + 1
+    return str(UNIQUE_ID).rjust(4, "0")
+
+
+def build_sample(name: str, labels: dict[str, str], value: str) -> str:
+    sample = name
+    if labels:
+        sample = sample + "{"
