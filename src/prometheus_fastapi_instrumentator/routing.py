@@ -37,13 +37,16 @@ is contained in a dedicated module.
 Based on code from [elastic/apm-agent-python](https://github.com/elastic/apm-agent-python/blob/527f62c0c50842f94ef90fda079853372539319a/elasticapm/contrib/starlette/__init__.py).
 """
 
-from typing import Optional
+from typing import List, Optional
 
 from starlette.requests import Request
-from starlette.routing import Match, Mount
+from starlette.routing import Match, Mount, Route
+from starlette.types import Scope
 
 
-def _get_route_name(scope, routes, route_name=None) -> Optional[str]:
+def _get_route_name(
+    scope: Scope, routes: List[Route], route_name: Optional[str] = None
+) -> Optional[str]:
     """Gets route name for given scope taking mounts into account."""
 
     for route in routes:

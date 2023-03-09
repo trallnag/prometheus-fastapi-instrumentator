@@ -10,7 +10,7 @@ create your own instrumentation function instead of combining several functions
 from this module.
 """
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, List, Optional, Sequence, Tuple, Union
 
 from prometheus_client import REGISTRY, CollectorRegistry, Counter, Histogram, Summary
 from starlette.requests import Request
@@ -56,7 +56,7 @@ def _build_label_attribute_names(
     should_include_handler: bool,
     should_include_method: bool,
     should_include_status: bool,
-) -> Tuple[list, list]:
+) -> Tuple[List[str], List[str]]:
     """Builds up tuple with to be used label and attribute names.
 
     Args:
@@ -114,7 +114,7 @@ def latency(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
-    buckets: tuple = Histogram.DEFAULT_BUCKETS,
+    buckets: Sequence[Union[float, str]] = Histogram.DEFAULT_BUCKETS,
     registry: CollectorRegistry = REGISTRY,
 ) -> Optional[Callable[[Info], None]]:
     """Default metric for the Prometheus FastAPI Instrumentator.
@@ -149,7 +149,7 @@ def latency(
     """
 
     if buckets[-1] != float("inf"):
-        buckets = buckets + (float("inf"),)
+        buckets = [*buckets, float("inf")]
 
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
@@ -569,7 +569,7 @@ def default(
     metric_namespace: str = "",
     metric_subsystem: str = "",
     should_only_respect_2xx_for_highr: bool = False,
-    latency_highr_buckets: tuple = (
+    latency_highr_buckets: Sequence[Union[float, str]] = (
         0.01,
         0.025,
         0.05,
@@ -592,7 +592,7 @@ def default(
         30,
         60,
     ),
-    latency_lowr_buckets: tuple = (0.1, 0.5, 1),
+    latency_lowr_buckets: Sequence[Union[float, str]] = (0.1, 0.5, 1),
     registry: CollectorRegistry = REGISTRY,
 ) -> Optional[Callable[[Info], None]]:
     """Contains multiple metrics to cover multiple things.
@@ -637,12 +637,11 @@ def default(
     Returns:
         Function that takes a single parameter `Info`.
     """
-
     if latency_highr_buckets[-1] != float("inf"):
-        latency_highr_buckets = latency_highr_buckets + (float("inf"),)
+        latency_highr_buckets = [*latency_highr_buckets, float("inf")]
 
     if latency_lowr_buckets[-1] != float("inf"):
-        latency_lowr_buckets = latency_lowr_buckets + (float("inf"),)
+        latency_lowr_buckets = [*latency_lowr_buckets, float("inf")]
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
