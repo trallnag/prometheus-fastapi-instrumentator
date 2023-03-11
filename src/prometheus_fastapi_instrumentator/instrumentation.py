@@ -4,7 +4,7 @@ import os
 import re
 import warnings
 from enum import Enum
-from typing import Awaitable, Callable, List, Optional, Union, cast
+from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union, cast
 
 from fastapi import FastAPI
 from prometheus_client import (
@@ -38,7 +38,7 @@ class PrometheusFastApiInstrumentator:
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
         registry: Union[CollectorRegistry, None] = None,
-    ):
+    ) -> None:
         """Create a Prometheus FastAPI Instrumentator.
 
         Args:
@@ -144,7 +144,7 @@ class PrometheusFastApiInstrumentator:
         metric_namespace: str = "",
         metric_subsystem: str = "",
         should_only_respect_2xx_for_highr: bool = False,
-        latency_highr_buckets: tuple = (
+        latency_highr_buckets: Sequence[Union[float, str]] = (
             0.01,
             0.025,
             0.05,
@@ -167,8 +167,8 @@ class PrometheusFastApiInstrumentator:
             30,
             60,
         ),
-        latency_lowr_buckets: tuple = (0.1, 0.5, 1),
-    ):
+        latency_lowr_buckets: Sequence[Union[float, str]] = (0.1, 0.5, 1),
+    ) -> "PrometheusFastApiInstrumentator":
         """Performs the instrumentation by adding middleware.
 
         The middleware iterates through all `instrumentations` and executes them.
@@ -217,8 +217,8 @@ class PrometheusFastApiInstrumentator:
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
         tags: Optional[List[Union[str, Enum]]] = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> "PrometheusFastApiInstrumentator":
         """Exposes endpoint for metrics.
 
         Args:
@@ -247,7 +247,7 @@ class PrometheusFastApiInstrumentator:
             return self
 
         @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
-        def metrics(request: Request):
+        def metrics(request: Request) -> Response:
             """Endpoint that serves Prometheus metrics."""
 
             ephemeral_registry = self.registry
@@ -274,7 +274,7 @@ class PrometheusFastApiInstrumentator:
         *instrumentation_function: Optional[
             Callable[[metrics.Info], Union[None, Awaitable[None]]]
         ],
-    ):
+    ) -> "PrometheusFastApiInstrumentator":
         """Adds function to list of instrumentations.
 
         Args:
@@ -303,7 +303,7 @@ class PrometheusFastApiInstrumentator:
 
         return self
 
-    def _should_instrumentate(self):
+    def _should_instrumentate(self) -> bool:
         """Checks if instrumentation should be performed based on env var."""
 
         return os.getenv(self.env_var_name, "False").lower() in ["true", "1"]

@@ -4,23 +4,22 @@ import asyncio
 import re
 from http import HTTPStatus
 from timeit import default_timer
-from typing import TYPE_CHECKING, Awaitable, Callable, Optional, Sequence, Tuple
+from typing import Awaitable, Callable, Optional, Sequence, Tuple, Union
 
+from fastapi import FastAPI
 from prometheus_client import REGISTRY, CollectorRegistry, Gauge
 from starlette.datastructures import Headers
 from starlette.requests import Request
 from starlette.responses import Response
+from starlette.types import Message, Receive, Scope, Send
 
 from prometheus_fastapi_instrumentator import metrics, routing
-
-if TYPE_CHECKING:
-    from asgiref.typing import ASGISendEvent
 
 
 class PrometheusInstrumentatorMiddleware:
     def __init__(
         self,
-        app,
+        app: FastAPI,
         *,
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
@@ -38,7 +37,7 @@ class PrometheusInstrumentatorMiddleware:
         metric_namespace: str = "",
         metric_subsystem: str = "",
         should_only_respect_2xx_for_highr: bool = False,
-        latency_highr_buckets: tuple = (
+        latency_highr_buckets: Sequence[Union[float, str]] = (
             0.01,
             0.025,
             0.05,
@@ -61,7 +60,7 @@ class PrometheusInstrumentatorMiddleware:
             30,
             60,
         ),
-        latency_lowr_buckets: tuple = (0.1, 0.5, 1),
+        latency_lowr_buckets: Sequence[Union[float, str]] = (0.1, 0.5, 1),
         registry: CollectorRegistry = REGISTRY,
     ) -> None:
         self.app = app
@@ -116,7 +115,7 @@ class PrometheusInstrumentatorMiddleware:
                 multiprocess_mode="livesum",
             )
 
-    async def __call__(self, scope, receive, send) -> None:
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
 
@@ -137,18 +136,20 @@ class PrometheusInstrumentatorMiddleware:
             inprogress.inc()
 
         status_code = 500
-        headers = []  # type: ignore
+        headers = []
         body = b""
 
-        async def send_wrapper(event: ASGISendEvent) -> None:
-            if event["type"] == "http.response.start":
+        async def send_wrapper(message: Message) -> None:
+            if message["type"] == "http.response.start":
                 nonlocal status_code, headers
-                headers = event["headers"]  # type: ignore
-                status_code = event["status"]
-            elif event["type"] == "http.response.body" and event.get("more_body", False):
+                headers = message["headers"]
+                status_code = message["status"]
+            elif message["type"] == "http.response.body" and message.get(
+                "more_body", False
+            ):
                 nonlocal body
-                body += event["body"]
-            await send(event)
+                body += message["body"]
+            await send(message)
 
         try:
             await self.app(scope, receive, send_wrapper)
@@ -165,7 +166,7 @@ class PrometheusInstrumentatorMiddleware:
                 duration = max(default_timer() - start_time, 0)
 
                 if self.should_instrument_requests_inprogress:
-                    inprogress.dec()  # type: ignore
+                    inprogress.dec()
 
                 if self.should_round_latency_decimals:
                     duration = round(duration, self.round_latency_decimals)
@@ -173,7 +174,9 @@ class PrometheusInstrumentatorMiddleware:
                 if self.should_group_status_codes:
                     status = status[0] + "xx"
 
-                response = Response(content=body, headers=Headers(raw=headers), status_code=status_code)  # type: ignore
+                response = Response(
+                    content=body, headers=Headers(raw=headers), status_code=status_code
+                )
 
                 info = metrics.Info(
                     request=request,
