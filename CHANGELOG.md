@@ -7,6 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [5.11.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.11.0...v5.11.1) / 2023-03-11
+
 ### Fixed
 
 - Improved typing hints and enabled stricter rules for MyPy. Thanks to
