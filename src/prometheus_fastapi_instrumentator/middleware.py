@@ -137,18 +137,12 @@ class PrometheusInstrumentatorMiddleware:
 
         status_code = 500
         headers = []
-        body = b""
 
         async def send_wrapper(message: Message) -> None:
             if message["type"] == "http.response.start":
                 nonlocal status_code, headers
                 headers = message["headers"]
                 status_code = message["status"]
-            elif message["type"] == "http.response.body" and message.get(
-                "more_body", False
-            ):
-                nonlocal body
-                body += message["body"]
             await send(message)
 
         try:
@@ -175,7 +169,7 @@ class PrometheusInstrumentatorMiddleware:
                     status = status[0] + "xx"
 
                 response = Response(
-                    content=body, headers=Headers(raw=headers), status_code=status_code
+                    content=b"", headers=Headers(raw=headers), status_code=status_code
                 )
 
                 info = metrics.Info(
