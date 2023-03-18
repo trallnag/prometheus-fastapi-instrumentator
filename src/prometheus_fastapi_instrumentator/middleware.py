@@ -28,6 +28,7 @@ class PrometheusInstrumentatorMiddleware:
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
         excluded_handlers: Sequence[str] = (),
+        body_metric_handlers: Sequence[str] = (),
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
@@ -79,6 +80,7 @@ class PrometheusInstrumentatorMiddleware:
         self.registry = registry
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
+        self.body_metric_handlers = [re.compile(path) for path in body_metric_handlers]
 
         if instrumentations:
             self.instrumentations = instrumentations
@@ -139,17 +141,26 @@ class PrometheusInstrumentatorMiddleware:
         headers = []
         body = b""
 
-        async def send_wrapper(message: Message) -> None:
-            if message["type"] == "http.response.start":
-                nonlocal status_code, headers
-                headers = message["headers"]
-                status_code = message["status"]
-            elif message["type"] == "http.response.body" and message.get(
-                "more_body", False
-            ):
-                nonlocal body
-                body += message["body"]
-            await send(message)
+        # Message body collected for handlers matching body_metric_handlers patterns
+        if any(pattern.search(handler) for pattern in self.body_metric_handlers):
+            async def send_wrapper(message: Message) -> None:
+                if message["type"] == "http.response.start":
+                    nonlocal status_code, headers
+                    headers = message["headers"]
+                    status_code = message["status"]
+                elif message["type"] == "http.response.body" and message.get(
+                    "more_body", False
+                ):
+                    nonlocal body
+                    body += message["body"]
+                await send(message)
+        else:
+            async def send_wrapper(message: Message) -> None:
+                if message["type"] == "http.response.start":
+                    nonlocal status_code, headers
+                    headers = message["headers"]
+                    status_code = message["status"]
+                await send(message)
 
         try:
             await self.app(scope, receive, send_wrapper)
