@@ -33,6 +33,7 @@ class PrometheusFastApiInstrumentator:
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
         excluded_handlers: List[str] = [],
+        body_metric_handlers: List[str] = [],
         round_latency_decimals: int = 4,
         env_var_name: str = "ENABLE_METRICS",
         inprogress_name: str = "http_requests_inprogress",
@@ -70,6 +71,10 @@ class PrometheusFastApiInstrumentator:
             excluded_handlers (List[str]): List of strings that will be compiled
                 to regex patterns. All matches will be skipped and not
                 instrumented. Defaults to `[]`.
+
+            body_metric_handlers (List[str]): List of strings that will be compiled
+                to regex patterns. All matches will include response body content
+                in metric instrumentation. Defaults to `[]`.
 
             round_latency_decimals (int): Number of decimals latencies should be
                 rounded to. Ignored unless `should_round_latency_decimals` is
@@ -110,6 +115,7 @@ class PrometheusFastApiInstrumentator:
         self.inprogress_labels = inprogress_labels
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
+        self.body_metric_handlers = [re.compile(path) for path in body_metric_handlers]
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
         self.async_instrumentations: List[Callable[[metrics.Info], Awaitable[None]]] = []
@@ -201,6 +207,7 @@ class PrometheusFastApiInstrumentator:
             instrumentations=self.instrumentations,
             async_instrumentations=self.async_instrumentations,
             excluded_handlers=self.excluded_handlers,
+            body_metric_handlers=self.body_metric_handlers,
             metric_namespace=metric_namespace,
             metric_subsystem=metric_subsystem,
             should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
