@@ -7,7 +7,14 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+## Fixed
+
+- Fixed `info.response.body` in instrumentation functions being wrongfully empty
+  if response is not streamed. Affects a feature that was introduced with
+  release [5.10.0](#5100--2023-02-26) few weeks ago. Closed issue
+  [#236](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/236)
+  and implemented in pull request
+  [#237](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/237).
 
 ## [5.11.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.11.0...v5.11.1) / 2023-03-11
 
