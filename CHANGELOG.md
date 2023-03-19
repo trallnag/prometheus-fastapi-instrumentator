@@ -7,7 +7,30 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Changed
+
+- **BREAKING:** Disabled passing response body to instrumentation functions.
+  Moved behind whitelist that is empty by default. Changes a feature introduced
+  with [5.10.0](#5100--2023-02-26). Only affects users that have custom
+  instrumentations that access `info.response.body`.
+
+  Opt-in via new parameter `body_handlers` added to instrumentator constructor.
+  Parameter takes list of pattern strings to match handlers. For old behavior,
+  pass argument `[r".*"]` to match all handlers:
+
+  ```python
+  instrumentator = Instrumentator(body_handlers=[r".*"])
+  ```
+
+  Motivation for change: Collecting body negatively impacts performance of
+  responses with largish body.
+
+  Thanks to [@bbeattie-phxlabs](@bbeattie-phxlabs) for raising this issue in
+  [#234](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/234)
+  and implementing it in
+  [#233](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/233)
+  /
+  [#238](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/238).
 
 ## [5.11.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.11.1...v5.11.2) / 2023-03-19
 
