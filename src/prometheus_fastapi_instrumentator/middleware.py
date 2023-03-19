@@ -144,9 +144,7 @@ class PrometheusInstrumentatorMiddleware:
                 nonlocal status_code, headers
                 headers = message["headers"]
                 status_code = message["status"]
-            elif message["type"] == "http.response.body" and message.get(
-                "more_body", False
-            ):
+            elif message["type"] == "http.response.body" and message["body"]:
                 nonlocal body
                 body += message["body"]
             await send(message)
