@@ -7,6 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [5.11.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.11.1...v5.11.2) / 2023-03-19
+
 ## Fixed
 
 - Fixed `info.response.body` in instrumentation functions being wrongfully empty
