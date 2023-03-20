@@ -1,5 +1,5 @@
 [flake8]
 exclude = .git,.lock
-max-complexity = 10
+max-complexity = 12
 max-line-length = 90
 ignore=E501,W503

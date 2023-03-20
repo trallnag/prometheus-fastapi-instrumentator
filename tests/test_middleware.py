@@ -4,17 +4,18 @@ from fastapi.testclient import TestClient
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
 
 
-def test_info_body_empty():
+def test_info_body_default():
     """
-    Tests that `info.response.body` is empty if actual response is also empty.
+    Tests that `info.response.body` is empty even if response body is not empty.
+    This is the expected default that can be changed with `body_handlers`.
     """
 
     app = FastAPI()
     client = TestClient(app)
 
-    @app.get("/")
-    def read_root():
-        return responses.Response(status_code=status.HTTP_200_OK)
+    @app.get("/", response_class=responses.PlainTextResponse)
+    def root():
+        return "123456789"
 
     instrumentation_executed = False
 
@@ -29,6 +30,31 @@ def test_info_body_empty():
     assert instrumentation_executed
 
 
+def test_info_body_empty():
+    """
+    Tests that `info.response.body` is empty if actual response is also empty.
+    """
+
+    app = FastAPI()
+    client = TestClient(app)
+
+    @app.get("/")
+    def root():
+        return responses.Response(status_code=status.HTTP_200_OK)
+
+    instrumentation_executed = False
+
+    def instrumentation(info: metrics.Info) -> None:
+        nonlocal instrumentation_executed
+        instrumentation_executed = True
+        assert len(info.response.body) == 0
+
+    Instrumentator(body_handlers=[r".*"]).instrument(app).add(instrumentation)
+
+    client.get("/")
+    assert instrumentation_executed
+
+
 def test_info_body_stream_small():
     """
     Tests that `info.response.body` is correct if small response is streamed.
@@ -38,7 +64,7 @@ def test_info_body_stream_small():
     client = TestClient(app)
 
     @app.get("/")
-    def read_root():
+    def root():
         return responses.StreamingResponse((str(num) + "xxx" for num in range(5)))
 
     instrumentation_executed = False
@@ -49,7 +75,7 @@ def test_info_body_stream_small():
         assert len(info.response.body) == 20
         assert info.response.body.decode() == "0xxx1xxx2xxx3xxx4xxx"
 
-    Instrumentator().instrument(app).add(instrumentation)
+    Instrumentator(body_handlers=[r".*"]).instrument(app).add(instrumentation)
 
     response = client.get("/")
     assert instrumentation_executed
@@ -66,23 +92,21 @@ def test_info_body_stream_large():
     client = TestClient(app)
 
     @app.get("/")
-    def read_root():
-        return responses.StreamingResponse(
-            (str(num) + "x" * 10000000 for num in range(5))
-        )
+    def root():
+        return responses.StreamingResponse(("x" * 1_000_000 for _ in range(5)))
 
     instrumentation_executed = False
 
     def instrumentation(info: metrics.Info) -> None:
         nonlocal instrumentation_executed
         instrumentation_executed = True
-        assert len(info.response.body) >= 50000000
+        assert len(info.response.body) == 5_000_000
 
-    Instrumentator().instrument(app).add(instrumentation)
+    Instrumentator(body_handlers=[r".*"]).instrument(app).add(instrumentation)
 
     response = client.get("/")
     assert instrumentation_executed
-    assert len(response.content) >= 50000000
+    assert len(response.content) == 5_000_000
 
 
 def test_info_body_bulk_small():
@@ -94,7 +118,7 @@ def test_info_body_bulk_small():
     client = TestClient(app)
 
     @app.get("/", response_class=responses.PlainTextResponse)
-    def read_root():
+    def root():
         return "123456789"
 
     instrumentation_executed = False
@@ -106,7 +130,7 @@ def test_info_body_bulk_small():
         assert len(info.response.body) == 9
         assert info.response.body == b"123456789"
 
-    Instrumentator().instrument(app).add(instrumentation)
+    Instrumentator(body_handlers=[r".*"]).instrument(app).add(instrumentation)
 
     response = client.get("/")
     assert instrumentation_executed
@@ -123,8 +147,8 @@ def test_info_body_bulk_large():
     client = TestClient(app)
 
     @app.get("/", response_class=responses.PlainTextResponse)
-    def read_root():
-        return "x" * 50_000_000
+    def root():
+        return "x" * 5_000_000
 
     instrumentation_executed = False
 
@@ -132,10 +156,10 @@ def test_info_body_bulk_large():
         print(info.response.body)
         nonlocal instrumentation_executed
         instrumentation_executed = True
-        assert len(info.response.body) == 50_000_000
+        assert len(info.response.body) == 5_000_000
 
-    Instrumentator().instrument(app).add(instrumentation)
+    Instrumentator(body_handlers=[r".*"]).instrument(app).add(instrumentation)
 
     response = client.get("/")
     assert instrumentation_executed
-    assert len(response.content) == 50_000_000
+    assert len(response.content) == 5_000_000
