@@ -7,7 +7,7 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-### Changed
+### Added
 
 - **BREAKING:** Disabled passing response body to instrumentation functions.
   Moved behind whitelist that is empty by default. Changes a feature introduced
