@@ -18,6 +18,9 @@ Breaking change only affects users that have custom instrumentations that access
 `info.response.body`, a feature introduced with [5.10.0](#5100--2023-02-26) few
 weeks ago. See below for more information.
 
+Ask or discuss anything quick about the release in the discussion
+[#239](https://github.com/trallnag/prometheus-fastapi-instrumentator/discussions/239).
+
 ### Added
 
 - **BREAKING:** Disabled passing response body to instrumentation functions.
