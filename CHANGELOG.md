@@ -7,6 +7,17 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [6.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v5.11.2...v6.0.0) / 2023-03-20
+
+Small release with a small breaking change leading to an increase of the major
+version according to semantic versioning.
+
+Breaking change only affects users that have custom instrumentations that access
+`info.response.body`, a feature introduced with [5.10.0](#5100--2023-02-26) few
+weeks ago. See below for more information.
+
 ### Added
 
 - **BREAKING:** Disabled passing response body to instrumentation functions.
