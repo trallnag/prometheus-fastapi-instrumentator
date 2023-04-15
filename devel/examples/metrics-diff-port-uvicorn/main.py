@@ -11,6 +11,7 @@ app = FastAPI()
 
 Instrumentator().instrument(app).expose(app)
 
+
 @app.get("/ping")
 def get_ping():
     PING_TOTAL.inc()
