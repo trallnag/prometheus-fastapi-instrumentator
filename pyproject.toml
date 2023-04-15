@@ -29,7 +29,7 @@ isort = "^5.11.3"
 mypy = "^1.1.1"
 devtools = "^0.10.0"
 asgiref = "^3.6.0"
-uvicorn = "^0.20.0"
+uvicorn = ">=0.20,<0.22"
 gunicorn = "^20.1.0"
 pytest-asyncio = "^0.20.3"
 
