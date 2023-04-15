@@ -6,14 +6,10 @@ from prometheus_fastapi_instrumentator import Instrumentator
 start_http_server(9000)
 
 PING_TOTAL = Counter("ping", "Number of pings calls.")
-METRICS_TOTAL = Counter("metrics", "Number of metrics calls.")
-
 
 app = FastAPI()
 
-
 Instrumentator().instrument(app).expose(app)
-
 
 @app.get("/ping")
 def get_ping():
