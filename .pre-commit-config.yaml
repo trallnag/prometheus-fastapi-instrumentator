@@ -66,16 +66,10 @@ exclude: |
   )$
 
 ci:
+  autofix_commit_msg: "refactor(pre-commit): Apply hook auto fixes"
+  autoupdate_commit_msg: "build(pre-commit): Apply hook rev updates"
   skip:
     - black
     - flake8
     - isort
     - mypy
-  autofix_commit_msg: |
-    ci(pre-commit): Apply hook auto fixes
-
-    For more information, see <https://pre-commit.com> and <https://pre-commit.ci>.
-  autoupdate_commit_msg: |
-    ci(pre-commit): Apply hook rev updates
-
-    For more information, see <https://pre-commit.com> and <https://pre-commit.ci>.
