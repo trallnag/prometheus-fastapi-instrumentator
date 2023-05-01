@@ -322,14 +322,14 @@ toml = ["tomli"]
 
 [[package]]
 name = "devtools"
-version = "0.10.0"
+version = "0.11.0"
 description = "Python's missing debug print command, and more."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "devtools-0.10.0-py3-none-any.whl", hash = "sha256:b0bc02043bb032cdfb93e227226e2fea1aaea8f5a31fca25fabc4eadca22f228"},
-    {file = "devtools-0.10.0.tar.gz", hash = "sha256:6eb7c4fa7c4b90e5cfe623537a9961d1dc3199d8be0981802c6931cd8f02418f"},
+    {file = "devtools-0.11.0-py3-none-any.whl", hash = "sha256:22a3b65b58713ccd7e8586feffdefaad57bbdbc6ff76bd68ecf3150a00cf41e3"},
+    {file = "devtools-0.11.0.tar.gz", hash = "sha256:4a6d987dfab0c7513a514e7faf0a71296d220423470204e76e0752d146dfad62"},
 ]
 
 [package.dependencies]
@@ -1100,4 +1100,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">= 3.7.0, < 4.0.0"
-content-hash = "aa564459494b5fd3cb5713e79aa3a0f6f42918e7de9db251c6b9828dbe9e262b"
+content-hash = "d1677ff8fd4629eb527814414d39b8f971d37f9a8f3931068d10383fa3960141"
