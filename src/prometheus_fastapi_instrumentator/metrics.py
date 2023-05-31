@@ -709,7 +709,10 @@ def default(
                 "Made to be only used if aggregation by handler is important. "
             ),
             buckets=latency_lowr_buckets,
-            labelnames=("handler",),
+            labelnames=(
+                "method",
+                "handler",
+            ),
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
@@ -734,7 +737,8 @@ def default(
             ):
                 LATENCY_HIGHR.observe(info.modified_duration)
 
-            LATENCY_LOWR.labels(info.modified_handler).observe(info.modified_duration)
+            LATENCY_LOWR.labels(handler=info.modified_handler, method=info.method).\
+                observe(info.modified_duration)
 
         return instrumentation
 

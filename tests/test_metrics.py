@@ -467,7 +467,7 @@ def test_default():
     assert (
         REGISTRY.get_sample_value(
             "http_request_duration_seconds_sum",
-            {"handler": "/"},
+            {"handler": "/", "method": "GET"},
         )
         > 0
     )
