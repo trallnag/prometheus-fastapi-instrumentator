@@ -516,8 +516,8 @@ Nothing. Dummy release.
 
 ### Changed
 
-- Renamed project from *Prometheus FastAPI Exporter* to *Prometheus FastAPI
-  Instrumentator*. Reasoning behind this change: Focus of this project is the
+- Renamed project from _Prometheus FastAPI Exporter_ to _Prometheus FastAPI
+  Instrumentator_. Reasoning behind this change: Focus of this project is the
   instrumentation, not exposition of metrics.
 
 ## [1.0.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v1.0.1...v1.0.2) / 2020-07-15

@@ -50,7 +50,8 @@ jobs:
           path: |
             ~/.local/bin/poetry
             ~/.local/share/pypoetry
-          key: ${{ runner.os }}-poetry-installation-${{ env.python_version }}-${{ env.poetry_version }}-0
+          key: |-
+            ${{ runner.os }}-poetry-installation-${{ env.python_version }}-${{ env.poetry_version }}-0
 
       - name: Install Poetry
         run: curl -sSL https://install.python-poetry.org | python -
@@ -61,7 +62,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-cache-${{ env.python_version }}-${{ env.poetry_version }}-${{ hashFiles('poetry.lock') }}-0
+          key: |-
+            ${{ runner.os }}-poetry-cache-${{ env.python_version }}-${{ env.poetry_version }}-${{ hashFiles('poetry.lock') }}-0
           restore-keys: |
             ${{ runner.os }}-poetry-cache-${{ env.python_version }}-${{ env.poetry_version }}-
             ${{ runner.os }}-poetry-cache-${{ env.python_version }}-
