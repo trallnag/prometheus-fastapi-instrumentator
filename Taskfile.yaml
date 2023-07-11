@@ -2,10 +2,24 @@ version: 3
 
 tasks:
   default:
+    - task: init
     - task: fmt
     - task: lint
     - task: test
     - task: test-mp
+
+  init:
+    desc: Init environment.
+    cmds:
+      - poetry install
+      - pre-commit install --install-hooks
+      - pre-commit install --install-hooks --hook-type commit-msg
+
+  update:
+    desc: Update environment.
+    cmds:
+      - poetry update
+      - pre-commit autoupdate
 
   fmt:
     desc: Run formatters.
@@ -25,7 +39,8 @@ tasks:
     cmds:
       - poetry run pytest {{ .COVERAGE }}
     vars:
-      COVERAGE: --cov-report=term-missing --cov-report=xml --cov=src
+      COVERAGE: |-
+        --cov-report=term-missing --cov-report=xml --cov=src
 
   test-mp:
     desc: Run multi process tests.
@@ -34,6 +49,7 @@ tasks:
       - mkdir -p $PROMETHEUS_MULTIPROC_DIR
       - poetry run pytest -k test_multiproc {{ .COVERAGE }}
     vars:
-      COVERAGE: --cov-append --cov-report=term-missing --cov-report=xml --cov=src
+      COVERAGE: |-
+        --cov-append --cov-report=term-missing --cov-report=xml --cov=src
     env:
       PROMETHEUS_MULTIPROC_DIR: /tmp/pfi-tests/multiproc
