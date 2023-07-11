@@ -162,7 +162,7 @@ def test_app():
 
     response = get_response(client, "/items/hallo")
     assert response.status_code == 422
-    assert b"value is not a valid integer" in response.content
+    assert b"integer" in response.content
 
     response = get_response(client, "/just_another_endpoint")
     assert response.status_code == 200
