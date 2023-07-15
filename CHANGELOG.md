@@ -7,6 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [6.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v6.0.0...v6.1.0) / 2023-07-15
+
 ### Added
 
 - Added label `method` metric `http_request_duration_seconds` from default
