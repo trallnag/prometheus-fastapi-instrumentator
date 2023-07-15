@@ -737,8 +737,9 @@ def default(
             ):
                 LATENCY_HIGHR.observe(info.modified_duration)
 
-            LATENCY_LOWR.labels(handler=info.modified_handler, method=info.method).\
-                observe(info.modified_duration)
+            LATENCY_LOWR.labels(
+                handler=info.modified_handler, method=info.method
+            ).observe(info.modified_duration)
 
         return instrumentation
 
