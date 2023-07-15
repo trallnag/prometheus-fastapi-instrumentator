@@ -41,8 +41,8 @@ defaults give you:
   content lengths of all incoming requests.
 - Summary `http_response_size_bytes` with `handler`. Added up total of the
   content lengths of all outgoing responses.
-- Histogram `http_request_duration_seconds` with `handler`. Only a few buckets
-  to keep cardinality low.
+- Histogram `http_request_duration_seconds` with `handler` and `method`. Only a
+  few buckets to keep cardinality low.
 - Histogram `http_request_duration_highr_seconds` without any labels. Large
   number of buckets (>20).
 
@@ -62,14 +62,11 @@ things:
 - Don't use this package at all and just use the source code as inspiration on
   how to instrument your FastAPI.
 
-Important: This package is not made for generic Prometheus instrumentation in
-Python. Use the Prometheus client library for that. This packages uses it as
-well.
-
 ## Table of Contents <!-- omit in toc -->
 
 <!--TOC-->
 
+- [Disclaimer](#disclaimer)
 - [Features](#features)
 - [Advanced Usage](#advanced-usage)
   - [Creating the Instrumentator](#creating-the-instrumentator)
@@ -82,6 +79,14 @@ well.
 - [Licensing](#licensing)
 
 <!--TOC-->
+
+## Disclaimer
+
+Not made for generic Prometheus instrumentation in Python. Use the Prometheus
+client library for that. This packages uses it as well.
+
+All the generic middleware and instrumentation code comes with a cost in
+performance that can become noticeable.
 
 ## Features
 
