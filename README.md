@@ -105,15 +105,12 @@ some of these options you may opt-in to:
 It also features a **modular approach to metrics** that should instrument all
 FastAPI endpoints. You can either choose from a set of already existing metrics
 or create your own. And every metric function by itself can be configured as
-well. You can see ready to use metrics
-[here](https://trallnag.github.io/prometheus-fastapi-instrumentator/metrics.html).
+well.
 
 ## Advanced Usage
 
 This chapter contains an example on the advanced usage of the Prometheus FastAPI
-Instrumentator to showcase most of it's features. Fore more concrete info check
-out the
-[automatically generated documentation](https://trallnag.github.io/prometheus-fastapi-instrumentator/).
+Instrumentator to showcase most of it's features.
 
 ### Creating the Instrumentator
 
@@ -151,8 +148,6 @@ objects. If no `add()` at all is used, the default metric gets added in the
 background. This is what happens in the fast track example.
 
 All instrumentation functions are stored as closures in the `metrics` module.
-Fore more concrete info check out the
-[automatically generated documentation](https://trallnag.github.io/prometheus-fastapi-instrumentator/).
 
 Closures come in handy here because it allows us to configure the functions
 within.
@@ -190,10 +185,7 @@ You can add as many metrics you like to the instrumentator.
 ### Creating new metrics
 
 As already mentioned, it is possible to create custom functions to pass on to
-`add()`. This is also how the default metrics are implemented. The documentation
-and code
-[here](https://trallnag.github.io/prometheus-fastapi-instrumentator/metrics.html)
-is helpful to get an overview.
+`add()`. This is also how the default metrics are implemented.
 
 The basic idea is that the instrumentator creates an `info` object that contains
 everything necessary for instrumentation based on the configuration of the
