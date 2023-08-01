@@ -18,7 +18,7 @@ fastapi = ">= 0.38.1, < 1.0.0"
 prometheus-client = ">= 0.8.0, < 1.0.0"
 
 [tool.poetry.group.dev.dependencies]
-httpx = "^0.23.3"
+httpx = ">=0.23.3,<0.25.0"
 black = "^23.1.0"
 flake8 = "^5.0.4"
 requests = "^2.28.2"
