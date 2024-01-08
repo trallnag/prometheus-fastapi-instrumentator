@@ -6,7 +6,6 @@ import warnings
 from enum import Enum
 from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union, cast
 
-from fastapi import FastAPI
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     REGISTRY,
@@ -14,6 +13,7 @@ from prometheus_client import (
     generate_latest,
     multiprocess,
 )
+from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -40,7 +40,7 @@ class PrometheusFastApiInstrumentator:
         inprogress_labels: bool = False,
         registry: Union[CollectorRegistry, None] = None,
     ) -> None:
-        """Create a Prometheus FastAPI Instrumentator.
+        """Create a Prometheus Starlette Instrumentator.
 
         Args:
             should_group_status_codes (bool): Should status codes be grouped into
@@ -60,7 +60,7 @@ class PrometheusFastApiInstrumentator:
             should_respect_env_var (bool): Should the instrumentator only work - for
                 example the methods `instrument()` and `expose()` - if a
                 certain environment variable is set to `true`? Usecase: A base
-                FastAPI app that is used by multiple distinct apps. The apps
+                Starlette app that is used by multiple distinct apps. The apps
                 only have to set the variable to be instrumented. Defaults to
                 `False`.
 
@@ -149,7 +149,7 @@ class PrometheusFastApiInstrumentator:
 
     def instrument(
         self,
-        app: FastAPI,
+        app: Starlette,
         metric_namespace: str = "",
         metric_subsystem: str = "",
         should_only_respect_2xx_for_highr: bool = False,
@@ -183,10 +183,10 @@ class PrometheusFastApiInstrumentator:
         The middleware iterates through all `instrumentations` and executes them.
 
         Args:
-            app (FastAPI): FastAPI app instance.
+            app (Starlette): Starlette app instance.
 
         Raises:
-            e: Only raised if FastAPI itself throws an exception.
+            e: Only raised if Starlette itself throws an exception.
 
         Returns:
             self: Instrumentator. Builder Pattern.
@@ -222,7 +222,7 @@ class PrometheusFastApiInstrumentator:
 
     def expose(
         self,
-        app: FastAPI,
+        app: Starlette,
         should_gzip: bool = False,
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
@@ -232,7 +232,7 @@ class PrometheusFastApiInstrumentator:
         """Exposes endpoint for metrics.
 
         Args:
-            app: FastAPI app instance. Endpoint will be added to this app.
+            app: Starlette app instance. Endpoint will be added to this app.
 
             should_gzip: Should the endpoint return compressed data? It will
                 also check for `gzip` in the `Accept-Encoding` header.
@@ -247,7 +247,7 @@ class PrometheusFastApiInstrumentator:
             tags (List[str], optional): If you manage your routes with tags.
                 Defaults to None.
 
-            kwargs: Will be passed to FastAPI route annotation.
+            kwargs: Will be passed to Starlette route annotation.
 
         Returns:
             self: Instrumentator. Builder Pattern.
