@@ -89,7 +89,7 @@ def _build_label_attribute_names(
         label_names.append("status")
         info_attribute_names.append("modified_status")
 
-    if should_include_headers:
+    if should_include_headers and included_headers is not None:
         for header in included_headers:
             label_names.append(header)
 
@@ -204,7 +204,7 @@ def latency(
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
-                if should_include_headers:
+                if should_include_headers and included_headers is not None:
                     for header in included_headers:
                         label_values.append(info.request.headers.get(header, ""))
 
@@ -297,7 +297,7 @@ def request_size(
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
-                if should_include_headers:
+                if should_include_headers and included_headers is not None:
                     for header in included_headers:
                         label_values.append(info.request.headers.get(header, ""))
 
@@ -403,7 +403,7 @@ def response_size(
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
-                if should_include_headers:
+                if should_include_headers and included_headers is not None:
                     for header in included_headers:
                         label_values.append(info.request.headers.get(header, ""))
 
@@ -514,7 +514,7 @@ def combined_size(
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
-                if should_include_headers:
+                if should_include_headers and included_headers is not None:
                     for header in included_headers:
                         label_values.append(info.request.headers.get(header, ""))
 
@@ -613,7 +613,7 @@ def requests(
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
-                if should_include_headers:
+                if should_include_headers and included_headers is not None:
                     for header in included_headers:
                         label_values.append(info.request.headers.get(header, ""))
 
@@ -724,7 +724,7 @@ def default(
     # handle it seems to be with this try block.
     try:
         header_label_names = ()
-        if should_include_headers:
+        if should_include_headers and included_headers is not None:
             for header in included_headers:
                 header_label_names = (*header_label_names, header)
 
@@ -799,7 +799,7 @@ def default(
 
         def instrumentation(info: Info) -> None:
             header_values = ()
-            if should_include_headers:
+            if should_include_headers and included_headers is not None:
                 for hdr in included_headers:
                     if info.request and hasattr(info.request, "headers"):
                         header_values = (*header_values, info.request.headers.get(hdr, ""),)
