@@ -39,6 +39,8 @@ class PrometheusFastApiInstrumentator:
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
         registry: Union[CollectorRegistry, None] = None,
+        should_include_headers: bool = False,
+        included_headers: List[str] = [],
     ) -> None:
         """Create a Prometheus FastAPI Instrumentator.
 
@@ -100,6 +102,12 @@ class PrometheusFastApiInstrumentator:
                 you need to run multiple apps at the same time, with their own
                 registries, for example during testing.
 
+            should_include_headers (book): Should labels be added for the headers
+                part of the included_headers list? Defaults to `False`.
+
+            included_headers (List[str]): List of strings that will be used to
+                add labels to the metrics. Defaults to `[]`.
+
         Raises:
             ValueError: If `PROMETHEUS_MULTIPROC_DIR` env var is found but
                 doesn't point to a valid directory.
@@ -119,6 +127,9 @@ class PrometheusFastApiInstrumentator:
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
         self.body_handlers = [re.compile(path) for path in body_handlers]
+
+        self.should_include_headers = should_include_headers
+        self.included_headers = included_headers
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
         self.async_instrumentations: List[Callable[[metrics.Info], Awaitable[None]]] = []

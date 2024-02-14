@@ -63,6 +63,8 @@ class PrometheusInstrumentatorMiddleware:
         ),
         latency_lowr_buckets: Sequence[Union[float, str]] = (0.1, 0.5, 1),
         registry: CollectorRegistry = REGISTRY,
+        should_include_headers: bool = False,
+        included_headers: List[str] = [],
     ) -> None:
         self.app = app
 
@@ -81,6 +83,9 @@ class PrometheusInstrumentatorMiddleware:
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
         self.body_handlers = [re.compile(path) for path in body_handlers]
+
+        self.should_include_headers = should_include_headers
+        self.included_headers = included_headers
 
         if instrumentations:
             self.instrumentations = instrumentations
