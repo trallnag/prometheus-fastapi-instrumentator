@@ -32,6 +32,7 @@ class PrometheusFastApiInstrumentator:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
+        custom_labels: dict = {},
         excluded_handlers: List[str] = [],
         body_handlers: List[str] = [],
         round_latency_decimals: int = 4,
@@ -111,7 +112,7 @@ class PrometheusFastApiInstrumentator:
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
         self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
-
+        self.custom_labels = custom_labels
         self.round_latency_decimals = round_latency_decimals
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
@@ -216,6 +217,7 @@ class PrometheusFastApiInstrumentator:
             should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
             latency_highr_buckets=latency_highr_buckets,
             latency_lowr_buckets=latency_lowr_buckets,
+            custom_labels=self.custom_labels,
             registry=self.registry,
         )
         return self

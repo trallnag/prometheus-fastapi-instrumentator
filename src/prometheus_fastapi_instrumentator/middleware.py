@@ -62,6 +62,7 @@ class PrometheusInstrumentatorMiddleware:
             60,
         ),
         latency_lowr_buckets: Sequence[Union[float, str]] = (0.1, 0.5, 1),
+        custom_labels: dict = {},
         registry: CollectorRegistry = REGISTRY,
     ) -> None:
         self.app = app
@@ -78,6 +79,7 @@ class PrometheusInstrumentatorMiddleware:
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
         self.registry = registry
+        self.custom_labels = custom_labels
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
         self.body_handlers = [re.compile(path) for path in body_handlers]
@@ -91,6 +93,7 @@ class PrometheusInstrumentatorMiddleware:
                 should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
                 latency_highr_buckets=latency_highr_buckets,
                 latency_lowr_buckets=latency_lowr_buckets,
+                custom_labels = custom_labels,
                 registry=self.registry,
             )
             if default_instrumentation:
@@ -197,6 +200,7 @@ class PrometheusInstrumentatorMiddleware:
                     modified_handler=handler,
                     modified_status=status,
                     modified_duration=duration,
+                    custom_labels=self.custom_labels
                 )
 
                 for instrumentation in self.instrumentations:
