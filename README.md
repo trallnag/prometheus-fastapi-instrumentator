@@ -129,6 +129,7 @@ instrumentator = Instrumentator(
     env_var_name="ENABLE_METRICS",
     inprogress_name="inprogress",
     inprogress_labels=True,
+    custom_labels={"service": "example-ms"}
 )
 ```
 
@@ -168,6 +169,7 @@ instrumentator.add(
         should_include_status=True,
         metric_namespace="a",
         metric_subsystem="b",
+        custom_labels={"service": "example-ms"}
     )
 ).add(
     metrics.response_size(
@@ -176,6 +178,7 @@ instrumentator.add(
         should_include_status=True,
         metric_namespace="namespace",
         metric_subsystem="subsystem",
+        custom_labels={"service": "example-ms"}
     )
 )
 ```
