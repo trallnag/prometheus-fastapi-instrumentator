@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from prometheus_client import REGISTRY
 from requests import Response as TestClientResponse
+from requests.auth import HTTPBasicAuth
 from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -74,5 +75,22 @@ def test_expose_custom_path():
     assert b"http_request" not in response.content
 
     response = get_response(client, "/custom_metrics")
+    assert response.status_code == 200
+    assert b"http_request" in response.content
+
+
+def test_expose_basic_auth():
+    username = 'hello'
+    password = 'mom'
+    app = create_app()
+    Instrumentator().instrument(app).expose(app, basic_auth=(username, password))
+    client = TestClient(app)
+
+    response = client.get("/metrics")
+    assert response.status_code == 401
+    assert b"http_request" not in response.content
+
+    auth = HTTPBasicAuth(username, password)
+    response = client.get("/metrics", auth=auth)
     assert response.status_code == 200
     assert b"http_request" in response.content

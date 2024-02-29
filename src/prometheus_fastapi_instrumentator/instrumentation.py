@@ -4,9 +4,10 @@ import os
 import re
 import warnings
 from enum import Enum
-from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union, cast
+from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union, cast, Tuple
+from base64 import b64encode
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     REGISTRY,
@@ -227,6 +228,7 @@ class PrometheusFastApiInstrumentator:
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
         tags: Optional[List[Union[str, Enum]]] = None,
+        basic_auth: Optional[Tuple[str, str]] = None,
         **kwargs: Any,
     ) -> "PrometheusFastApiInstrumentator":
         """Exposes endpoint for metrics.
@@ -246,6 +248,9 @@ class PrometheusFastApiInstrumentator:
 
             tags (List[str], optional): If you manage your routes with tags.
                 Defaults to None.
+            
+            basic_auth (Tuple[str, str], optional): username and password for
+                HTTP basic authentication. Disabled if None.
 
             kwargs: Will be passed to FastAPI route annotation.
 
@@ -256,9 +261,22 @@ class PrometheusFastApiInstrumentator:
         if self.should_respect_env_var and not self._should_instrumentate():
             return self
 
+        authorization_value = None
+        if basic_auth is not None:
+            username, password = basic_auth
+            encoded_cred = b64encode(f'{username}:{password}'.encode('utf-8')).decode('ascii')
+            authorization_value = f"Basic {encoded_cred}"
+
         @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
         def metrics(request: Request) -> Response:
             """Endpoint that serves Prometheus metrics."""
+
+            authorization_header = request.headers.get('authorization', None)
+            if authorization_header != authorization_value:
+                raise HTTPException(
+                    status_code=401,
+                    headers={'WWW-Authenticate': 'Basic realm="Access to metrics endpoint"'}
+                )
 
             ephemeral_registry = self.registry
             if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
