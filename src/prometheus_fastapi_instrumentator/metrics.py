@@ -27,6 +27,7 @@ class Info:
         modified_handler: str,
         modified_status: str,
         modified_duration: float,
+        modified_duration_without_streaming: float,
     ):
         """Creates Info object that is used for instrumentation functions.
 
@@ -42,6 +43,8 @@ class Info:
                 by instrumentator. For example grouping into `2xx`, `3xx` and so on.
             modified_duration (float): Latency representation after processing
                 by instrumentator. For example rounding of decimals. Seconds.
+            modified_duration_without_streaming (float): Latency between request arrival and response starts (i.e. first chunk duration).
+                Excluding the streaming duration.
         """
 
         self.request = request
@@ -50,6 +53,7 @@ class Info:
         self.modified_handler = modified_handler
         self.modified_status = modified_status
         self.modified_duration = modified_duration
+        self.modified_duration_without_streaming = modified_duration_without_streaming
 
 
 def _build_label_attribute_names(
@@ -114,6 +118,7 @@ def latency(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    should_exclude_streaming_duration: bool = False,
     buckets: Sequence[Union[float, str]] = Histogram.DEFAULT_BUCKETS,
     registry: CollectorRegistry = REGISTRY,
 ) -> Optional[Callable[[Info], None]]:
@@ -184,15 +189,19 @@ def latency(
             )
 
         def instrumentation(info: Info) -> None:
+            duration = info.modified_duration
+            if should_exclude_streaming_duration == True:
+                duration = info.modified_duration_without_streaming
+
             if label_names:
                 label_values = [
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
 
-                METRIC.labels(*label_values).observe(info.modified_duration)
+                METRIC.labels(*label_values).observe(duration)
             else:
-                METRIC.observe(info.modified_duration)
+                METRIC.observe(duration)
 
         return instrumentation
     except ValueError as e:

@@ -140,6 +140,7 @@ class PrometheusInstrumentatorMiddleware:
         status_code = 500
         headers = []
         body = b""
+        response_start_time = None
 
         # Message body collected for handlers matching body_handlers patterns.
         if any(pattern.search(handler) for pattern in self.body_handlers):
@@ -158,9 +159,10 @@ class PrometheusInstrumentatorMiddleware:
 
             async def send_wrapper(message: Message) -> None:
                 if message["type"] == "http.response.start":
-                    nonlocal status_code, headers
+                    nonlocal status_code, headers, response_start_time
                     headers = message["headers"]
                     status_code = message["status"]
+                    response_start_time = default_timer()
                 await send(message)
 
         try:
@@ -176,12 +178,17 @@ class PrometheusInstrumentatorMiddleware:
 
             if not is_excluded:
                 duration = max(default_timer() - start_time, 0)
+                duration_without_streaming = 0
+
+                if response_start_time:
+                    duration_without_streaming = max(response_start_time - start_time, 0)
 
                 if self.should_instrument_requests_inprogress:
                     inprogress.dec()
 
                 if self.should_round_latency_decimals:
                     duration = round(duration, self.round_latency_decimals)
+                    duration_without_streaming = round(duration_without_streaming, self.round_latency_decimals)
 
                 if self.should_group_status_codes:
                     status = status[0] + "xx"
@@ -197,6 +204,7 @@ class PrometheusInstrumentatorMiddleware:
                     modified_handler=handler,
                     modified_status=status,
                     modified_duration=duration,
+                    modified_duration_without_streaming=duration_without_streaming,
                 )
 
                 for instrumentation in self.instrumentations:
