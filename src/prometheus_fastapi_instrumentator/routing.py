@@ -39,7 +39,7 @@ Based on code from [elastic/apm-agent-python](https://github.com/elastic/apm-age
 
 from typing import List, Optional
 
-from starlette.requests import Request
+from starlette.requests import HTTPConnection
 from starlette.routing import Match, Mount, Route
 from starlette.types import Scope
 
@@ -66,7 +66,7 @@ def _get_route_name(
     return None
 
 
-def get_route_name(request: Request) -> Optional[str]:
+def get_route_name(request: HTTPConnection) -> Optional[str]:
     """Gets route name for given request taking mounts into account."""
 
     app = request.app
