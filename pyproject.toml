@@ -14,7 +14,7 @@ keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
 
 [tool.poetry.dependencies]
 python = ">= 3.8.1, < 4.0.0"
-fastapi = ">= 0.38.1, < 1.0.0"
+starlette  = ">= 0.30.0, < 1.0.0"
 prometheus-client = ">= 0.8.0, < 1.0.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -32,6 +32,7 @@ asgiref = "^3.7.2"
 uvicorn = ">=0.28.0"
 gunicorn = "^21.2.0"
 pytest-asyncio = ">=0.23.5.post1"
+fastapi = "^0.110.0"
 
 [tool.black]
 line-length = 90

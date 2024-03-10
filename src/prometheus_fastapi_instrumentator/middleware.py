@@ -6,8 +6,8 @@ from http import HTTPStatus
 from timeit import default_timer
 from typing import Awaitable, Callable, Optional, Sequence, Tuple, Union
 
-from fastapi import FastAPI
 from prometheus_client import REGISTRY, CollectorRegistry, Gauge
+from starlette.applications import Starlette
 from starlette.datastructures import Headers
 from starlette.requests import Request
 from starlette.responses import Response
@@ -19,7 +19,7 @@ from prometheus_fastapi_instrumentator import metrics, routing
 class PrometheusInstrumentatorMiddleware:
     def __init__(
         self,
-        app: FastAPI,
+        app: Starlette,
         *,
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
