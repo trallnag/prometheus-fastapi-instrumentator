@@ -27,7 +27,7 @@ class Info:
         modified_handler: str,
         modified_status: str,
         modified_duration: float,
-        modified_duration_without_streaming: float,
+        modified_duration_without_streaming: float = 0.0,
     ):
         """Creates Info object that is used for instrumentation functions.
 
@@ -44,7 +44,7 @@ class Info:
             modified_duration (float): Latency representation after processing
                 by instrumentator. For example rounding of decimals. Seconds.
             modified_duration_without_streaming (float): Latency between request arrival and response starts (i.e. first chunk duration).
-                Excluding the streaming duration.
+                Excluding the streaming duration. Defaults to 0.
         """
 
         self.request = request

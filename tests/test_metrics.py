@@ -106,6 +106,7 @@ def test_existence_of_attributes():
     assert info.modified_duration is None
     assert info.modified_status is None
     assert info.modified_handler is None
+    assert info.modified_duration_without_streaming == 0.0
 
 
 def test_build_label_attribute_names_all_false():
