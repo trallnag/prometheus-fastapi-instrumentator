@@ -33,6 +33,7 @@ class PrometheusFastApiInstrumentator:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
+        should_exclude_streaming_duration: bool = False,
         excluded_handlers: List[str] = [],
         body_handlers: List[str] = [],
         round_latency_decimals: int = 4,
@@ -68,6 +69,10 @@ class PrometheusFastApiInstrumentator:
             should_instrument_requests_inprogress (bool): Enables a gauge that shows
                 the inprogress requests. See also the related args starting
                 with `inprogress`. Defaults to `False`.
+
+            should_exclude_streaming_duration: Should the streaming duration be
+                excluded? Only relevant if default metrics are used. Defaults
+                to `False`.
 
             excluded_handlers (List[str]): List of strings that will be compiled
                 to regex patterns. All matches will be skipped and not
@@ -112,6 +117,7 @@ class PrometheusFastApiInstrumentator:
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
         self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
+        self.should_exclude_streaming_duration = should_exclude_streaming_duration
 
         self.round_latency_decimals = round_latency_decimals
         self.env_var_name = env_var_name
@@ -205,6 +211,7 @@ class PrometheusFastApiInstrumentator:
             should_round_latency_decimals=self.should_round_latency_decimals,
             should_respect_env_var=self.should_respect_env_var,
             should_instrument_requests_inprogress=self.should_instrument_requests_inprogress,
+            should_exclude_streaming_duration=self.should_exclude_streaming_duration,
             round_latency_decimals=self.round_latency_decimals,
             env_var_name=self.env_var_name,
             inprogress_name=self.inprogress_name,

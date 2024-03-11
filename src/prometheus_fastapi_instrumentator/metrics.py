@@ -195,6 +195,8 @@ def latency(
             duration = info.modified_duration
             if should_exclude_streaming_duration:
                 duration = info.modified_duration_without_streaming
+            else:
+                duration = info.modified_duration
 
             if label_names:
                 label_values = [
@@ -581,6 +583,7 @@ def default(
     metric_namespace: str = "",
     metric_subsystem: str = "",
     should_only_respect_2xx_for_highr: bool = False,
+    should_exclude_streaming_duration: bool = False,
     latency_highr_buckets: Sequence[Union[float, str]] = (
         0.01,
         0.025,
@@ -622,7 +625,7 @@ def default(
         content length bytes by handler.
     * `http_request_duration_highr_seconds` (no labels): High number of buckets
         leading to more accurate calculation of percentiles.
-    * `http_request_duration_seconds` (`handler`):
+    * `http_request_duration_seconds` (`handler`, `method`):
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
@@ -636,6 +639,9 @@ def default(
             `http_request_duration_highr_seconds` only include latencies of
             requests / responses that have a status code starting with `2`?
             Defaults to `False`.
+
+        should_exclude_streaming_duration: Should the streaming duration be
+            excluded? Defaults to `False`.
 
         latency_highr_buckets (tuple[float], optional): Buckets tuple for high
             res histogram. Can be large because no labels are used. Defaults to
@@ -731,6 +737,12 @@ def default(
         )
 
         def instrumentation(info: Info) -> None:
+            duration = info.modified_duration
+            if should_exclude_streaming_duration:
+                duration = info.modified_duration_without_streaming
+            else:
+                duration = info.modified_duration
+
             TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
 
             IN_SIZE.labels(info.modified_handler).observe(
@@ -747,11 +759,11 @@ def default(
             if not should_only_respect_2xx_for_highr or info.modified_status.startswith(
                 "2"
             ):
-                LATENCY_HIGHR.observe(info.modified_duration)
+                LATENCY_HIGHR.observe(duration)
 
             LATENCY_LOWR.labels(
                 handler=info.modified_handler, method=info.method
-            ).observe(info.modified_duration)
+            ).observe(duration)
 
         return instrumentation
 
