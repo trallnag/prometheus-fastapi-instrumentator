@@ -146,6 +146,9 @@ def latency(
         should_include_status: Should the `status` label be part of the
             metric? Defaults to `True`.
 
+        should_exclude_streaming_duration: Should the streaming duration be
+            excluded? Defaults to `False`.
+
         buckets: Buckets for the histogram. Defaults to Prometheus default.
             Defaults to default buckets from Prometheus client library.
 
