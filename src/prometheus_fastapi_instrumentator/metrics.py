@@ -190,7 +190,7 @@ def latency(
 
         def instrumentation(info: Info) -> None:
             duration = info.modified_duration
-            if should_exclude_streaming_duration == True:
+            if should_exclude_streaming_duration:
                 duration = info.modified_duration_without_streaming
 
             if label_names:

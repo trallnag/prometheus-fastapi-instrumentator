@@ -177,11 +177,11 @@ class PrometheusInstrumentatorMiddleware:
             )
 
             if not is_excluded:
-                duration = max(default_timer() - start_time, 0)
-                duration_without_streaming = 0
+                duration = max(default_timer() - start_time, 0.0)
+                duration_without_streaming = 0.0
 
                 if response_start_time:
-                    duration_without_streaming = max(response_start_time - start_time, 0)
+                    duration_without_streaming = max(response_start_time - start_time, 0.0)
 
                 if self.should_instrument_requests_inprogress:
                     inprogress.dec()
