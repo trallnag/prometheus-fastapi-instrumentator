@@ -7,7 +7,27 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Added
+
+- Instrumentator now works without FastAPI. This is possible because every
+  FastAPI app is also a Starlette app (but not the other way around). Or to be
+  more specific: FastAPI uses Starlette for things like routing and middleware
+  this package relies on. The change is backwards compatible, even type checkers
+  like mypy should continue working. Thanks to
+  [@mvanderlee](https://github.com/mvanderlee) for proposing this in
+  [#280](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/280)
+  and implementing it in
+  [#288](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/288).
+
+- Relaxed type of `get_route_name` argument to `HTTPConnection`. This allows
+  developers to use the `get_route_name` function for getting the name of
+  websocket routes as well. Thanks to [@pajowu](https://github.com/pajowu) for
+  proposing and implementing this feature in
+  [#276](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/276).
+
+### Removed
+
+- **BREAKING:** Dropped support for Python 3.7 which is has reached end-of-life.
 
 ## [6.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v6.0.0...v6.1.0) / 2023-07-15
 

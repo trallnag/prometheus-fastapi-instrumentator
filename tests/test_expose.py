@@ -2,6 +2,9 @@ import asyncio
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
+from starlette.applications import Starlette
+from starlette.responses import PlainTextResponse
+from starlette.routing import Route
 from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -10,7 +13,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 # Setup
 
 
-def create_app() -> FastAPI:
+def create_fastapi_app() -> FastAPI:
     app = FastAPI()
 
     @app.get("/")
@@ -45,6 +48,13 @@ def create_app() -> FastAPI:
     return app
 
 
+def create_starlette_app() -> Starlette:
+    async def homepage(request):
+        return PlainTextResponse("Homepage")
+
+    return Starlette(routes=[Route("/", endpoint=homepage)])
+
+
 def reset_prometheus() -> None:
     from prometheus_client import REGISTRY
 
@@ -70,7 +80,7 @@ def reset_prometheus() -> None:
 
 def test_expose_default_content_type():
     reset_prometheus()
-    app = create_app()
+    app = create_fastapi_app()
     Instrumentator().instrument(app).expose(app)
     client = TestClient(app)
 
@@ -80,3 +90,25 @@ def test_expose_default_content_type():
         "text/plain; version=0.0.4; charset=utf-8; charset=utf-8"
         not in response.headers.values()
     )
+
+
+def test_fastapi_app_expose():
+    reset_prometheus()
+    app = create_fastapi_app()
+    Instrumentator().instrument(app).expose(app)
+    client = TestClient(app)
+
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+
+
+def test_starlette_app_expose():
+    reset_prometheus()
+    app = create_starlette_app()
+    Instrumentator().instrument(app).expose(app)
+    client = TestClient(app)
+
+    response = client.get("/metrics")
+
+    assert response.status_code == 200

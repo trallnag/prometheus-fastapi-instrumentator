@@ -122,7 +122,7 @@ def latency(
     buckets: Sequence[Union[float, str]] = Histogram.DEFAULT_BUCKETS,
     registry: CollectorRegistry = REGISTRY,
 ) -> Optional[Callable[[Info], None]]:
-    """Default metric for the Prometheus FastAPI Instrumentator.
+    """Default metric for the Prometheus Starlette Instrumentator.
 
     Args:
         metric_name (str, optional): Name of the metric to be created. Must be

@@ -1,12 +1,12 @@
 import asyncio
 import gzip
+import importlib.util
 import os
 import re
 import warnings
 from enum import Enum
 from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union, cast
 
-from fastapi import FastAPI
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     REGISTRY,
@@ -14,6 +14,7 @@ from prometheus_client import (
     generate_latest,
     multiprocess,
 )
+from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -40,7 +41,7 @@ class PrometheusFastApiInstrumentator:
         inprogress_labels: bool = False,
         registry: Union[CollectorRegistry, None] = None,
     ) -> None:
-        """Create a Prometheus FastAPI Instrumentator.
+        """Create a Prometheus FastAPI (and Starlette) Instrumentator.
 
         Args:
             should_group_status_codes (bool): Should status codes be grouped into
@@ -149,7 +150,7 @@ class PrometheusFastApiInstrumentator:
 
     def instrument(
         self,
-        app: FastAPI,
+        app: Starlette,
         metric_namespace: str = "",
         metric_subsystem: str = "",
         should_only_respect_2xx_for_highr: bool = False,
@@ -183,10 +184,11 @@ class PrometheusFastApiInstrumentator:
         The middleware iterates through all `instrumentations` and executes them.
 
         Args:
-            app (FastAPI): FastAPI app instance.
+            app: Starlette app instance. Note that every FastAPI app is a
+                Starlette app.
 
         Raises:
-            e: Only raised if FastAPI itself throws an exception.
+            e: Only raised if app itself throws an exception.
 
         Returns:
             self: Instrumentator. Builder Pattern.
@@ -222,7 +224,7 @@ class PrometheusFastApiInstrumentator:
 
     def expose(
         self,
-        app: FastAPI,
+        app: Starlette,
         should_gzip: bool = False,
         endpoint: str = "/metrics",
         include_in_schema: bool = True,
@@ -232,7 +234,9 @@ class PrometheusFastApiInstrumentator:
         """Exposes endpoint for metrics.
 
         Args:
-            app: FastAPI app instance. Endpoint will be added to this app.
+            app: App instance. Endpoint will be added to this app. This can be
+            a Starlette app or a FastAPI app. If it is a Starlette app, `tags`
+            `kwargs` will be ignored.
 
             should_gzip: Should the endpoint return compressed data? It will
                 also check for `gzip` in the `Accept-Encoding` header.
@@ -245,9 +249,9 @@ class PrometheusFastApiInstrumentator:
             include_in_schema: Should the endpoint show up in the documentation?
 
             tags (List[str], optional): If you manage your routes with tags.
-                Defaults to None.
+                Defaults to None. Only passed to FastAPI app.
 
-            kwargs: Will be passed to FastAPI route annotation.
+            kwargs: Will be passed to app. Only passed to FastAPI app.
 
         Returns:
             self: Instrumentator. Builder Pattern.
@@ -256,7 +260,6 @@ class PrometheusFastApiInstrumentator:
         if self.should_respect_env_var and not self._should_instrumentate():
             return self
 
-        @app.get(endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs)
         def metrics(request: Request) -> Response:
             """Endpoint that serves Prometheus metrics."""
 
@@ -276,6 +279,21 @@ class PrometheusFastApiInstrumentator:
                 resp.headers["Content-Type"] = CONTENT_TYPE_LATEST
 
             return resp
+
+        route_configured = False
+        if importlib.util.find_spec("fastapi"):
+            from fastapi import FastAPI
+
+            if isinstance(app, FastAPI):
+                fastapi_app: FastAPI = app
+                fastapi_app.get(
+                    endpoint, include_in_schema=include_in_schema, tags=tags, **kwargs
+                )(metrics)
+                route_configured = True
+        if not route_configured:
+            app.add_route(
+                path=endpoint, route=metrics, include_in_schema=include_in_schema
+            )
 
         return self
 
