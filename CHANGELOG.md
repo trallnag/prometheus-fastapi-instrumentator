@@ -19,6 +19,24 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   and implementing it in
   [#288](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/288).
 
+- **Middleware also records duration without streaming** in addition to the
+  already existing total latency (i.e. the time consumed for streaming is not
+  included in the duration value). The differentiation can be valuable as it
+  shows the time to first byte.
+
+  This mode is opt-in and can be enabled / used in several ways: The
+  `Instrumentator()` constructor, the `metrics.default()` closure, and the
+  `metrics.latency()` closure now come with the flag
+  `should_exclude_streaming_duration`. The attribute
+  `modified_duration_without_streaming` has been added to the `metrics.Info`
+  class. Instances of `metrics.Info` are passed to instrumentation functions,
+  where the added value can be used to set metrics.
+
+  Thanks to [@dosuken123](https://github.com/dosuken123) for proposing this in
+  [#291](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/291)
+  and implementing it in
+  [#290](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/290).
+
 - Relaxed type of `get_route_name` argument to `HTTPConnection`. This allows
   developers to use the `get_route_name` function for getting the name of
   websocket routes as well. Thanks to [@pajowu](https://github.com/pajowu) for
