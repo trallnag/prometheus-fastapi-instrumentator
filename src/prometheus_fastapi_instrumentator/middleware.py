@@ -147,9 +147,10 @@ class PrometheusInstrumentatorMiddleware:
 
             async def send_wrapper(message: Message) -> None:
                 if message["type"] == "http.response.start":
-                    nonlocal status_code, headers
+                    nonlocal status_code, headers, response_start_time
                     headers = message["headers"]
                     status_code = message["status"]
+                    response_start_time = default_timer()
                 elif message["type"] == "http.response.body" and message["body"]:
                     nonlocal body
                     body += message["body"]
