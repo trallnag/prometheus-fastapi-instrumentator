@@ -163,3 +163,24 @@ def test_info_body_bulk_large():
     response = client.get("/")
     assert instrumentation_executed
     assert len(response.content) == 5_000_000
+
+
+def test_info_body_duration_without_streaming():
+    app = FastAPI()
+    client = TestClient(app)
+
+    @app.get("/")
+    def root():
+        return responses.StreamingResponse(("x" * 1_000 for _ in range(5)))
+
+    instrumentation_executed = False
+
+    def instrumentation(info: metrics.Info) -> None:
+        nonlocal instrumentation_executed
+        instrumentation_executed = True
+        assert info.modified_duration_without_streaming < info.modified_duration
+
+    Instrumentator(body_handlers=[r".*"]).instrument(app).add(instrumentation)
+
+    client.get("/")
+    assert instrumentation_executed

@@ -27,6 +27,7 @@ class Info:
         modified_handler: str,
         modified_status: str,
         modified_duration: float,
+        modified_duration_without_streaming: float = 0.0,
     ):
         """Creates Info object that is used for instrumentation functions.
 
@@ -42,6 +43,8 @@ class Info:
                 by instrumentator. For example grouping into `2xx`, `3xx` and so on.
             modified_duration (float): Latency representation after processing
                 by instrumentator. For example rounding of decimals. Seconds.
+            modified_duration_without_streaming (float): Latency between request arrival and response starts (i.e. first chunk duration).
+                Excluding the streaming duration. Defaults to 0.
         """
 
         self.request = request
@@ -50,6 +53,7 @@ class Info:
         self.modified_handler = modified_handler
         self.modified_status = modified_status
         self.modified_duration = modified_duration
+        self.modified_duration_without_streaming = modified_duration_without_streaming
 
 
 def _build_label_attribute_names(
@@ -114,6 +118,7 @@ def latency(
     should_include_handler: bool = True,
     should_include_method: bool = True,
     should_include_status: bool = True,
+    should_exclude_streaming_duration: bool = False,
     buckets: Sequence[Union[float, str]] = Histogram.DEFAULT_BUCKETS,
     registry: CollectorRegistry = REGISTRY,
 ) -> Optional[Callable[[Info], None]]:
@@ -140,6 +145,9 @@ def latency(
 
         should_include_status: Should the `status` label be part of the
             metric? Defaults to `True`.
+
+        should_exclude_streaming_duration: Should the streaming duration be
+            excluded? Defaults to `False`.
 
         buckets: Buckets for the histogram. Defaults to Prometheus default.
             Defaults to default buckets from Prometheus client library.
@@ -184,15 +192,21 @@ def latency(
             )
 
         def instrumentation(info: Info) -> None:
+            duration = info.modified_duration
+            if should_exclude_streaming_duration:
+                duration = info.modified_duration_without_streaming
+            else:
+                duration = info.modified_duration
+
             if label_names:
                 label_values = [
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
 
-                METRIC.labels(*label_values).observe(info.modified_duration)
+                METRIC.labels(*label_values).observe(duration)
             else:
-                METRIC.observe(info.modified_duration)
+                METRIC.observe(duration)
 
         return instrumentation
     except ValueError as e:
@@ -569,6 +583,7 @@ def default(
     metric_namespace: str = "",
     metric_subsystem: str = "",
     should_only_respect_2xx_for_highr: bool = False,
+    should_exclude_streaming_duration: bool = False,
     latency_highr_buckets: Sequence[Union[float, str]] = (
         0.01,
         0.025,
@@ -610,7 +625,7 @@ def default(
         content length bytes by handler.
     * `http_request_duration_highr_seconds` (no labels): High number of buckets
         leading to more accurate calculation of percentiles.
-    * `http_request_duration_seconds` (`handler`):
+    * `http_request_duration_seconds` (`handler`, `method`):
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
@@ -624,6 +639,9 @@ def default(
             `http_request_duration_highr_seconds` only include latencies of
             requests / responses that have a status code starting with `2`?
             Defaults to `False`.
+
+        should_exclude_streaming_duration: Should the streaming duration be
+            excluded? Defaults to `False`.
 
         latency_highr_buckets (tuple[float], optional): Buckets tuple for high
             res histogram. Can be large because no labels are used. Defaults to
@@ -719,6 +737,12 @@ def default(
         )
 
         def instrumentation(info: Info) -> None:
+            duration = info.modified_duration
+            if should_exclude_streaming_duration:
+                duration = info.modified_duration_without_streaming
+            else:
+                duration = info.modified_duration
+
             TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
 
             IN_SIZE.labels(info.modified_handler).observe(
@@ -735,11 +759,11 @@ def default(
             if not should_only_respect_2xx_for_highr or info.modified_status.startswith(
                 "2"
             ):
-                LATENCY_HIGHR.observe(info.modified_duration)
+                LATENCY_HIGHR.observe(duration)
 
             LATENCY_LOWR.labels(
                 handler=info.modified_handler, method=info.method
-            ).observe(info.modified_duration)
+            ).observe(duration)
 
         return instrumentation
 
