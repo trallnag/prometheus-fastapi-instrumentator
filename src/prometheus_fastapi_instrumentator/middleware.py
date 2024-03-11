@@ -188,7 +188,9 @@ class PrometheusInstrumentatorMiddleware:
 
                 if self.should_round_latency_decimals:
                     duration = round(duration, self.round_latency_decimals)
-                    duration_without_streaming = round(duration_without_streaming, self.round_latency_decimals)
+                    duration_without_streaming = round(
+                        duration_without_streaming, self.round_latency_decimals
+                    )
 
                 if self.should_group_status_codes:
                     status = status[0] + "xx"
