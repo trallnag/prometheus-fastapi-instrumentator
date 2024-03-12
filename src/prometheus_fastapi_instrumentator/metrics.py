@@ -27,7 +27,8 @@ class Info:
         modified_handler: str,
         modified_status: str,
         modified_duration: float,
-        custom_labels: dict
+        custom_labels: dict,
+        modified_duration_without_streaming: float = 0.0,
     ):
         """Creates Info object that is used for instrumentation functions.
 
@@ -43,6 +44,8 @@ class Info:
                 by instrumentator. For example grouping into `2xx`, `3xx` and so on.
             modified_duration (float): Latency representation after processing
                 by instrumentator. For example rounding of decimals. Seconds.
+            modified_duration_without_streaming (float): Latency between request arrival and response starts (i.e. first chunk duration).
+                Excluding the streaming duration. Defaults to 0.
         """
 
         self.request = request
@@ -53,12 +56,13 @@ class Info:
         self.modified_duration = modified_duration
         for key, value in custom_labels.items():
             setattr(self, key, value)
+        self.modified_duration_without_streaming = modified_duration_without_streaming
 
 
 def _build_label_attribute_names(
     should_include_handler: bool,
     should_include_method: bool,
-    should_include_status: bool
+    should_include_status: bool,
 ) -> Tuple[List[str], List[str]]:
     """Builds up tuple with to be used label and attribute names.
 
@@ -118,10 +122,11 @@ def latency(
     should_include_method: bool = True,
     should_include_status: bool = True,
     custom_labels: dict = {},
+    should_exclude_streaming_duration: bool = False,
     buckets: Sequence[Union[float, str]] = Histogram.DEFAULT_BUCKETS,
     registry: CollectorRegistry = REGISTRY,
 ) -> Optional[Callable[[Info], None]]:
-    """Default metric for the Prometheus FastAPI Instrumentator.
+    """Default metric for the Prometheus Starlette Instrumentator.
 
     Args:
         metric_name (str, optional): Name of the metric to be created. Must be
@@ -144,6 +149,9 @@ def latency(
 
         should_include_status: Should the `status` label be part of the
             metric? Defaults to `True`.
+
+        should_exclude_streaming_duration: Should the streaming duration be
+            excluded? Defaults to `False`.
 
         buckets: Buckets for the histogram. Defaults to Prometheus default.
             Defaults to default buckets from Prometheus client library.
@@ -190,15 +198,21 @@ def latency(
             )
 
         def instrumentation(info: Info) -> None:
+            duration = info.modified_duration
+            if should_exclude_streaming_duration:
+                duration = info.modified_duration_without_streaming
+            else:
+                duration = info.modified_duration
+
             if label_names:
                 label_values = [
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
 
-                METRIC.labels(*label_values).observe(info.modified_duration)
+                METRIC.labels(*label_values).observe(duration)
             else:
-                METRIC.observe(info.modified_duration)
+                METRIC.observe(duration)
 
         return instrumentation
     except ValueError as e:
@@ -581,12 +595,13 @@ def requests(
 
     return None
 
+
 def _map_label_name_value(label_name):
     atrribute_names = []
     mapping = {
         "handler": "modified_handler",
         "status": "modified_status",
-        "duration": "modified_duration"
+        "duration": "modified_duration",
     }
     for item in label_name:
         if item in mapping:
@@ -595,10 +610,12 @@ def _map_label_name_value(label_name):
             atrribute_names.append(item)
     return atrribute_names
 
+
 def default(
     metric_namespace: str = "",
     metric_subsystem: str = "",
     should_only_respect_2xx_for_highr: bool = False,
+    should_exclude_streaming_duration: bool = False,
     latency_highr_buckets: Sequence[Union[float, str]] = (
         0.01,
         0.025,
@@ -641,7 +658,7 @@ def default(
         content length bytes by handler.
     * `http_request_duration_highr_seconds` (no labels): High number of buckets
         leading to more accurate calculation of percentiles.
-    * `http_request_duration_seconds` (`handler`):
+    * `http_request_duration_seconds` (`handler`, `method`):
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
@@ -655,6 +672,9 @@ def default(
             `http_request_duration_highr_seconds` only include latencies of
             requests / responses that have a status code starting with `2`?
             Defaults to `False`.
+
+        should_exclude_streaming_duration: Should the streaming duration be
+            excluded? Defaults to `False`.
 
         latency_highr_buckets (tuple[float], optional): Buckets tuple for high
             res histogram. Can be large because no labels are used. Defaults to
@@ -684,10 +704,10 @@ def default(
     additional_label_names = tuple([key for key in custom_labels])
     try:
         total_label_names = (
-                "method",
-                "status",
-                "handler",
-            ) + additional_label_names
+            "method",
+            "status",
+            "handler",
+        ) + additional_label_names
         TOTAL = Counter(
             name="http_requests_total",
             documentation="Total number of requests by method, status and handler.",
@@ -696,9 +716,7 @@ def default(
             subsystem=metric_subsystem,
             registry=registry,
         )
-        in_size_names = (
-                "handler",
-            ) + additional_label_names
+        in_size_names = ("handler",) + additional_label_names
         IN_SIZE = Summary(
             name="http_request_size_bytes",
             documentation=(
@@ -711,9 +729,7 @@ def default(
             subsystem=metric_subsystem,
             registry=registry,
         )
-        out_size_names = (
-                "handler",
-            ) + additional_label_names
+        out_size_names = ("handler",) + additional_label_names
         OUT_SIZE = Summary(
             name="http_response_size_bytes",
             documentation=(
@@ -739,9 +755,9 @@ def default(
             registry=registry,
         )
         latency_lower_names = (
-                "method",
-                "handler",
-            ) + additional_label_names
+            "method",
+            "handler",
+        ) + additional_label_names
         LATENCY_LOWR = Histogram(
             name="http_request_duration_seconds",
             documentation=(
@@ -754,40 +770,46 @@ def default(
             subsystem=metric_subsystem,
             registry=registry,
         )
-        
+
         def instrumentation(info: Info) -> None:
+            duration = info.modified_duration
+            if should_exclude_streaming_duration:
+                duration = info.modified_duration_without_streaming
+            else:
+                duration = info.modified_duration
+
             label_values = [
-                    getattr(info, attribute_name)
-                    for attribute_name in _map_label_name_value(total_label_names)
-                ]
+                getattr(info, attribute_name)
+                for attribute_name in _map_label_name_value(total_label_names)
+            ]
             TOTAL.labels(*label_values).inc()
             label_values = [
-                    getattr(info, attribute_name)
-                    for attribute_name in _map_label_name_value(in_size_names)
-                ]
+                getattr(info, attribute_name)
+                for attribute_name in _map_label_name_value(in_size_names)
+            ]
             IN_SIZE.labels(*label_values).observe(
                 int(info.request.headers.get("Content-Length", 0))
             )
             label_values = [
-                    getattr(info, attribute_name)
-                    for attribute_name in _map_label_name_value(out_size_names)
-                ]
+                getattr(info, attribute_name)
+                for attribute_name in _map_label_name_value(out_size_names)
+            ]
             if info.response and hasattr(info.response, "headers"):
                 OUT_SIZE.labels(*label_values).observe(
                     int(info.response.headers.get("Content-Length", 0))
                 )
             else:
                 OUT_SIZE.labels(*label_values).observe(0)
-            
+
             if not should_only_respect_2xx_for_highr or info.modified_status.startswith(
                 "2"
             ):
-                LATENCY_HIGHR.observe(info.modified_duration)
+                LATENCY_HIGHR.observe(duration)
             label_values = [
-                    getattr(info, attribute_name)
-                    for attribute_name in _map_label_name_value(latency_lower_names)
-                ]
-            LATENCY_LOWR.labels(*label_values).observe(info.modified_duration)
+                getattr(info, attribute_name)
+                for attribute_name in _map_label_name_value(latency_lower_names)
+            ]
+            LATENCY_LOWR.labels(*label_values).observe(duration)
 
         return instrumentation
 

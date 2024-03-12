@@ -1,8 +1,8 @@
 from typing import Any, Dict, Optional
 
 import pytest
-from fastapi import FastAPI, HTTPException
-from prometheus_client import REGISTRY
+from fastapi import FastAPI, HTTPException, responses
+from prometheus_client import REGISTRY, Histogram
 from requests import Response as TestClientResponse
 from starlette.testclient import TestClient
 
@@ -106,6 +106,7 @@ def test_existence_of_attributes():
     assert info.modified_duration is None
     assert info.modified_status is None
     assert info.modified_handler is None
+    assert info.modified_duration_without_streaming == 0.0
 
 
 def test_build_label_attribute_names_all_false():
@@ -422,6 +423,47 @@ def test_latency_with_bucket_no_inf():
     )
 
 
+def test_latency_duration_without_streaming():
+    _ = create_app()
+    app = FastAPI()
+    client = TestClient(app)
+
+    @app.get("/")
+    def root():
+        return responses.StreamingResponse(("x" * 1_000 for _ in range(5)))
+
+    METRIC = Histogram(
+        "http_request_duration_with_streaming_seconds",
+        "x",
+    )
+
+    def instrumentation(info: metrics.Info) -> None:
+        METRIC.observe(info.modified_duration)
+
+    Instrumentator().add(
+        metrics.latency(
+            should_include_handler=False,
+            should_include_method=False,
+            should_include_status=False,
+            should_exclude_streaming_duration=True,
+        ),
+        instrumentation,
+    ).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    _ = get_response(client, "/metrics")
+
+    assert REGISTRY.get_sample_value(
+        "http_request_duration_seconds_sum",
+        {},
+    ) < REGISTRY.get_sample_value(
+        "http_request_duration_with_streaming_seconds_sum",
+        {},
+    )
+
+
 # ------------------------------------------------------------------------------
 # default
 
@@ -518,6 +560,39 @@ def test_default_with_runtime_error():
 
     assert (
         b'http_request_size_bytes_count{handler="/runtime_error"} 1.0' in response.content
+    )
+
+
+def test_default_duration_without_streaming():
+    _ = create_app()
+    app = FastAPI()
+
+    @app.get("/")
+    def root():
+        return responses.StreamingResponse(("x" * 1_000 for _ in range(5)))
+
+    METRIC = Histogram(
+        "http_request_duration_with_streaming_seconds", "x", labelnames=["handler"]
+    )
+
+    def instrumentation(info: metrics.Info) -> None:
+        METRIC.labels(info.modified_handler).observe(info.modified_duration)
+
+    Instrumentator().add(
+        metrics.default(should_exclude_streaming_duration=True), instrumentation
+    ).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.get("/")
+
+    _ = get_response(client, "/metrics")
+
+    assert REGISTRY.get_sample_value(
+        "http_request_duration_with_streaming_seconds_sum",
+        {"handler": "/"},
+    ) > REGISTRY.get_sample_value(
+        "http_request_duration_seconds_sum",
+        {"handler": "/", "method": "GET"},
     )
 
 

@@ -6,8 +6,8 @@ from http import HTTPStatus
 from timeit import default_timer
 from typing import Awaitable, Callable, Optional, Sequence, Tuple, Union
 
-from fastapi import FastAPI
 from prometheus_client import REGISTRY, CollectorRegistry, Gauge
+from starlette.applications import Starlette
 from starlette.datastructures import Headers
 from starlette.requests import Request
 from starlette.responses import Response
@@ -19,7 +19,7 @@ from prometheus_fastapi_instrumentator import metrics, routing
 class PrometheusInstrumentatorMiddleware:
     def __init__(
         self,
-        app: FastAPI,
+        app: Starlette,
         *,
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
@@ -27,6 +27,7 @@ class PrometheusInstrumentatorMiddleware:
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
+        should_exclude_streaming_duration: bool = False,
         excluded_handlers: Sequence[str] = (),
         body_handlers: Sequence[str] = (),
         round_latency_decimals: int = 4,
@@ -91,9 +92,10 @@ class PrometheusInstrumentatorMiddleware:
                 metric_namespace=metric_namespace,
                 metric_subsystem=metric_subsystem,
                 should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
+                should_exclude_streaming_duration=should_exclude_streaming_duration,
                 latency_highr_buckets=latency_highr_buckets,
                 latency_lowr_buckets=latency_lowr_buckets,
-                custom_labels = custom_labels,
+                custom_labels=custom_labels,
                 registry=self.registry,
             )
             if default_instrumentation:
@@ -143,15 +145,17 @@ class PrometheusInstrumentatorMiddleware:
         status_code = 500
         headers = []
         body = b""
+        response_start_time = None
 
         # Message body collected for handlers matching body_handlers patterns.
         if any(pattern.search(handler) for pattern in self.body_handlers):
 
             async def send_wrapper(message: Message) -> None:
                 if message["type"] == "http.response.start":
-                    nonlocal status_code, headers
+                    nonlocal status_code, headers, response_start_time
                     headers = message["headers"]
                     status_code = message["status"]
+                    response_start_time = default_timer()
                 elif message["type"] == "http.response.body" and message["body"]:
                     nonlocal body
                     body += message["body"]
@@ -161,9 +165,10 @@ class PrometheusInstrumentatorMiddleware:
 
             async def send_wrapper(message: Message) -> None:
                 if message["type"] == "http.response.start":
-                    nonlocal status_code, headers
+                    nonlocal status_code, headers, response_start_time
                     headers = message["headers"]
                     status_code = message["status"]
+                    response_start_time = default_timer()
                 await send(message)
 
         try:
@@ -178,13 +183,22 @@ class PrometheusInstrumentatorMiddleware:
             )
 
             if not is_excluded:
-                duration = max(default_timer() - start_time, 0)
+                duration = max(default_timer() - start_time, 0.0)
+                duration_without_streaming = 0.0
+
+                if response_start_time:
+                    duration_without_streaming = max(
+                        response_start_time - start_time, 0.0
+                    )
 
                 if self.should_instrument_requests_inprogress:
                     inprogress.dec()
 
                 if self.should_round_latency_decimals:
                     duration = round(duration, self.round_latency_decimals)
+                    duration_without_streaming = round(
+                        duration_without_streaming, self.round_latency_decimals
+                    )
 
                 if self.should_group_status_codes:
                     status = status[0] + "xx"
@@ -200,7 +214,8 @@ class PrometheusInstrumentatorMiddleware:
                     modified_handler=handler,
                     modified_status=status,
                     modified_duration=duration,
-                    custom_labels=self.custom_labels
+                    custom_labels=self.custom_labels,
+                    modified_duration_without_streaming=duration_without_streaming,
                 )
 
                 for instrumentation in self.instrumentations:
