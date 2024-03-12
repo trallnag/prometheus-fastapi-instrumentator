@@ -80,8 +80,8 @@ def test_expose_custom_path():
 
 
 def test_expose_basic_auth():
-    username = 'hello'
-    password = 'mom'
+    username = "hello"
+    password = "mom"
     app = create_app()
     Instrumentator().instrument(app).expose(app, basic_auth=(username, password))
     client = TestClient(app)
