@@ -16,7 +16,7 @@ anymore. Beyond that, three improvements based on various pull requests.
 
 ### Added
 
-- Instrumentator now works without FastAPI. This is possible because every
+- **Instrumentator now works without FastAPI**. This is possible because every
   FastAPI app is also a Starlette app (but not the other way around). Or to be
   more specific: FastAPI uses Starlette for things like routing and middleware
   this package relies on. The change is backwards compatible, even type checkers
@@ -44,7 +44,7 @@ anymore. Beyond that, three improvements based on various pull requests.
   and implementing it in
   [#290](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/290).
 
-- Relaxed type of `get_route_name` argument to `HTTPConnection`. This allows
+- **Relaxed type of `get_route_name` argument to `HTTPConnection`**. This allows
   developers to use the `get_route_name` function for getting the name of
   websocket routes as well. Thanks to [@pajowu](https://github.com/pajowu) for
   proposing and implementing this feature in
