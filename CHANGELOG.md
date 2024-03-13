@@ -7,6 +7,13 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [7.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v6.1.0...v7.0.0) / 2023-07-15
+
+Major release with a single breaking change: Python 3.7 is not supported
+anymore. Beyond that, three improvements based on various pull requests.
+
 ### Added
 
 - Instrumentator now works without FastAPI. This is possible because every
