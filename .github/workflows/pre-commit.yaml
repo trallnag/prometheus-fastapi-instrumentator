@@ -77,7 +77,7 @@ jobs:
       - name: Install, cache, and run pre-commit
         uses: pre-commit/action@v3.0.0
 
-      - uses: pre-commit-ci/lite-action@v1.0.1
+      - uses: pre-commit-ci/lite-action@v1.0.2
         if: always()
         with:
           msg: "ci(pre-commit): Apply hook auto fixes"
