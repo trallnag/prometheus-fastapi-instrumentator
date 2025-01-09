@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: check-ast
       - id: check-executables-have-shebangs
@@ -12,7 +12,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v9.13.0
+    rev: v9.20.0
     hooks:
       - id: commitlint
         stages: [commit-msg]
@@ -26,41 +26,22 @@ repos:
         args: [--prose-wrap=always]
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.12.1
+    rev: v0.17.1
     hooks:
       - id: markdownlint-cli2
 
-  - repo: local
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.8.6
     hooks:
-      - id: black
-        name: black
-        language: system
-        entry: poetry run black
-        require_serial: true
-        types: [python]
+      - id: ruff-format
+      - id: ruff
+        args: [ --fix, --unsafe-fixes ]
 
-      - id: flake8
-        name: flake8
-        language: system
-        entry: poetry run flake8 --config .flake8 --statistics
-        require_serial: true
-        types: [python]
-
-      - id: isort
-        name: isort
-        language: system
-        entry: poetry run isort
-        require_serial: true
-        types: [python]
-
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
       - id: mypy
-        name: mypy
-        language: system
-        entry: poetry run dmypy run --timeout 3600 src
-        require_serial: true
-        pass_filenames: false
-        files: ^src/.+$
-        exclude: ^tests/.+$
+        args: [ --no-strict-optional, --ignore-missing-imports ]
 
 exclude: |
   (?x)^(
@@ -71,7 +52,5 @@ ci:
   autofix_commit_msg: "refactor(pre-commit): Apply hook auto fixes"
   autoupdate_commit_msg: "build(pre-commit): Apply hook rev updates"
   skip:
-    - black
-    - flake8
-    - isort
+    - ruff
     - mypy
