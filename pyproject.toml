@@ -1,46 +1,74 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ['setuptools>=68.0.0', "wheel", 'Cython>=3.0.0']
+build-backend = 'setuptools.build_meta'
 
-[tool.poetry]
+[project]
 name = "prometheus-fastapi-instrumentator"
 version = "7.0.0"
-description = "Instrument your FastAPI with Prometheus metrics."
-authors = ["Tim Schwenke <tim@trallnag.com>"]
-license = "ISC"
+description = "Instrument your FastAPI app with Prometheus metrics"
+authors = [
+    {name = "Tim Schwenke",email = "tim@trallnag.com"}
+]
+license = {text = 'ISC License (ISCL)'}
+classifiers=[
+    'Development Status :: 5 - Production/Stable',
+    'Development Status :: 6 - Mature',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Information Technology',
+    'Intended Audience :: System Administrators',
+    'License :: OSI Approved :: ISC License (ISCL)',
+    'Operating System :: OS Independent',
+    'Environment :: Web Environment',
+    'Framework :: FastAPI',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: System :: Systems Administration',
+    'Topic :: System :: Monitoring',
+    'Topic :: Internet',
+    "Typing :: Typed",
+]
+requires-python = '>=3.9'
 readme = "README.md"
-repository = "https://github.com/trallnag/prometheus-fastapi-instrumentator"
-keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
+keywords = ["prometheus", "monitoring", "instrumentation", "fastapi", "exporter", "metrics"]
+dynamic = ["dependencies"]
+
+[project.urls]
+Homepage = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
+Documentation = 'https://github.com/trallnag/prometheus-fastapi-instrumentator/blob/master/README.md'
+Funding = 'https://github.com/sponsors/trallnag'
+Source = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
+Changelog = 'https://github.com/trallnag/prometheus-fastapi-instrumentator/releases'
 
 [tool.poetry.dependencies]
-python = ">= 3.8.1, < 4.0.0"
 starlette  = ">= 0.30.0, < 1.0.0"
 prometheus-client = ">= 0.8.0, < 1.0.0"
 
 [tool.poetry.group.dev.dependencies]
-httpx = "^0.23.3"
-black = "^24.2.0"
-flake8 = "^7.0.0"
-requests = "^2.31.0"
+ruff = "*"
+mypy = "^1.9.0"
 pytest = "^8.1.1"
+pytest-asyncio = ">=0.23.5.post1"
 pytest-cov = "^4.1.0"
 rope = "^1.12.0"
-isort = "^5.13.2"
-mypy = "^1.9.0"
 devtools = "^0.10.0"
 asgiref = "^3.7.2"
+requests = "^2.31.0"
+httpx = "^0.23.3"
 uvicorn = ">=0.28.0"
 gunicorn = "^21.2.0"
-pytest-asyncio = ">=0.23.5.post1"
 fastapi = "^0.110.0"
 
-[tool.black]
-line-length = 90
-
-[tool.isort]
-profile = "black"
-
 [tool.mypy]
+python_version = ">=3.9"
+ignore_missing_imports = true
 allow_redefinition = true
 disallow_untyped_defs = true
 disallow_any_unimported = true
@@ -49,7 +77,87 @@ check_untyped_defs = true
 warn_unused_ignores = true
 show_error_codes = true
 
+[tool.ruff]
+src = ["src"]
+target-version = "py313"
+line-length = 120
+fix = true
+unsafe-fixes = true
+show-fixes = true
+output-format = "grouped"
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "ANN", # flake8-annotations
+    "Q", # flake8-quotes
+    "SIM", # flake8-simplify
+    "T", # flake8-type-checking
+    "B", # flake8-bandit
+    "C", # flake8-copyright
+    "UP", # pyupgrade
+]
+ignore = [
+    "ANN101", # Checks that instance method self arguments have type annotations
+    "D203", # one blank line before class, handled by pydocstyle
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
+    "W191", # indentation contains tabs
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.flake8-type-checking]
+exempt-modules = ["typing", "typing_extensions"]
+
+[tool.ruff.lint.flake8-bandit]
+check-typed-exception = true
+
+[tool.ruff.lint.isort]
+length-sort = true
+combine-as-imports = true
+order-by-type = true
+force-sort-within-sections = true
+split-on-trailing-comma = false
+known-first-party = ["src"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+indent-style = "space"
+skip-magic-trailing-comma = true
+docstring-code-format = true
+docstring-code-line-length = 80
+
 [tool.pytest.ini_options]
+minversion = "8.3"
+testpaths = "tests"
 norecursedirs = "tests/helpers"
 markers = ["slow: mark test as slow."]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*"]
+data_file = "tests/coverage/.coverage"
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+omit = ["tests/*"]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "def logger",
+    "def build_spec.*:",
+    "except ConnectionRefusedError",
+]
