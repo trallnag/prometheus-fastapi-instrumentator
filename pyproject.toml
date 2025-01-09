@@ -1,6 +1,6 @@
 [project]
 name = "prometheus-fastapi-instrumentator"
-version = "7.0.0"
+version = "7.0.1"
 description = "Instrument your FastAPI app with Prometheus metrics"
 authors = [
     {name = "Tim Schwenke",email = "tim@trallnag.com"}
