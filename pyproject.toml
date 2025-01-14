@@ -3,9 +3,12 @@ name = "prometheus-fastapi-instrumentator"
 version = "7.0.1"
 description = "Instrument your FastAPI app with Prometheus metrics"
 authors = [
-    {name = "Tim Schwenke",email = "tim@trallnag.com"}
+    { name = "Tim Schwenke", email = "tim@trallnag.com" }
 ]
+readme = "README.md"
 license = {text = 'ISC License (ISCL)'}
+requires-python = '>=3.9'
+keywords = ["prometheus", "monitoring", "instrumentation", "fastapi", "exporter", "metrics"]
 classifiers=[
     'Development Status :: 5 - Production/Stable',
     'Development Status :: 6 - Mature',
@@ -31,51 +34,43 @@ classifiers=[
     'Topic :: Internet',
     "Typing :: Typed",
 ]
-readme = "README.md"
-keywords = ["prometheus", "monitoring", "instrumentation", "fastapi", "exporter", "metrics"]
 dynamic = ["dependencies"]
-requires-python = '>=3.9'
 
 [project.urls]
-Homepage = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
-Documentation = 'https://github.com/trallnag/prometheus-fastapi-instrumentator/blob/master/README.md'
-Funding = 'https://github.com/sponsors/trallnag'
-Source = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
-Changelog = 'https://github.com/trallnag/prometheus-fastapi-instrumentator/releases'
+homepage = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
+repository = "https://github.com/trallnag/prometheus-fastapi-instrumentator"
+documentation = 'https://github.com/trallnag/prometheus-fastapi-instrumentator/blob/master/README.md'
+funding = 'https://github.com/sponsors/trallnag'
+source = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
+changelog = 'https://github.com/trallnag/prometheus-fastapi-instrumentator/releases'
+
+[tool.poetry]
+requires-poetry = ">=2.0"
+packages = [{ include = "prometheus_fastapi_instrumentator", from = "src" }]
+include = [{ path = "tests", format = "sdist" }]
 
 [tool.poetry.dependencies]
-starlette  = ">= 0.30.0, < 1.0.0"
-prometheus-client = ">= 0.8.0, < 1.0.0"
+starlette = ">=0.30.0,<1.0.0"
+prometheus-client = ">=0.8.0,<1.0.0"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "*"
-mypy = "^1.9.0"
-pytest = "^8.1.1"
+ruff = "^0.9.1"
+mypy = "^1.14.1"
+pytest = "^8.3.4"
 pytest-asyncio = ">=0.25.2"
-pytest-cov = "^4.1.0"
+pytest-cov = "^6.0.0"
 rope = "^1.12.0"
-devtools = "^0.10.0"
-asgiref = "^3.7.2"
-requests = "^2.31.0"
-httpx = "^0.23.3"
-uvicorn = ">=0.28.0"
-gunicorn = "^21.2.0"
-fastapi = "^0.110.0"
+devtools = "^0.12.2"
+asgiref = "^3.8.1"
+requests = "^2.32.3"
+httpx = "^0.28.1"
+uvicorn = ">=0.34.0"
+gunicorn = "^23.0.0"
+fastapi = "^0.115.6"
 
 [build-system]
-requires = ['setuptools>=68.0.0', "wheel", 'Cython>=3.0.0']
+requires = ["setuptools>=75.8.0", "wheel>=0.45.1", "Cython>=3.0.0"]
 build-backend = 'setuptools.build_meta'
-
-[tool.mypy]
-python_version = "3.13"
-ignore_missing_imports = true
-allow_redefinition = true
-disallow_untyped_defs = true
-disallow_any_unimported = true
-no_implicit_optional = true
-check_untyped_defs = true
-warn_unused_ignores = true
-show_error_codes = true
 
 [tool.ruff]
 src = ["src"]
@@ -135,6 +130,17 @@ indent-style = "space"
 skip-magic-trailing-comma = true
 docstring-code-format = true
 docstring-code-line-length = 80
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+allow_redefinition = true
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_unused_ignores = true
+show_error_codes = true
 
 [tool.pytest.ini_options]
 minversion = "8.3"
