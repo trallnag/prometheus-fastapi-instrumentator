@@ -7,6 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [7.0.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.1...v7.0.2) / 2025-01-14
+
 ### Fixed
 
 - **Replaced incorrect license identifier in `pyproject.toml`.** Problem
