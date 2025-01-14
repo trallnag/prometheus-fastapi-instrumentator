@@ -21,7 +21,7 @@ Nothing.
 ### Changed
 
 - **Migrated `pyproject.toml` to support PEP 621.** This comes with a migration
-  to Poetry 2.0. Thanks to [@alexted(https://github.com/alexted) bringing this
+  to Poetry 2.0. Thanks to [@alexted](https://github.com/alexted) bringing this
   up in
   [#323](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/323).
 
