@@ -7,7 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Fixed
+
+- **Replaced incorrect license identifier in `pyproject.toml`.** Problem
+  introduced with the migration to Poetry 2.0 in the last patch release.
 
 ## [7.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.0...v7.0.1) / 2025-01-14
 

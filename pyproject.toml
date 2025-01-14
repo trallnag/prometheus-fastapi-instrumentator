@@ -11,7 +11,7 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = 'ISC License (ISCL)'}
+license = { text = "ISC" }
 keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
 dependencies = [
     "starlette (>=0.30.0,<1.0.0)",
