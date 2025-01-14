@@ -7,6 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [7.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.0...v7.0.1) / 2025-01-14
+
 ### Changed
 
 - **Migrated `pyproject.toml` to support PEP 621.** This comes with a migration

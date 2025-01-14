@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "poetry-demo"
-version = "0.1.0"
+version = "7.0.1"
 description = ""
 authors = [
     {name = "Tim Schwenke", email = "tim@trallnag.com"}
