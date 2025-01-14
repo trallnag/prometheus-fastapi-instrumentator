@@ -7,7 +7,12 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Changed
+
+- **Migrated `pyproject.toml` to support PEP 621.** This comes with a migration
+  to Poetry 2.0. Thanks to [@alexted(https://github.com/alexted) bringing this
+  up in
+  [#323](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/323).
 
 ## [7.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v6.1.0...v7.0.0) / 2023-07-15
 
