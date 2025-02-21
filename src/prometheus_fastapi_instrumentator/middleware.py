@@ -112,12 +112,17 @@ class PrometheusInstrumentatorMiddleware:
                 if self.inprogress_labels
                 else ()
             )
-            self.inprogress = Gauge(
-                name=self.inprogress_name,
-                documentation="Number of HTTP requests in progress.",
-                labelnames=labels,
-                multiprocess_mode="livesum",
-            )
+            try:
+                self.inprogress = Gauge(
+                    name=self.inprogress_name,
+                    documentation="Number of HTTP requests in progress.",
+                    labelnames=labels,
+                    multiprocess_mode="livesum",
+                    registry=self.registry,
+                )
+            except ValueError as e:
+                if not metrics._is_duplicated_time_series(e):
+                    raise e
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
