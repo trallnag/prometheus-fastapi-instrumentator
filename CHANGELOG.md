@@ -7,9 +7,32 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [7.0.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.1...v7.0.2) / 2025-01-14
+
+### Fixed
+
+- **Replaced incorrect license identifier in `pyproject.toml`.** Problem
+  introduced with the migration to Poetry 2.0 in the last patch release.
+
+## [7.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.0...v7.0.1) / 2025-01-14
+
+### Changed
+
+- **Migrated `pyproject.toml` to support PEP 621.** This comes with a migration
+  to Poetry 2.0. Thanks to [@alexted](https://github.com/alexted) bringing this
+  up in
+  [#323](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/323).
+
+## [7.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v6.1.0...v7.0.0) / 2023-07-15
+
+Major release with a single breaking change: Python 3.7 is not supported
+anymore. Beyond that, three improvements based on various pull requests.
+
 ### Added
 
-- Instrumentator now works without FastAPI. This is possible because every
+- **Instrumentator now works without FastAPI**. This is possible because every
   FastAPI app is also a Starlette app (but not the other way around). Or to be
   more specific: FastAPI uses Starlette for things like routing and middleware
   this package relies on. The change is backwards compatible, even type checkers
@@ -37,7 +60,7 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   and implementing it in
   [#290](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/290).
 
-- Relaxed type of `get_route_name` argument to `HTTPConnection`. This allows
+- **Relaxed type of `get_route_name` argument to `HTTPConnection`**. This allows
   developers to use the `get_route_name` function for getting the name of
   websocket routes as well. Thanks to [@pajowu](https://github.com/pajowu) for
   proposing and implementing this feature in

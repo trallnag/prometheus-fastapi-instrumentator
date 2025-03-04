@@ -1,26 +1,30 @@
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
+[project]
 name = "prometheus-fastapi-instrumentator"
-version = "6.1.0"
-description = "Instrument your FastAPI with Prometheus metrics."
-authors = ["Tim Schwenke <tim@trallnag.com>"]
-license = "ISC"
+version = "7.0.2"
+description = "Instrument your FastAPI app with Prometheus metrics"
+authors = [
+    {name = "Tim Schwenke", email = "tim@trallnag.com"}
+]
 readme = "README.md"
-repository = "https://github.com/trallnag/prometheus-fastapi-instrumentator"
+requires-python = ">=3.8"
+license = { text = "ISC" }
 keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
+dependencies = [
+    "starlette (>=0.30.0,<1.0.0)",
+    "prometheus-client (>=0.8.0,<1.0.0)"
+]
 
-[tool.poetry.dependencies]
-python = ">= 3.8.1, < 4.0.0"
-starlette  = ">= 0.30.0, < 1.0.0"
-prometheus-client = ">= 0.8.0, < 1.0.0"
+[project.urls]
+homepage = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
 
 [tool.poetry.group.dev.dependencies]
 httpx = "^0.23.3"
 black = "^24.2.0"
-flake8 = "^7.0.0"
+flake8 = { version = "^7.0.0", python = ">=3.8.1" }
 requests = "^2.31.0"
 pytest = "^8.1.1"
 pytest-cov = "^4.1.0"

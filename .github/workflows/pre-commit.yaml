@@ -25,7 +25,7 @@ on:
     - cron: 4 4 * * 1
 
 env:
-  poetry_version: "1.8.2"
+  poetry_version: "2.0.1"
   python_version: "3.12"
 
 jobs:
