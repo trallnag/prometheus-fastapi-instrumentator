@@ -41,6 +41,7 @@ class PrometheusFastApiInstrumentator:
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
         registry: Union[CollectorRegistry, None] = None,
+        custom_labels: dict = {},
     ) -> None:
         """Create a Prometheus FastAPI (and Starlette) Instrumentator.
 
@@ -123,6 +124,7 @@ class PrometheusFastApiInstrumentator:
         self.env_var_name = env_var_name
         self.inprogress_name = inprogress_name
         self.inprogress_labels = inprogress_labels
+        self.custom_labels = custom_labels
 
         self.excluded_handlers = [re.compile(path) for path in excluded_handlers]
         self.body_handlers = [re.compile(path) for path in body_handlers]
@@ -226,6 +228,7 @@ class PrometheusFastApiInstrumentator:
             latency_highr_buckets=latency_highr_buckets,
             latency_lowr_buckets=latency_lowr_buckets,
             registry=self.registry,
+            custom_labels=self.custom_labels,
         )
         return self
 
