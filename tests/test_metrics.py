@@ -603,7 +603,7 @@ def test_custom_labels():
     ).instrument(app).expose(app)
     client = TestClient(app)
 
-    client.request(method="GET", url="/", content="fefeef")
+    client.request(method="GET", url="/", content="foo")
     client.request(method="GET", url="/")
 
     _ = get_response(client, "/metrics")
