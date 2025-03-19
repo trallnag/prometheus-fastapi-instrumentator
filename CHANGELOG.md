@@ -9,6 +9,21 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 Nothing.
 
+## [7.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.2...v7.1.0) / 2025-03-19
+
+### Added
+
+- Included metrics closure creators have new optional parameter `custom_labels`
+  to set additional custom static labels. Parameter has not been added to the
+  `Instrumentator()` constructor. Thanks to
+  [@iocentos](https://github.com/iocentos) for requesting this in
+  [#279](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/279)
+  and [@martian711](https://github.com/martian711) in
+  [#287](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/287)
+  as well as [@Budlee](https://github.com/Budlee) in
+  [#326](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/326)
+  for implementing it.
+
 ## [7.0.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.1...v7.0.2) / 2025-01-14
 
 ### Fixed
