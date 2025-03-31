@@ -121,6 +121,7 @@ def latency(
     should_exclude_streaming_duration: bool = False,
     buckets: Sequence[Union[float, str]] = Histogram.DEFAULT_BUCKETS,
     registry: CollectorRegistry = REGISTRY,
+    custom_labels: dict = {},
 ) -> Optional[Callable[[Info], None]]:
     """Default metric for the Prometheus Starlette Instrumentator.
 
@@ -162,6 +163,9 @@ def latency(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
+    for key in custom_labels:
+        label_names.append(key)
+        info_attribute_names.append(key)
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
@@ -225,6 +229,7 @@ def request_size(
     should_include_method: bool = True,
     should_include_status: bool = True,
     registry: CollectorRegistry = REGISTRY,
+    custom_labels: dict = {},
 ) -> Optional[Callable[[Info], None]]:
     """Record the content length of incoming requests.
 
@@ -253,6 +258,9 @@ def request_size(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
+    for key in custom_labels:
+        label_names.append(key)
+        info_attribute_names.append(key)
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
@@ -309,6 +317,7 @@ def response_size(
     should_include_method: bool = True,
     should_include_status: bool = True,
     registry: CollectorRegistry = REGISTRY,
+    custom_labels: dict = {},
 ) -> Optional[Callable[[Info], None]]:
     """Record the content length of outgoing responses.
 
@@ -343,6 +352,9 @@ def response_size(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
+    for key in custom_labels:
+        label_names.append(key)
+        info_attribute_names.append(key)
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
@@ -403,6 +415,7 @@ def combined_size(
     should_include_method: bool = True,
     should_include_status: bool = True,
     registry: CollectorRegistry = REGISTRY,
+    custom_labels: dict = {},
 ) -> Optional[Callable[[Info], None]]:
     """Record the combined content length of requests and responses.
 
@@ -437,7 +450,9 @@ def combined_size(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
-
+    for key in custom_labels:
+        label_names.append(key)
+        info_attribute_names.append(key)
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
     # complain about duplicated metrics.
@@ -501,6 +516,7 @@ def requests(
     should_include_method: bool = True,
     should_include_status: bool = True,
     registry: CollectorRegistry = REGISTRY,
+    custom_labels: dict = {},
 ) -> Optional[Callable[[Info], None]]:
     """Record the number of requests.
 
@@ -533,6 +549,9 @@ def requests(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
+    for key in custom_labels:
+        label_names.append(key)
+        info_attribute_names.append(key)
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
@@ -579,6 +598,21 @@ def requests(
     return None
 
 
+def _map_label_name_value(label_name: tuple) -> list[str]:
+    attribute_names = []
+    mapping = {
+        "handler": "modified_handler",
+        "status": "modified_status",
+        "duration": "modified_duration",
+    }
+    for item in label_name:
+        if item in mapping:
+            attribute_names.append(mapping[item])
+        else:
+            attribute_names.append(item)
+    return attribute_names
+
+
 def default(
     metric_namespace: str = "",
     metric_subsystem: str = "",
@@ -609,6 +643,7 @@ def default(
     ),
     latency_lowr_buckets: Sequence[Union[float, str]] = (0.1, 0.5, 1),
     registry: CollectorRegistry = REGISTRY,
+    custom_labels: dict = {},
 ) -> Optional[Callable[[Info], None]]:
     """Contains multiple metrics to cover multiple things.
 
@@ -668,20 +703,23 @@ def default(
     # The Python Prometheus client currently doesn't seem to have a way to
     # verify if adding a metric will cause errors or not, so the only way to
     # handle it seems to be with this try block.
+    additional_label_names = tuple([key for key in custom_labels])
     try:
+        total_label_names = (
+            "method",
+            "status",
+            "handler",
+        )
         TOTAL = Counter(
             name="http_requests_total",
             documentation="Total number of requests by method, status and handler.",
-            labelnames=(
-                "method",
-                "status",
-                "handler",
-            ),
+            labelnames=total_label_names + additional_label_names,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
         )
 
+        in_size_names = ("handler",)
         IN_SIZE = Summary(
             name="http_request_size_bytes",
             documentation=(
@@ -689,12 +727,13 @@ def default(
                 "Only value of header is respected. Otherwise ignored. "
                 "No percentile calculated. "
             ),
-            labelnames=("handler",),
+            labelnames=in_size_names + additional_label_names,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
         )
 
+        out_size_names = ("handler",)
         OUT_SIZE = Summary(
             name="http_response_size_bytes",
             documentation=(
@@ -702,7 +741,7 @@ def default(
                 "Only value of header is respected. Otherwise ignored. "
                 "No percentile calculated. "
             ),
-            labelnames=("handler",),
+            labelnames=out_size_names + additional_label_names,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
@@ -720,6 +759,10 @@ def default(
             registry=registry,
         )
 
+        latency_lower_names = (
+            "method",
+            "handler",
+        )
         LATENCY_LOWR = Histogram(
             name="http_request_duration_seconds",
             documentation=(
@@ -727,10 +770,7 @@ def default(
                 "Made to be only used if aggregation by handler is important. "
             ),
             buckets=latency_lowr_buckets,
-            labelnames=(
-                "method",
-                "handler",
-            ),
+            labelnames=latency_lower_names + additional_label_names,
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
@@ -743,27 +783,41 @@ def default(
             else:
                 duration = info.modified_duration
 
-            TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+            label_values = [
+                getattr(info, attribute_name)
+                for attribute_name in _map_label_name_value(total_label_names)
+            ] + list(custom_labels.values())
+            TOTAL.labels(*label_values).inc()
 
-            IN_SIZE.labels(info.modified_handler).observe(
+            label_values = [
+                getattr(info, attribute_name)
+                for attribute_name in _map_label_name_value(in_size_names)
+            ] + list(custom_labels.values())
+            IN_SIZE.labels(*label_values).observe(
                 int(info.request.headers.get("Content-Length", 0))
             )
 
+            label_values = [
+                getattr(info, attribute_name)
+                for attribute_name in _map_label_name_value(out_size_names)
+            ] + list(custom_labels.values())
             if info.response and hasattr(info.response, "headers"):
-                OUT_SIZE.labels(info.modified_handler).observe(
+                OUT_SIZE.labels(*label_values).observe(
                     int(info.response.headers.get("Content-Length", 0))
                 )
             else:
-                OUT_SIZE.labels(info.modified_handler).observe(0)
+                OUT_SIZE.labels(*label_values).observe(0)
 
             if not should_only_respect_2xx_for_highr or info.modified_status.startswith(
                 "2"
             ):
                 LATENCY_HIGHR.observe(duration)
 
-            LATENCY_LOWR.labels(
-                handler=info.modified_handler, method=info.method
-            ).observe(duration)
+            label_values = [
+                getattr(info, attribute_name)
+                for attribute_name in _map_label_name_value(latency_lower_names)
+            ] + list(custom_labels.values())
+            LATENCY_LOWR.labels(*label_values).observe(duration)
 
         return instrumentation
 

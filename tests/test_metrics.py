@@ -596,6 +596,64 @@ def test_default_duration_without_streaming():
     )
 
 
+def test_custom_labels():
+    app = create_app()
+    Instrumentator().add(
+        metrics.default(custom_labels={"a_custom_label": "a_custom_value"})
+    ).instrument(app).expose(app)
+    client = TestClient(app)
+
+    client.request(method="GET", url="/", content="foo")
+    client.request(method="GET", url="/")
+
+    _ = get_response(client, "/metrics")
+
+    assert (
+        REGISTRY.get_sample_value(
+            "http_requests_total",
+            {
+                "handler": "/",
+                "method": "GET",
+                "status": "2xx",
+                "a_custom_label": "a_custom_value",
+            },
+        )
+        > 0
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_size_bytes_sum",
+            {
+                "handler": "/",
+                "a_custom_label": "a_custom_value",
+                "a_custom_label": "a_custom_value",
+            },
+        )
+        > 0
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_response_size_bytes_sum",
+            {"handler": "/", "a_custom_label": "a_custom_value"},
+        )
+        > 0
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_duration_highr_seconds_sum",
+            {},
+        )
+        > 0
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_request_duration_seconds_sum",
+            {"handler": "/", "method": "GET", "a_custom_label": "a_custom_value"},
+        )
+        > 0
+    )
+
+
 # ------------------------------------------------------------------------------
 # requests
 
