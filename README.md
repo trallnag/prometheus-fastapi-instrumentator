@@ -295,7 +295,7 @@ found.
 
 ## Contributing
 
-Please refer to [`CONTRIBUTING.md`](CONTRIBUTING).
+Please refer to [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 Consult [`DEVELOPMENT.md`](DEVELOPMENT.md) for guidance regarding development.
 
