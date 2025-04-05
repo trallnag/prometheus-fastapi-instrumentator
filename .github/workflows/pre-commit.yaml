@@ -75,7 +75,7 @@ jobs:
       # Pre-commit.
 
       - name: Install, cache, and run pre-commit
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
 
       - uses: pre-commit-ci/lite-action@v1.0.1
         if: always()
