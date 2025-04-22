@@ -128,8 +128,7 @@ instrumentator = Instrumentator(
     excluded_handlers=[".*admin.*", "/metrics"],
     env_var_name="ENABLE_METRICS",
     inprogress_name="inprogress",
-    inprogress_labels=True,
-    custom_labels={"service": "example-label"}
+    inprogress_labels=True
 )
 ```
 
@@ -154,7 +153,12 @@ Closures come in handy here because it allows us to configure the functions
 within.
 
 ```python
-instrumentator.add(metrics.latency(buckets=(1, 2, 3,)))
+instrumentator.add(
+    metrics.latency(
+        buckets=(1, 2, 3,),
+        custom_labels={"region": "us-east-1"}
+    )
+)
 ```
 
 This simply adds the metric you also get in the fast track example with a
