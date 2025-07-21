@@ -120,6 +120,7 @@ class PrometheusInstrumentatorMiddleware:
                 documentation="Number of HTTP requests in progress.",
                 labelnames=labels,
                 multiprocess_mode="livesum",
+                registry=self.registry,
             )
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
