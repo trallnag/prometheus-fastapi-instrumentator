@@ -41,6 +41,7 @@ class PrometheusFastApiInstrumentator:
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
         registry: Union[CollectorRegistry, None] = None,
+        custom_labels: dict = {},
     ) -> None:
         """Create a Prometheus FastAPI (and Starlette) Instrumentator.
 
@@ -106,6 +107,8 @@ class PrometheusFastApiInstrumentator:
                 you need to run multiple apps at the same time, with their own
                 registries, for example during testing.
 
+            custom_labels (dict): A dictionary of custom labels.
+
         Raises:
             ValueError: If `PROMETHEUS_MULTIPROC_DIR` env var is found but
                 doesn't point to a valid directory.
@@ -146,6 +149,8 @@ class PrometheusFastApiInstrumentator:
             self.registry = registry
         else:
             self.registry = REGISTRY
+
+        self.custom_labels = custom_labels
 
         if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
             pmd = os.environ["PROMETHEUS_MULTIPROC_DIR"]
@@ -204,7 +209,7 @@ class PrometheusFastApiInstrumentator:
             return self
 
         app.add_middleware(
-            PrometheusInstrumentatorMiddleware,
+            PrometheusInstrumentatorMiddleware(custom_labels=self.custom_labels),
             should_group_status_codes=self.should_group_status_codes,
             should_ignore_untemplated=self.should_ignore_untemplated,
             should_group_untemplated=self.should_group_untemplated,
