@@ -41,6 +41,7 @@ class PrometheusFastApiInstrumentator:
         inprogress_name: str = "http_requests_inprogress",
         inprogress_labels: bool = False,
         registry: Union[CollectorRegistry, None] = None,
+        prometheus_multiproc_dir: Union[str, None] = None,
     ) -> None:
         """Create a Prometheus FastAPI (and Starlette) Instrumentator.
 
@@ -106,6 +107,10 @@ class PrometheusFastApiInstrumentator:
                 you need to run multiple apps at the same time, with their own
                 registries, for example during testing.
 
+            prometheus_multiproc_dir (str): Directory used in multiprocess.MultiProcessCollector.
+                It is analogous to specify the env var 'PROMETHEUS_MULTIPROC_DIR'
+                and sets it if env var is not found.
+
         Raises:
             ValueError: If `PROMETHEUS_MULTIPROC_DIR` env var is found but
                 doesn't point to a valid directory.
@@ -146,6 +151,9 @@ class PrometheusFastApiInstrumentator:
             self.registry = registry
         else:
             self.registry = REGISTRY
+
+        if prometheus_multiproc_dir is not None and "PROMETHEUS_MULTIPROC_DIR" not in os.environ:
+            os.environ["PROMETHEUS_MULTIPROC_DIR"] = prometheus_multiproc_dir
 
         if "PROMETHEUS_MULTIPROC_DIR" in os.environ:
             pmd = os.environ["PROMETHEUS_MULTIPROC_DIR"]
