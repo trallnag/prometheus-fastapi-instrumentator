@@ -6,7 +6,7 @@ import re
 import warnings
 from enum import Enum
 from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union, cast
-
+from .const import DEFAULT_LATENCY_HIGHR_BUCKETS, DEFAULT_LATENCY_LOWR_BUCKETS
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     REGISTRY,
@@ -116,7 +116,9 @@ class PrometheusFastApiInstrumentator:
         self.should_group_untemplated = should_group_untemplated
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
-        self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
+        self.should_instrument_requests_inprogress = (
+            should_instrument_requests_inprogress
+        )
         self.should_exclude_streaming_duration = should_exclude_streaming_duration
 
         self.round_latency_decimals = round_latency_decimals
@@ -128,7 +130,9 @@ class PrometheusFastApiInstrumentator:
         self.body_handlers = [re.compile(path) for path in body_handlers]
 
         self.instrumentations: List[Callable[[metrics.Info], None]] = []
-        self.async_instrumentations: List[Callable[[metrics.Info], Awaitable[None]]] = []
+        self.async_instrumentations: List[
+            Callable[[metrics.Info], Awaitable[None]]
+        ] = []
 
         if (
             "prometheus_multiproc_dir" in os.environ
@@ -160,30 +164,12 @@ class PrometheusFastApiInstrumentator:
         metric_namespace: str = "",
         metric_subsystem: str = "",
         should_only_respect_2xx_for_highr: bool = False,
-        latency_highr_buckets: Sequence[Union[float, str]] = (
-            0.01,
-            0.025,
-            0.05,
-            0.075,
-            0.1,
-            0.25,
-            0.5,
-            0.75,
-            1,
-            1.5,
-            2,
-            2.5,
-            3,
-            3.5,
-            4,
-            4.5,
-            5,
-            7.5,
-            10,
-            30,
-            60,
-        ),
-        latency_lowr_buckets: Sequence[Union[float, str]] = (0.1, 0.5, 1),
+        latency_highr_buckets: Sequence[
+            Union[float, str]
+        ] = DEFAULT_LATENCY_HIGHR_BUCKETS,
+        latency_lowr_buckets: Sequence[
+            Union[float, str]
+        ] = DEFAULT_LATENCY_LOWR_BUCKETS,
     ) -> "PrometheusFastApiInstrumentator":
         """Performs the instrumentation by adding middleware.
 
