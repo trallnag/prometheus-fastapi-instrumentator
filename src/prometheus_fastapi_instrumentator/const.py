@@ -2,7 +2,7 @@ from typing import Sequence, Union
 import json
 import os
 
-DEFAULT_LATENCY_HIGHR_BUCKETS = Sequence[Union[float, str]] = (
+DEFAULT_LATENCY_HIGHR_BUCKETS: Sequence[Union[float, str]] = (
     0.01,
     0.025,
     0.05,
