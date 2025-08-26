@@ -128,8 +128,7 @@ instrumentator = Instrumentator(
     excluded_handlers=[".*admin.*", "/metrics"],
     env_var_name="ENABLE_METRICS",
     inprogress_name="inprogress",
-    inprogress_labels=True,
-    custom_labels={"service": "example-label"}
+    inprogress_labels=True
 )
 ```
 
@@ -257,16 +256,23 @@ found.
 
 ### Specify namespace and subsystem
 
-You can specify the namespace and subsystem of the metrics by passing them in
-the instrument method.
+You can specify the namespace and subsystem of the default metrics by passing them in the `add` method, specifying the `metrics.default` closure.
 
 ```python
-from prometheus_fastapi_instrumentator import Instrumentator
-
-@app.on_event("startup")
-async def startup():
-    Instrumentator().instrument(app, metric_namespace='myproject', metric_subsystem='myservice').expose(app)
+instrumentator = (
+    Instrumentator()
+      .add(
+          metrics.default(
+            metric_namespace="myproject", 
+            metric_subsystem="myservice", 
+            custom_labels={"environment": "dev"},
+          )
+        )
+      .instrument(app)
+      .expose(app)
+  )
 ```
+
 
 Then your metrics will contain the namespace and subsystem in the metric name.
 
