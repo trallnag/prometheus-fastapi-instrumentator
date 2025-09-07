@@ -11,7 +11,7 @@ from this module.
 """
 
 from typing import Callable, List, Optional, Sequence, Tuple, Union
-
+from .const import DEFAULT_LATENCY_HIGHR_BUCKETS, DEFAULT_LATENCY_LOWR_BUCKETS
 from prometheus_client import REGISTRY, CollectorRegistry, Counter, Histogram, Summary
 from starlette.requests import Request
 from starlette.responses import Response
@@ -618,30 +618,8 @@ def default(
     metric_subsystem: str = "",
     should_only_respect_2xx_for_highr: bool = False,
     should_exclude_streaming_duration: bool = False,
-    latency_highr_buckets: Sequence[Union[float, str]] = (
-        0.01,
-        0.025,
-        0.05,
-        0.075,
-        0.1,
-        0.25,
-        0.5,
-        0.75,
-        1,
-        1.5,
-        2,
-        2.5,
-        3,
-        3.5,
-        4,
-        4.5,
-        5,
-        7.5,
-        10,
-        30,
-        60,
-    ),
-    latency_lowr_buckets: Sequence[Union[float, str]] = (0.1, 0.5, 1),
+    latency_highr_buckets: Sequence[Union[float, str]] = DEFAULT_LATENCY_HIGHR_BUCKETS,
+    latency_lowr_buckets: Sequence[Union[float, str]] = DEFAULT_LATENCY_LOWR_BUCKETS,
     registry: CollectorRegistry = REGISTRY,
     custom_labels: dict = {},
 ) -> Optional[Callable[[Info], None]]:
