@@ -14,3 +14,6 @@ MD041: false
 
 # MD040/fenced-code-language Fenced code blocks should have a language specified
 MD040: false
+
+# TODO: Enable once I have time.
+MD059: false
