@@ -7,7 +7,12 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Fixed
+
+- Corrected documentation for setting custom labels. Thanks to
+  [@rickie95](https://github.com/rickie95) in
+  [#342](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/342)
+  for implementing it.
 
 ## [7.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.2...v7.1.0) / 2025-03-19
 
