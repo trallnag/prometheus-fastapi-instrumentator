@@ -785,22 +785,22 @@ def default(
 
             label_values = [
                 getattr(info, attribute_name)
-                for attribute_name in _map_label_name_value(total_label_names)
-            ] + list(custom_labels.values())
+                for attribute_name in _map_label_name_value(total_label_names) + list(custom_labels.values())
+            ]
             TOTAL.labels(*label_values).inc()
 
             label_values = [
                 getattr(info, attribute_name)
-                for attribute_name in _map_label_name_value(in_size_names)
-            ] + list(custom_labels.values())
+                for attribute_name in _map_label_name_value(in_size_names) + list(custom_labels.values())
+            ]
             IN_SIZE.labels(*label_values).observe(
                 int(info.request.headers.get("Content-Length", 0))
             )
 
             label_values = [
                 getattr(info, attribute_name)
-                for attribute_name in _map_label_name_value(out_size_names)
-            ] + list(custom_labels.values())
+                for attribute_name in _map_label_name_value(out_size_names) + list(custom_labels.values())
+            ]
             if info.response and hasattr(info.response, "headers"):
                 OUT_SIZE.labels(*label_values).observe(
                     int(info.response.headers.get("Content-Length", 0))
@@ -815,8 +815,8 @@ def default(
 
             label_values = [
                 getattr(info, attribute_name)
-                for attribute_name in _map_label_name_value(latency_lower_names)
-            ] + list(custom_labels.values())
+                for attribute_name in _map_label_name_value(latency_lower_names) + list(custom_labels.values())
+            ]
             LATENCY_LOWR.labels(*label_values).observe(duration)
 
         return instrumentation
