@@ -74,6 +74,7 @@ things:
   - [Creating new metrics](#creating-new-metrics)
   - [Perform instrumentation](#perform-instrumentation)
   - [Specify namespace and subsystem](#specify-namespace-and-subsystem)
+  - [Specify static custom labels](#specify-static-custom-labels)
   - [Exposing endpoint](#exposing-endpoint)
 - [Contributing](#contributing)
 - [Licensing](#licensing)
@@ -256,29 +257,46 @@ found.
 
 ### Specify namespace and subsystem
 
-You can specify the namespace and subsystem of the default metrics by passing them in the `add` method, specifying the `metrics.default` closure.
+You can specify the namespace and subsystem of the metrics by passing them in
+the instrument method.
 
 ```python
-instrumentator = (
-    Instrumentator()
-      .add(
-          metrics.default(
-            metric_namespace="myproject", 
-            metric_subsystem="myservice", 
-            custom_labels={"environment": "dev"},
-          )
-        )
-      .instrument(app)
-      .expose(app)
-  )
+Instrumentator().instrument(
+    app,
+    metric_namespace="myproject",
+    metric_subsystem="myservice",
+).expose(app)
 ```
 
+Or by passing them when calling a metrics closure.
+
+```python
+Instrumentator().add(
+    metrics.default(
+        metric_namespace="myproject",
+        metric_subsystem="myservice",
+    ),
+).instrument(app).expose(app)
+```
 
 Then your metrics will contain the namespace and subsystem in the metric name.
 
 ```sh
 # TYPE myproject_myservice_http_request_duration_highr_seconds histogram
 myproject_myservice_http_request_duration_highr_seconds_bucket{le="0.01"} 0.0
+```
+
+### Specify static custom labels
+
+You can specify static custom labels by passing them to metrics closures that
+support these parameters.
+
+```python
+Instrumentator().add(
+    metrics.default(
+        custom_labels={"environment": "dev"},
+    ),
+).instrument(app).expose(app)
 ```
 
 ### Exposing endpoint
