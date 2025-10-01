@@ -34,7 +34,7 @@ mypy = "^1.9.0"
 devtools = "^0.10.0"
 asgiref = "^3.7.2"
 uvicorn = ">=0.28.0"
-gunicorn = "^21.2.0"
+gunicorn = "^23.0.0"
 pytest-asyncio = ">=0.23.5.post1"
 fastapi = "^0.110.0"
 
