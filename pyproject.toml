@@ -22,7 +22,7 @@ dependencies = [
 homepage = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
 
 [tool.poetry.group.dev.dependencies]
-httpx = "^0.23.3"
+httpx = "^0.28.1"
 black = "^24.2.0"
 flake8 = { version = "^7.0.0", python = ">=3.8.1" }
 requests = "^2.31.0"
