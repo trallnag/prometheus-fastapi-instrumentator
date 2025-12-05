@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import asyncio
 import re
 from http import HTTPStatus
 from timeit import default_timer
 from typing import Awaitable, Callable, Optional, Sequence, Tuple, Union
 
+import anyio
 from prometheus_client import REGISTRY, CollectorRegistry, Gauge
 from starlette.applications import Starlette
 from starlette.datastructures import Headers
@@ -220,12 +220,9 @@ class PrometheusInstrumentatorMiddleware:
                 for instrumentation in self.instrumentations:
                     instrumentation(info)
 
-                await asyncio.gather(
-                    *[
-                        instrumentation(info)
-                        for instrumentation in self.async_instrumentations
-                    ]
-                )
+                async with anyio.create_task_group() as tg:
+                    for async_instrumentation in self.async_instrumentations:
+                        tg.start_soon(async_instrumentation, info)
 
     def _get_handler(self, request: Request) -> Tuple[str, bool]:
         """Extracts either template or (if no template) path.

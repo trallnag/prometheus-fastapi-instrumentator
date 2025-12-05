@@ -5,9 +5,9 @@ process mode is activated. For now I seem to get by trying to reset collectors,
 even though it does not fully reset everything.
 """
 
-import asyncio
 from datetime import datetime
 
+import anyio
 import pytest
 from fastapi import FastAPI
 from helpers import utils
@@ -139,6 +139,7 @@ def test_multiproc_correct_count():
     not utils.is_prometheus_multiproc_valid(),
     reason="Environment variable must be set in parent process.",
 )
+@pytest.mark.anyio
 async def test_multiproc_inprogress_metric():
     """
     Tests that in-progress metric is counting correctly in multi process mode.
@@ -152,22 +153,23 @@ async def test_multiproc_inprogress_metric():
 
     @app.get("/sleep")
     async def get_sleep(seconds: float):
-        await asyncio.sleep(seconds)
+        await anyio.sleep(seconds)
         return f"Slept for {seconds}s"
 
     Instrumentator(
         should_instrument_requests_inprogress=True, inprogress_labels=True
     ).instrument(app).expose(app)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        tasks = []
+    async with AsyncClient(
+        app=app, base_url="http://test"
+    ) as ac, anyio.create_task_group() as tg:
         for i in range(3):
-            tasks.append(asyncio.create_task(ac.get("/sleep?seconds=1")))
+            tg.start_soon(ac.get, "/sleep?seconds=1")
+
         print("1:", datetime.utcnow())
-        await asyncio.sleep(0.5)
+        await anyio.sleep(0.5)
         print("2:", datetime.utcnow())
         metrics_response = await ac.get("/metrics")
-        await asyncio.gather(*tasks)
 
     assert metrics_response.status_code == 200
 

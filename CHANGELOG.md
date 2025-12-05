@@ -7,6 +7,11 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+### Added
+
+- Trio (and any other event loop implementation supported by AnyIO) is now
+  supported in the middleware.
+
 ### Fixed
 
 - Corrected documentation for setting custom labels. Thanks to
