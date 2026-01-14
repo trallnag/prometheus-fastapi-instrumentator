@@ -140,6 +140,7 @@ class PrometheusInstrumentatorMiddleware:
         response_start_time = None
         response_end_time = None
 
+        # Message body collected for handlers matching body_handlers patterns.
         should_collect_body = any(
             pattern.search(handler) for pattern in self.body_handlers
         )
