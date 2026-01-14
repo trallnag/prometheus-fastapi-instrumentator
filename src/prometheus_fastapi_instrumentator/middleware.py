@@ -130,6 +130,7 @@ class PrometheusInstrumentatorMiddleware:
         start_time = default_timer()
 
         handler, is_excluded = self._process_handler(request)
+
         if not is_excluded:
             self._inprogress_inc(request, handler)
 
@@ -149,14 +150,16 @@ class PrometheusInstrumentatorMiddleware:
                 headers = message["headers"]
                 status_code = message["status"]
                 response_start_time = default_timer()
+
             elif message["type"] == "http.response.body":
-                nonlocal response_end_time
-                if should_collect_body:
+                if should_collect_body and message.get("body"):
                     nonlocal body
-                    if message.get("body"):
-                        body += message["body"]
+                    body += message["body"]
+
                 if not message.get("more_body", False):
+                    nonlocal response_end_time
                     response_end_time = default_timer()
+
             await send(message)
 
         try:
