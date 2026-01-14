@@ -1,5 +1,6 @@
 import time
 
+import pytest
 from fastapi import BackgroundTasks, FastAPI, responses, status
 from fastapi.testclient import TestClient
 
@@ -188,7 +189,16 @@ def test_info_body_duration_without_streaming():
     assert instrumentation_executed
 
 
-def test_info_body_durations_exclude_background_tasks():
+@pytest.mark.parametrize(
+    "response_factory",
+    [
+        lambda: responses.Response(status_code=status.HTTP_200_OK),
+        lambda: responses.Response(content=b"ok", media_type="text/plain"),
+        lambda: responses.StreamingResponse(("x" * 1000 for _ in range(5))),
+    ],
+    ids=["empty_body", "full_body", "streaming_body"],
+)
+def test_info_body_durations_exclude_background_tasks(response_factory):
     app = FastAPI()
     client = TestClient(app)
 
@@ -198,11 +208,11 @@ def test_info_body_durations_exclude_background_tasks():
     @app.get("/with-background")
     def with_background(background_tasks: BackgroundTasks):
         background_tasks.add_task(background_task)
-        return responses.Response(content=b"ok", media_type="text/plain")
+        return response_factory()
 
     @app.get("/without-background")
     def without_background():
-        return responses.Response(content=b"ok", media_type="text/plain")
+        return response_factory()
 
     duration_bg = None
     duration_no_bg = None
