@@ -10,7 +10,7 @@ authors = [
     {name = "Tim Schwenke", email = "tim@trallnag.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = { text = "ISC" }
 keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
 dependencies = [
@@ -24,7 +24,7 @@ homepage = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
 [tool.poetry.group.dev.dependencies]
 httpx = "^0.23.3"
 black = "^24.2.0"
-flake8 = { version = "^7.0.0", python = ">=3.8.1" }
+flake8 = { version = "^7.3.0", python = ">=3.9" }
 requests = "^2.31.0"
 pytest = "^8.1.1"
 pytest-cov = "^4.1.0"

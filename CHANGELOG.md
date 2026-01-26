@@ -8,7 +8,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 ## Unreleased
 
 ### Fixed
-
+- set minimum support python3.9 in pyproject.toml. Thanks to
+  [@even-even](https://github.com/even-even) in
+  [#354](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/354)
+  for implementing it.
 - Corrected documentation for setting custom labels. Thanks to
   [@rickie95](https://github.com/rickie95) in
   [#342](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/342)
@@ -316,7 +319,7 @@ Ask or discuss anything quick about the release in the discussion
 
 ### Fixed
 
-- Corrected documention on how to use package. Instrumentation should happen in
+- Corrected documentation on how to use package. Instrumentation should happen in
   a function decorated with `@app.on_event("startup")` to prevent crashes on
   startup in certain situations. Done in
   [#168](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/168).
@@ -550,7 +553,7 @@ applied to the FastAPI.
 If you just use the default instrumentator without setting any parameters,
 nothing changes. The defaults stay the same.
 
-If you use any of the paramters that were available in the Instrumentator
+If you use any of the parameters that were available in the Instrumentator
 constructor you have to check if they are still available or not. Some of them
 have been moved to the corresponding `metric` closure / function.
 
