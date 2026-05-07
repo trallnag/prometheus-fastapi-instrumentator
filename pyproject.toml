@@ -10,11 +10,11 @@ authors = [
     {name = "Tim Schwenke", email = "tim@trallnag.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = { text = "ISC" }
 keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
 dependencies = [
-    "starlette (>=0.30.0,<1.0.0)",
+    "starlette (>=1.0.0,<2.0.0)",
     "prometheus-client (>=0.8.0,<1.0.0)"
 ]
 
@@ -36,7 +36,7 @@ asgiref = "^3.7.2"
 uvicorn = ">=0.28.0"
 gunicorn = "^21.2.0"
 pytest-asyncio = ">=0.23.5.post1"
-fastapi = "^0.110.0"
+fastapi = "^0.133.0"
 
 [tool.black]
 line-length = 90
