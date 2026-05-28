@@ -89,5 +89,6 @@ def get_route_name(request: HTTPConnection) -> Optional[str]:
 
         route_name = _get_route_name(redirect_scope, routes)
         if route_name is not None:
-            route_name = route_name + "/" if trim else route_name[:-1]
+            route_name = route_name.rstrip("/")
+            route_name = route_name + "/" if trim else route_name
     return route_name
