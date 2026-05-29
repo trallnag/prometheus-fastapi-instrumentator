@@ -25,7 +25,7 @@ homepage = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
 httpx = "^0.23.3"
 black = "^24.2.0"
 flake8 = { version = "^7.0.0", python = ">=3.8.1" }
-requests = "^2.31.0"
+requests = "^2.33.0"
 pytest = "^8.1.1"
 pytest-cov = "^4.1.0"
 rope = "^1.12.0"
