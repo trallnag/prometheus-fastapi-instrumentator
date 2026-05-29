@@ -7,6 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [8.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.1.0...v8.0.0) / 2026-05-29
+
 ### Changed
 
 - **BREAKING: Ported project to Starlette v1. This includes new required minimum
