@@ -5,7 +5,16 @@ import os
 import re
 import warnings
 from enum import Enum
-from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union, cast
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    List,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+)
 
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
@@ -218,8 +227,8 @@ class PrometheusFastApiInstrumentator:
             inprogress_labels=self.inprogress_labels,
             instrumentations=self.instrumentations,
             async_instrumentations=self.async_instrumentations,
-            excluded_handlers=self.excluded_handlers,
-            body_handlers=self.body_handlers,
+            excluded_handlers=self.excluded_handlers,  # type: ignore
+            body_handlers=self.body_handlers,  # type: ignore
             metric_namespace=metric_namespace,
             metric_subsystem=metric_subsystem,
             should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,

@@ -11,7 +11,7 @@ from datetime import datetime
 import pytest
 from fastapi import FastAPI
 from helpers import utils
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator

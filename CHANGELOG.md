@@ -10,11 +10,11 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 ### Changed
 
 - **BREAKING: Ported project to Starlette v1. This includes new required minimum
-  versions of Python and FastAPI.** Bumped `starlette` dependency from
-  `>=0.30.0,<1.0.0` to `>=1.0.0,<2.0.0`. Bumped `requires-python` from `>=3.8`
-  to `>=3.10` (`starlette` dropped support). Bumped `fastapi` dev dependency to
-  `^0.133.0` (first version supporting `starlette` v1). Adjusted middleware app
-  parameter type from Starlette to ASGIApp. Thanks to
+  versions of Python, Starlette, and FastAPI.** Bumped `starlette` dependency
+  from `>=0.30.0,<1.0.0` to `>=1.0.0,<2.0.0`. Bumped `requires-python` from
+  `>=3.8` to `>=3.10` (`starlette` dropped support). Bumped `fastapi` dev
+  dependency to `^0.133.0` (first version supporting `starlette` v1). Adjusted
+  middleware app parameter type from `Starlette` to `ASGIApp`. Thanks to
   [@bgermann](https://github.com/bgermann) in
   [#357](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/357)
   for implementing it.
