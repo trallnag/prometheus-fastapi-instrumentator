@@ -11,7 +11,7 @@ from datetime import datetime
 import pytest
 from fastapi import FastAPI
 from helpers import utils
-from httpx import AsyncClient
+from httpx2 import ASGITransport, AsyncClient
 from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -159,7 +159,8 @@ async def test_multiproc_inprogress_metric():
         should_instrument_requests_inprogress=True, inprogress_labels=True
     ).instrument(app).expose(app)
 
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         tasks = []
         for i in range(3):
             tasks.append(asyncio.create_task(ac.get("/sleep?seconds=1")))
