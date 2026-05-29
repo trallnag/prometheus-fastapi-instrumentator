@@ -78,13 +78,6 @@ jobs:
           poetry run pytest -k test_multiproc \
             --cov-append --cov-report=term-missing --cov-report=xml --cov=src
 
-      - name: Upload coverage to Codecov
-        if: strategy.job-index == 0
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-
       - name: Check version equality
         run: |
           pattern="__version__ = \"$(poetry version --short)\""
