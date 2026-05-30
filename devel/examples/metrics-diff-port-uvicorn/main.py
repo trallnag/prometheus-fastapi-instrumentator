@@ -9,7 +9,7 @@ PING_TOTAL = Counter("ping", "Number of pings calls.")
 
 app = FastAPI()
 
-Instrumentator().instrument(app).expose(app)
+Instrumentator().instrument(app)
 
 
 @app.get("/ping")
