@@ -10,6 +10,7 @@ create your own instrumentation function instead of combining several functions
 from this module.
 """
 
+from operator import attrgetter
 from typing import Callable, List, Optional, Sequence, Tuple, Union
 
 from prometheus_client import REGISTRY, CollectorRegistry, Counter, Histogram, Summary
@@ -163,9 +164,9 @@ def latency(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
-    for key in custom_labels:
+    for key, value in custom_labels.items():
         label_names.append(key)
-        info_attribute_names.append(key)
+        info_attribute_names.append(value)
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
@@ -204,7 +205,7 @@ def latency(
 
             if label_names:
                 label_values = [
-                    getattr(info, attribute_name)
+                    attrgetter(attribute_name)(info)
                     for attribute_name in info_attribute_names
                 ]
 
@@ -258,9 +259,9 @@ def request_size(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
-    for key in custom_labels:
+    for key, value in custom_labels.items():
         label_names.append(key)
-        info_attribute_names.append(key)
+        info_attribute_names.append(value)
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
@@ -292,7 +293,7 @@ def request_size(
             content_length = info.request.headers.get("Content-Length", 0)
             if label_names:
                 label_values = [
-                    getattr(info, attribute_name)
+                    attrgetter(attribute_name)(info)
                     for attribute_name in info_attribute_names
                 ]
 
@@ -352,9 +353,9 @@ def response_size(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
-    for key in custom_labels:
+    for key, value in custom_labels.items():
         label_names.append(key)
-        info_attribute_names.append(key)
+        info_attribute_names.append(value)
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
@@ -390,7 +391,7 @@ def response_size(
 
             if label_names:
                 label_values = [
-                    getattr(info, attribute_name)
+                    attrgetter(attribute_name)(info)
                     for attribute_name in info_attribute_names
                 ]
 
@@ -450,9 +451,9 @@ def combined_size(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
-    for key in custom_labels:
+    for key, value in custom_labels.items():
         label_names.append(key)
-        info_attribute_names.append(key)
+        info_attribute_names.append(value)
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
     # complain about duplicated metrics.
@@ -491,7 +492,7 @@ def combined_size(
 
             if label_names:
                 label_values = [
-                    getattr(info, attribute_name)
+                    attrgetter(attribute_name)(info)
                     for attribute_name in info_attribute_names
                 ]
 
@@ -549,9 +550,9 @@ def requests(
     label_names, info_attribute_names = _build_label_attribute_names(
         should_include_handler, should_include_method, should_include_status
     )
-    for key in custom_labels:
+    for key, value in custom_labels.items():
         label_names.append(key)
-        info_attribute_names.append(key)
+        info_attribute_names.append(value)
 
     # Starlette will call app.build_middleware_stack() with every new middleware
     # added, which will call all this again, which will make the registry
@@ -582,7 +583,7 @@ def requests(
         def instrumentation(info: Info) -> None:
             if label_names:
                 label_values = [
-                    getattr(info, attribute_name)
+                    attrgetter(attribute_name)(info)
                     for attribute_name in info_attribute_names
                 ]
 
