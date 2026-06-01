@@ -36,7 +36,7 @@ uvicorn = "^0.48.0"
 gunicorn = "^26.0.0"
 pytest-asyncio = "^1.4.0"
 fastapi = "^0.136.3"
-httpx2 = "^2.2.0"
+httpx2 = "^2.3.0"
 
 [tool.black]
 line-length = 90
