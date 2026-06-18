@@ -7,7 +7,18 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Fixed
+
+- Resolve `AttributeError: '_IncludedRouter' object has no attribute 'path'`
+  that caused requests to return HTTP 500 with FastAPI >= 0.137. FastAPI now
+  stores routers added via `include_router(...)` as `_IncludedRouter` wrappers
+  (which have no `path`) in `app.routes`, so the route-name resolver raised
+  when reading `route.path` -- on full matches *and* partial matches such as
+  405 method mismatches. Route-name resolution now recovers the full, prefixed
+  name from the wrapper's `effective_route_contexts()` (handling included
+  `APIRoute`, mounted sub-apps and websocket routes), and is guarded so it
+  degrades to no route label rather than raising. Fixes
+  [#370](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/370).
 
 ## [8.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.1.0...v8.0.0) / 2026-05-29
 

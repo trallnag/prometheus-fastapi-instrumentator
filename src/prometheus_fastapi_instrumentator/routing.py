@@ -37,32 +37,82 @@ is contained in a dedicated module.
 Based on code from [elastic/apm-agent-python](https://github.com/elastic/apm-agent-python/blob/527f62c0c50842f94ef90fda079853372539319a/elasticapm/contrib/starlette/__init__.py).
 """
 
-from typing import List, Optional
+import logging
+from typing import Any, List, Optional
 
 from starlette.requests import HTTPConnection
-from starlette.routing import Match, Mount, Route
+from starlette.routing import BaseRoute, Match, Mount
 from starlette.types import Scope
+
+logger = logging.getLogger(__name__)
+
+
+def _effective_route_path(ctx: Any, scope: Scope, child_scope: Scope) -> Optional[str]:
+    """Resolve the full, prefixed path for a matched FastAPI
+    ``_EffectiveRouteContext``.
+
+    For ``APIRoute`` contexts the prefixed path is on ``ctx.path`` (and
+    ``ctx.starlette_route`` is ``None``). For ``Mount`` and websocket contexts
+    ``ctx.path`` is ``""`` and the prefixed path is carried by
+    ``ctx.starlette_route`` instead; mounts are recursed into so the mounted
+    sub-route name is appended, matching the handling of top-level mounts.
+    """
+    underlying = getattr(ctx, "starlette_route", None)
+    if underlying is None:
+        return getattr(ctx, "path", None)
+    if isinstance(underlying, Mount) and underlying.routes:
+        child_route_name = _get_route_name(
+            {**scope, **child_scope}, underlying.routes, underlying.path
+        )
+        if child_route_name is None:
+            return None
+        return underlying.path + child_route_name
+    return getattr(underlying, "path", None)
 
 
 def _get_route_name(
-    scope: Scope, routes: List[Route], route_name: Optional[str] = None
+    scope: Scope, routes: List[BaseRoute], route_name: Optional[str] = None
 ) -> Optional[str]:
-    """Gets route name for given scope taking mounts into account."""
+    """Gets route name for given scope, taking mounts and included routers
+    into account."""
 
     for route in routes:
+        # FastAPI (>= 0.137) wraps every ``include_router(...)`` in a private
+        # ``_IncludedRouter`` -- a ``BaseRoute`` *without* a ``path``, so the
+        # generic ``route.path`` accesses below would raise ``AttributeError``
+        # (#370) on both full and partial (e.g. 405) matches. Resolve it via
+        # its ``effective_route_contexts()``, whose contexts expose the fully
+        # prefixed path. Detected by duck typing so this library still works
+        # with plain Starlette (which never has it); guarded broadly so that a
+        # future FastAPI internals change degrades to no route label rather
+        # than turning every request into a 500.
+        effective_contexts = getattr(route, "effective_route_contexts", None)
+        if callable(effective_contexts):
+            try:
+                for ctx in effective_contexts():
+                    ctx_match, ctx_child_scope = ctx.matches(scope)
+                    if ctx_match == Match.FULL:
+                        return _effective_route_path(ctx, scope, ctx_child_scope)
+            except Exception:
+                logger.debug(
+                    "Could not resolve route name from an included router; "
+                    "falling back to no route label.",
+                    exc_info=True,
+                )
+            continue
+
         match, child_scope = route.matches(scope)
         if match == Match.FULL:
-            route_name = route.path
-            child_scope = {**scope, **child_scope}
             if isinstance(route, Mount) and route.routes:
-                child_route_name = _get_route_name(child_scope, route.routes, route_name)
+                child_route_name = _get_route_name(
+                    {**scope, **child_scope}, route.routes, route.path
+                )
                 if child_route_name is None:
-                    route_name = None
-                else:
-                    route_name += child_route_name
-            return route_name
+                    return None
+                return route.path + child_route_name
+            return getattr(route, "path", None)
         elif match == Match.PARTIAL and route_name is None:
-            route_name = route.path
+            route_name = getattr(route, "path", None)
     return None
 
 
