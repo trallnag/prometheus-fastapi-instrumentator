@@ -37,32 +37,99 @@ is contained in a dedicated module.
 Based on code from [elastic/apm-agent-python](https://github.com/elastic/apm-agent-python/blob/527f62c0c50842f94ef90fda079853372539319a/elasticapm/contrib/starlette/__init__.py).
 """
 
-from typing import List, Optional
+from typing import Any, Iterable, List, Optional
 
 from starlette.requests import HTTPConnection
 from starlette.routing import Match, Mount, Route
 from starlette.types import Scope
 
+try:
+    from fastapi.routing import iter_route_contexts as _iter_fastapi_route_contexts
+except ImportError:
+    _iter_fastapi_route_contexts = None
+
+
+def _iter_routes_with_context(routes: List[Any]) -> Iterable[Any]:
+    """Yields route objects with include_router context when FastAPI provides it."""
+
+    if _iter_fastapi_route_contexts is None:
+        return routes
+
+    return _iter_fastapi_route_contexts(routes)
+
+
+def _get_path_from_effective_candidates(route: Any, scope: Scope) -> Optional[str]:
+    """Extract the full templated path from FastAPI's include-router wrapper.
+
+    FastAPI >= 0.137 can keep include_router registrations as wrapper routes
+    that do not expose ``.path``. Those wrappers cache concrete candidates that
+    carry the full ``path_format`` (including include_router prefixes).
+    """
+
+    candidates = getattr(route, "_effective_candidates", None)
+    if not candidates:
+        return None
+
+    for candidate in candidates:
+        candidate_path = getattr(candidate, "path_format", None)
+        if candidate_path is None:
+            candidate_path = getattr(candidate, "path", None)
+        if candidate_path is None:
+            continue
+
+        match, _ = candidate.matches(scope)
+        if match == Match.FULL:
+            return candidate_path
+
+    return None
+
 
 def _get_route_name(
-    scope: Scope, routes: List[Route], route_name: Optional[str] = None
+    scope: Scope,
+    routes: List[Any],
+    route_name: Optional[str] = None,
+    use_fastapi_contexts: bool = True,
 ) -> Optional[str]:
     """Gets route name for given scope taking mounts into account."""
 
-    for route in routes:
+    routes_to_iterate = _iter_routes_with_context(routes) if use_fastapi_contexts else routes
+
+    for route in routes_to_iterate:
         match, child_scope = route.matches(scope)
+        original_route = getattr(route, "original_route", route)
+        route_path = getattr(route, "path", None)
+        if route_path is None:
+            route_path = getattr(route, "path_format", None)
+        if route_path is None:
+            route_path = _get_path_from_effective_candidates(route, scope)
         if match == Match.FULL:
-            route_name = route.path
+            if route_path is not None:
+                route_name = route_path
             child_scope = {**scope, **child_scope}
-            if isinstance(route, Mount) and route.routes:
-                child_route_name = _get_route_name(child_scope, route.routes, route_name)
+            child_routes = getattr(original_route, "routes", None)
+            if isinstance(original_route, Mount) and child_routes:
+                child_route_name = _get_route_name(
+                    child_scope,
+                    child_routes,
+                    route_name,
+                    use_fastapi_contexts=False,
+                )
                 if child_route_name is None:
                     route_name = None
                 else:
                     route_name += child_route_name
+            elif route_path is None:
+                if child_routes:
+                    route_name = _get_route_name(
+                        child_scope,
+                        child_routes,
+                        route_name,
+                        use_fastapi_contexts=False,
+                    )
             return route_name
         elif match == Match.PARTIAL and route_name is None:
-            route_name = route.path
+            if route_path is not None:
+                route_name = route_path
     return None
 
 
