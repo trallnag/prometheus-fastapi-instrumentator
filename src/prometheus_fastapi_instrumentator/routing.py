@@ -58,9 +58,12 @@ def _resolve_path(route: Route) -> Optional[str]:
         return route.path
     include_context = getattr(route, "include_context", None)
     if include_context is not None:
+        # An empty prefix means the wrapper contributes no path segment of
+        # its own (e.g. ``APIRouter(prefix=...)`` registered via
+        # ``include_router`` without an extra ``prefix=`` argument). The
+        # caller must still recurse into nested routes.
         prefix = getattr(include_context, "prefix", "") or ""
-        if prefix:
-            return prefix
+        return prefix
     return None
 
 
