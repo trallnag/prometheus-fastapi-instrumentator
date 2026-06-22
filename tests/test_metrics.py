@@ -736,7 +736,9 @@ def test_request_mount_redirection_bug():
 
     app.mount("/mounted_app", mounted_asgi_app)
 
-    Instrumentator().add(metrics.requests(should_include_status=False)).instrument(app).expose(app)
+    Instrumentator().add(metrics.requests(should_include_status=False)).instrument(
+        app
+    ).expose(app)
     client = TestClient(app)
 
     # Hitting the Mount without a trailing slash triggers a 307.

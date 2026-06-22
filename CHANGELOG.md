@@ -17,6 +17,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   [@adeebmirza](https://github.com/adeebmirza) in
   [#371](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/371)
   for fixing it.
+- Fixed hitting mounts with slash redirection collecting wrong handler name.
+  Thanks to [@lbonn](https://github.com/lbonn) for raising and fixing this issue
+  in
+  [#369](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/369).
 
 ## [8.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.1.0...v8.0.0) / 2026-05-29
 
