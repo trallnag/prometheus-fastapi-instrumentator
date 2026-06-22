@@ -9,13 +9,14 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ### Fixed
 
-- Resolve route name for routers registered via `app.include_router` on FastAPI
-  0.116+. FastAPI's internal `_IncludedRouter` class does not expose a `path`
-  attribute, which caused the instrumentator middleware to raise
-  `AttributeError` on every request routed through an included router. The
-  internal route name resolution now also handles `_IncludedRouter` and recurses
-  into the included router's own routes so the Prometheus label reflects the
-  leaf endpoint.
+- Fixed resolving route names for routers registered via `include_router()` on
+  FastAPI 0.116+ leading to `AttributeError` getting raised on every request.
+  The internal route name resolution now also handles `_IncludedRouter` and
+  recurses into the included router's own routes so the Prometheus label
+  reflects the leaf endpoint. Thanks to
+  [@adeebmirza](https://github.com/adeebmirza) in
+  [#371](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/371)
+  for fixing it.
 
 ## [8.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.1.0...v8.0.0) / 2026-05-29
 

@@ -1,6 +1,7 @@
 import asyncio
 import sys
 
+from helpers import utils
 from requests import Response as TestClientResponse
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse, PlainTextResponse
@@ -8,7 +9,6 @@ from starlette.routing import Route
 from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator
-from helpers import utils
 
 # Explicitly unload fastapi to ensure this module tests Starlette in isolation
 if "fastapi" in sys.modules:
@@ -39,9 +39,7 @@ def create_starlette_app() -> Starlette:
         return JSONResponse({"message": f"Slept for {seconds}s"})
 
     async def error_endpoint(request):
-        return JSONResponse(
-            {"error": "Not found"}, status_code=404
-        )
+        return JSONResponse({"error": "Not found"}, status_code=404)
 
     async def item_endpoint(request):
         item_id = request.path_params.get("item_id")
