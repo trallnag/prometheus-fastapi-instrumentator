@@ -96,7 +96,7 @@ def _strip_prefix_from_scope(scope: Scope, prefix: str) -> Scope:
     if path == prefix:
         return {**scope, "path": ""}
     if path.startswith(prefix + "/"):
-        return {**scope, "path": path[len(prefix):]}
+        return {**scope, "path": path.removeprefix(prefix)}
     return scope
 
 
@@ -134,9 +134,7 @@ def _get_route_name(
                     if include_context is not None:
                         prefix = getattr(include_context, "prefix", "") or ""
                         if prefix:
-                            child_scope = _strip_prefix_from_scope(
-                                child_scope, prefix
-                            )
+                            child_scope = _strip_prefix_from_scope(child_scope, prefix)
                 child_route_name = _get_route_name(child_scope, children)
                 if child_route_name is not None:
                     # Concatenate the leaf path onto the parent path so the
