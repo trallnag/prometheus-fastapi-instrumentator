@@ -3,7 +3,6 @@
 [![pypi-version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
 [![python-versions](https://img.shields.io/pypi/pyversions/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
 [![downloads](https://pepy.tech/badge/prometheus-fastapi-instrumentator/month)](https://pepy.tech/project/prometheus-fastapi-instrumentator/month)
-[![build](https://img.shields.io/github/actions/workflow/status/trallnag/kubestatus2cloudwatch/ci.yaml?branch=master)](https://github.com/trallnag/kubestatus2cloudwatch/actions)
 
 A configurable and modular Prometheus Instrumentator for your FastAPI. Install
 `prometheus-fastapi-instrumentator` from
