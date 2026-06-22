@@ -7,6 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [8.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v8.0.0...v8.0.1) / 2026-06-22
+
 ### Fixed
 
 - Fixed resolving route names for routers registered via `include_router()` on

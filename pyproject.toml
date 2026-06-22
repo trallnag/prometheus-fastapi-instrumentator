@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "prometheus-fastapi-instrumentator"
-version = "8.0.0"
+version = "8.0.1"
 description = "Instrument your FastAPI app with Prometheus metrics"
 authors = [
     {name = "Tim Schwenke", email = "tim@trallnag.com"}
