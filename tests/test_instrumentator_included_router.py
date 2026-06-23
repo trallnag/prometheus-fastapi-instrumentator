@@ -18,12 +18,14 @@ end-to-end through the FastAPI TestClient and assert that:
 
 from http import HTTPStatus
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, WebSocket
 from helpers import utils
 from prometheus_client import REGISTRY, generate_latest
+from starlette.routing import Mount
 from starlette.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_fastapi_instrumentator.routing import _get_route_name
 
 
 def _reset_collectors() -> None:
@@ -222,3 +224,90 @@ def test_included_router_not_found_does_not_500():
     # ``/api/v1/items/foo/extra`` does not match any registered route.
     response = client.get("/api/v1/items/foo/extra")
     assert response.status_code == HTTPStatus.NOT_FOUND, response.text
+
+
+def test_included_router_method_not_allowed_does_not_500():
+    """A request with the wrong HTTP method against an included router must
+    surface 405, not the instrumentator's 500.
+
+    A method mismatch yields ``Match.PARTIAL`` from ``_IncludedRouter``:
+    the path matches but the method does not. Before the #370 fix this
+    partial match triggered the same missing-``path`` attribute read as a
+    full match and raised ``AttributeError``, which Starlette's error
+    handler converted to 500.
+    """
+
+    _reset_collectors()
+
+    app = FastAPI()
+    router = APIRouter()
+
+    @router.get("/items")
+    def items() -> list:
+        return []
+
+    app.include_router(router, prefix="/v1")
+    Instrumentator().instrument(app).expose(app)
+
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.post("/v1/items")
+    assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED, response.text
+
+
+def test_mount_inside_included_router_resolves_path():
+    """A Starlette ``Mount`` appended to an ``APIRouter``'s routes and then
+    registered via ``include_router`` must serve requests without crashing and
+    report the full ``/router_prefix/mount_path/leaf_path`` handler label.
+
+    ``_child_routes`` retrieves the ``Mount`` from ``original_router.routes``
+    and recurses into it after stripping the router prefix from the scope.
+    """
+
+    _reset_collectors()
+
+    app = FastAPI()
+
+    subapp = FastAPI()
+
+    @subapp.get("/widget")
+    def widget() -> dict:
+        return {"ok": True}
+
+    router = APIRouter()
+    router.routes.append(Mount("/sub", app=subapp))
+    app.include_router(router, prefix="/m")
+
+    Instrumentator().instrument(app).expose(app)
+
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.get("/m/sub/widget")
+    assert response.status_code == 200, response.text
+
+    metrics_response = client.get("/metrics")
+    assert 'handler="/m/sub/widget"' in metrics_response.content.decode()
+
+
+def test_websocket_route_under_included_router_resolves_path():
+    """``_get_route_name`` must resolve the full prefixed path for a WebSocket
+    route registered under an included router.
+
+    The WebSocket route is stored in ``_IncludedRouter.original_router.routes``
+    with a ``.path`` attribute. ``_get_route_name`` is exercised directly with
+    a ``websocket``-type scope so the resolution logic can be verified without
+    establishing a live WebSocket connection.
+    """
+
+    app = FastAPI()
+    router = APIRouter()
+
+    @router.websocket("/ws")
+    async def ws_endpoint(websocket: WebSocket) -> None:
+        await websocket.accept()
+        await websocket.close()
+
+    app.include_router(router, prefix="/v1")
+
+    scope = {"type": "websocket", "path": "/v1/ws", "headers": []}
+    assert _get_route_name(scope, app.routes) == "/v1/ws"
