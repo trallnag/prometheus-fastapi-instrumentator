@@ -1,6 +1,6 @@
-import asyncio
 import gzip
 import importlib.util
+import inspect
 import os
 import re
 import warnings
@@ -333,7 +333,7 @@ class PrometheusFastApiInstrumentator:
 
         for func in instrumentation_function:
             if func:
-                if asyncio.iscoroutinefunction(func):
+                if inspect.iscoroutinefunction(func):
                     self.async_instrumentations.append(
                         cast(
                             Callable[[metrics.Info], Awaitable[None]],
