@@ -14,7 +14,7 @@ on:
     - cron: 4 4 * * 1
 
 env:
-  poetry_version: "1.8.2"
+  poetry_version: "2.4.1"
 
 jobs:
   ci:
@@ -22,11 +22,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.8"]
+        python-version: ["3.14", "3.10"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ------------------------------------------------------------------------
       # Python & Poetry.
@@ -37,7 +37,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache Poetry installation
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.local/bin/poetry
@@ -51,7 +51,7 @@ jobs:
           POETRY_VERSION: ${{ env.poetry_version }}
 
       - name: Cache Poetry cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pypoetry
           key: |-
@@ -77,13 +77,6 @@ jobs:
           mkdir -p $PROMETHEUS_MULTIPROC_DIR
           poetry run pytest -k test_multiproc \
             --cov-append --cov-report=term-missing --cov-report=xml --cov=src
-
-      - name: Upload coverage to Codecov
-        if: strategy.job-index == 0
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
 
       - name: Check version equality
         run: |

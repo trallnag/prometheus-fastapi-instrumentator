@@ -1,38 +1,42 @@
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
+[project]
 name = "prometheus-fastapi-instrumentator"
-version = "7.0.0"
-description = "Instrument your FastAPI with Prometheus metrics."
-authors = ["Tim Schwenke <tim@trallnag.com>"]
-license = "ISC"
+version = "8.0.1"
+description = "Instrument your FastAPI app with Prometheus metrics"
+authors = [
+    {name = "Tim Schwenke", email = "tim@trallnag.com"}
+]
 readme = "README.md"
-repository = "https://github.com/trallnag/prometheus-fastapi-instrumentator"
+requires-python = ">=3.10"
+license = { text = "ISC" }
 keywords = ["prometheus", "instrumentation", "fastapi", "exporter", "metrics"]
+dependencies = [
+    "starlette (>=1.0.0,<2.0.0)",
+    "prometheus-client (>=0.8.0,<1.0.0)"
+]
 
-[tool.poetry.dependencies]
-python = ">= 3.8.1, < 4.0.0"
-starlette  = ">= 0.30.0, < 1.0.0"
-prometheus-client = ">= 0.8.0, < 1.0.0"
+[project.urls]
+homepage = 'https://github.com/trallnag/prometheus-fastapi-instrumentator'
 
 [tool.poetry.group.dev.dependencies]
-httpx = "^0.23.3"
-black = "^24.2.0"
-flake8 = "^7.0.0"
-requests = "^2.31.0"
-pytest = "^8.1.1"
-pytest-cov = "^4.1.0"
-rope = "^1.12.0"
-isort = "^5.13.2"
-mypy = "^1.9.0"
-devtools = "^0.10.0"
-asgiref = "^3.7.2"
-uvicorn = ">=0.28.0"
-gunicorn = "^21.2.0"
-pytest-asyncio = ">=0.23.5.post1"
-fastapi = "^0.110.0"
+black = "^26.5.1"
+flake8 = "^7.3.0"
+requests = "^2.34.2"
+pytest = "^9.0.3"
+pytest-cov = "^7.1.0"
+rope = "^1.14.0"
+isort = "^8.0.1"
+mypy = "^2.1.0"
+devtools = "^0.12.2"
+asgiref = "^3.11.1"
+uvicorn = "^0.48.0"
+gunicorn = "^26.0.0"
+pytest-asyncio = "^1.4.0"
+fastapi = "^0.137.2"
+httpx2 = "^2.2.0"
 
 [tool.black]
 line-length = 90

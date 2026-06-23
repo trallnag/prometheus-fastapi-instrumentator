@@ -3,8 +3,6 @@
 [![pypi-version](https://badge.fury.io/py/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
 [![python-versions](https://img.shields.io/pypi/pyversions/prometheus-fastapi-instrumentator.svg)](https://pypi.python.org/pypi/prometheus-fastapi-instrumentator)
 [![downloads](https://pepy.tech/badge/prometheus-fastapi-instrumentator/month)](https://pepy.tech/project/prometheus-fastapi-instrumentator/month)
-[![build](https://img.shields.io/github/actions/workflow/status/trallnag/kubestatus2cloudwatch/ci.yaml?branch=master)](https://github.com/trallnag/kubestatus2cloudwatch/actions)
-[![codecov](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator/branch/master/graph/badge.svg)](https://codecov.io/gh/trallnag/prometheus-fastapi-instrumentator)
 
 A configurable and modular Prometheus Instrumentator for your FastAPI. Install
 `prometheus-fastapi-instrumentator` from
@@ -74,6 +72,7 @@ things:
   - [Creating new metrics](#creating-new-metrics)
   - [Perform instrumentation](#perform-instrumentation)
   - [Specify namespace and subsystem](#specify-namespace-and-subsystem)
+  - [Specify static custom labels](#specify-static-custom-labels)
   - [Exposing endpoint](#exposing-endpoint)
 - [Contributing](#contributing)
 - [Licensing](#licensing)
@@ -128,7 +127,7 @@ instrumentator = Instrumentator(
     excluded_handlers=[".*admin.*", "/metrics"],
     env_var_name="ENABLE_METRICS",
     inprogress_name="inprogress",
-    inprogress_labels=True,
+    inprogress_labels=True
 )
 ```
 
@@ -168,6 +167,7 @@ instrumentator.add(
         should_include_status=True,
         metric_namespace="a",
         metric_subsystem="b",
+        custom_labels={"service": "example-label"}
     )
 ).add(
     metrics.response_size(
@@ -176,6 +176,7 @@ instrumentator.add(
         should_include_status=True,
         metric_namespace="namespace",
         metric_subsystem="subsystem",
+        custom_labels={"service": "example-label"}
     )
 )
 ```
@@ -258,11 +259,22 @@ You can specify the namespace and subsystem of the metrics by passing them in
 the instrument method.
 
 ```python
-from prometheus_fastapi_instrumentator import Instrumentator
+Instrumentator().instrument(
+    app,
+    metric_namespace="myproject",
+    metric_subsystem="myservice",
+).expose(app)
+```
 
-@app.on_event("startup")
-async def startup():
-    Instrumentator().instrument(app, metric_namespace='myproject', metric_subsystem='myservice').expose(app)
+Or by passing them when calling a metrics closure.
+
+```python
+Instrumentator().add(
+    metrics.default(
+        metric_namespace="myproject",
+        metric_subsystem="myservice",
+    ),
+).instrument(app).expose(app)
 ```
 
 Then your metrics will contain the namespace and subsystem in the metric name.
@@ -270,6 +282,19 @@ Then your metrics will contain the namespace and subsystem in the metric name.
 ```sh
 # TYPE myproject_myservice_http_request_duration_highr_seconds histogram
 myproject_myservice_http_request_duration_highr_seconds_bucket{le="0.01"} 0.0
+```
+
+### Specify static custom labels
+
+You can specify static custom labels by passing them to metrics closures that
+support these parameters.
+
+```python
+Instrumentator().add(
+    metrics.default(
+        custom_labels={"environment": "dev"},
+    ),
+).instrument(app).expose(app)
 ```
 
 ### Exposing endpoint

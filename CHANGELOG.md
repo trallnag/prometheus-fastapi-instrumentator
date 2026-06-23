@@ -7,7 +7,80 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Fixed
+
+- Replaced deprecated `asyncio.iscoroutinefunction()` with
+  `inspect.iscoroutinefunction()` in `Instrumentator.add()` to avoid warnings
+  on Python 3.12+.
+
+## [8.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v8.0.0...v8.0.1) / 2026-06-22
+
+### Fixed
+
+- Fixed resolving route names for routers registered via `include_router()` on
+  FastAPI 0.116+ leading to `AttributeError` getting raised on every request.
+  The internal route name resolution now also handles `_IncludedRouter` and
+  recurses into the included router's own routes so the Prometheus label
+  reflects the leaf endpoint. Thanks to
+  [@adeebmirza](https://github.com/adeebmirza) in
+  [#371](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/371)
+  for fixing it.
+- Fixed hitting mounts with slash redirection collecting wrong handler name.
+  Thanks to [@lbonn](https://github.com/lbonn) for raising and fixing this issue
+  in
+  [#369](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/369).
+
+## [8.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.1.0...v8.0.0) / 2026-05-29
+
+### Changed
+
+- **BREAKING: Ported project to Starlette v1. This includes new required minimum
+  versions of Python, Starlette, and FastAPI.** Bumped `starlette` dependency
+  from `>=0.30.0,<1.0.0` to `>=1.0.0,<2.0.0`. Bumped `requires-python` from
+  `>=3.8` to `>=3.10` (`starlette` dropped support). Bumped `fastapi` dev
+  dependency to `^0.133.0` (first version supporting `starlette` v1). Adjusted
+  middleware app parameter type from `Starlette` to `ASGIApp`. Thanks to
+  [@bgermann](https://github.com/bgermann) in
+  [#357](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/357)
+  for implementing it.
+
+### Fixed
+
+- Corrected documentation for setting custom labels. Thanks to
+  [@rickie95](https://github.com/rickie95) in
+  [#342](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/342)
+  for implementing it.
+
+## [7.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.2...v7.1.0) / 2025-03-19
+
+### Added
+
+- Included metrics closure creators have new optional parameter `custom_labels`
+  to set additional custom static labels. Parameter has not been added to the
+  `Instrumentator()` constructor. Thanks to
+  [@iocentos](https://github.com/iocentos) for requesting this in
+  [#279](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/279)
+  and [@martian711](https://github.com/martian711) in
+  [#287](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/287)
+  as well as [@Budlee](https://github.com/Budlee) in
+  [#326](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/326)
+  for implementing it.
+
+## [7.0.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.1...v7.0.2) / 2025-01-14
+
+### Fixed
+
+- **Replaced incorrect license identifier in `pyproject.toml`.** Problem
+  introduced with the migration to Poetry 2.0 in the last patch release.
+
+## [7.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.0...v7.0.1) / 2025-01-14
+
+### Changed
+
+- **Migrated `pyproject.toml` to support PEP 621.** This comes with a migration
+  to Poetry 2.0. Thanks to [@alexted](https://github.com/alexted) bringing this
+  up in
+  [#323](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/323).
 
 ## [7.0.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v6.1.0...v7.0.0) / 2023-07-15
 
