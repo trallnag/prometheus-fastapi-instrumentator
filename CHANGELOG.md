@@ -51,6 +51,9 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
   [#342](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/342)
   for implementing it.
 
+- Time spent in background tasks is no longer included in reported request
+  duration
+
 ## [7.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v7.0.2...v7.1.0) / 2025-03-19
 
 ### Added

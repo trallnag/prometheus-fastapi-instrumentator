@@ -1,4 +1,7 @@
-from fastapi import FastAPI, responses, status
+import time
+
+import pytest
+from fastapi import BackgroundTasks, FastAPI, responses, status
 from fastapi.testclient import TestClient
 
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
@@ -184,3 +187,70 @@ def test_info_body_duration_without_streaming():
 
     client.get("/")
     assert instrumentation_executed
+
+
+@pytest.mark.parametrize(
+    "response_factory",
+    [
+        lambda: responses.Response(status_code=status.HTTP_200_OK),
+        lambda: responses.Response(content=b"ok", media_type="text/plain"),
+        lambda: responses.StreamingResponse(("x" * 1000 for _ in range(5))),
+    ],
+    ids=["empty_body", "full_body", "streaming_body"],
+)
+def test_info_body_durations_exclude_background_tasks(response_factory):
+    app = FastAPI()
+    client = TestClient(app)
+
+    def background_task():
+        time.sleep(0.1)
+
+    @app.get("/with-background")
+    def with_background(background_tasks: BackgroundTasks):
+        background_tasks.add_task(background_task)
+        return response_factory()
+
+    @app.get("/without-background")
+    def without_background():
+        return response_factory()
+
+    duration_bg = None
+    duration_no_bg = None
+    duration_without_streaming_bg = None
+    duration_without_streaming_no_bg = None
+    instrumentation_execute_count = 0
+
+    def instrumentation(info: metrics.Info) -> None:
+        nonlocal duration_bg, duration_no_bg
+        nonlocal duration_without_streaming_bg, duration_without_streaming_no_bg
+        nonlocal instrumentation_execute_count
+        instrumentation_execute_count += 1
+        if "with-background" in str(info.request.url):
+            duration_bg = info.modified_duration
+            duration_without_streaming_bg = info.modified_duration_without_streaming
+        else:
+            duration_no_bg = info.modified_duration
+            duration_without_streaming_no_bg = info.modified_duration_without_streaming
+
+    Instrumentator().instrument(app).add(instrumentation)
+
+    client.get("/with-background")
+    client.get("/without-background")
+
+    assert instrumentation_execute_count == 2
+
+    assert duration_bg is not None
+    assert duration_no_bg is not None
+    assert duration_without_streaming_bg is not None
+    assert duration_without_streaming_no_bg is not None
+
+    assert duration_bg >= duration_without_streaming_bg
+    assert duration_no_bg >= duration_without_streaming_no_bg
+
+    duration_diff = abs(duration_bg - duration_no_bg)
+    duration_without_streaming_diff = abs(
+        duration_without_streaming_bg - duration_without_streaming_no_bg
+    )
+
+    assert duration_diff < 0.05
+    assert duration_without_streaming_diff < 0.05

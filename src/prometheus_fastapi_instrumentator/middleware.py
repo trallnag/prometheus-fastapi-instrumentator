@@ -128,103 +128,155 @@ class PrometheusInstrumentatorMiddleware:
         request = Request(scope)
         start_time = default_timer()
 
-        handler, is_templated = self._get_handler(request)
-        is_excluded = self._is_handler_excluded(handler, is_templated)
-        handler = (
-            "none" if not is_templated and self.should_group_untemplated else handler
-        )
+        handler, is_excluded = self._process_handler(request)
 
-        if not is_excluded and self.inprogress:
-            if self.inprogress_labels:
-                inprogress = self.inprogress.labels(request.method, handler)
-            else:
-                inprogress = self.inprogress
-            inprogress.inc()
+        if not is_excluded:
+            self._inprogress_inc(request, handler)
 
         status_code = 500
         headers = []
         body = b""
         response_start_time = None
+        response_end_time = None
 
         # Message body collected for handlers matching body_handlers patterns.
-        if any(pattern.search(handler) for pattern in self.body_handlers):
+        should_collect_body = any(
+            pattern.search(handler) for pattern in self.body_handlers
+        )
 
-            async def send_wrapper(message: Message) -> None:
-                if message["type"] == "http.response.start":
-                    nonlocal status_code, headers, response_start_time
-                    headers = message["headers"]
-                    status_code = message["status"]
-                    response_start_time = default_timer()
-                elif message["type"] == "http.response.body" and message["body"]:
+        async def send_wrapper(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                nonlocal status_code, headers, response_start_time
+                headers = message["headers"]
+                status_code = message["status"]
+                response_start_time = default_timer()
+
+            elif message["type"] == "http.response.body":
+                if should_collect_body and message.get("body"):
                     nonlocal body
                     body += message["body"]
-                await send(message)
 
-        else:
+                if not message.get("more_body", False):
+                    nonlocal response_end_time
+                    response_end_time = default_timer()
 
-            async def send_wrapper(message: Message) -> None:
-                if message["type"] == "http.response.start":
-                    nonlocal status_code, headers, response_start_time
-                    headers = message["headers"]
-                    status_code = message["status"]
-                    response_start_time = default_timer()
-                await send(message)
+            await send(message)
 
         try:
             await self.app(scope, receive, send_wrapper)
         except Exception as exc:
             raise exc
         finally:
-            status = (
-                str(status_code.value)
-                if isinstance(status_code, HTTPStatus)
-                else str(status_code)
+            if not is_excluded:
+                await self._record_metrics(
+                    request,
+                    handler,
+                    status_code,
+                    headers,
+                    body,
+                    response_start_time,
+                    response_end_time,
+                    start_time,
+                )
+
+    def _process_handler(self, request: Request) -> Tuple[str, bool]:
+        handler, is_templated = self._get_handler(request)
+        is_excluded = self._is_handler_excluded(handler, is_templated)
+        handler = (
+            "none" if not is_templated and self.should_group_untemplated else handler
+        )
+        return handler, is_excluded
+
+    def _get_inprogress(self, request: Request, handler: str) -> Gauge | None:
+        if self.inprogress is None:
+            return None
+        if self.inprogress_labels:
+            return self.inprogress.labels(request.method, handler)
+        return self.inprogress
+
+    def _inprogress_inc(self, request: Request, handler: str) -> None:
+        inprogress = self._get_inprogress(request, handler)
+        if inprogress is None:
+            return
+        inprogress.inc()
+
+    def _inprogress_dec(self, request: Request, handler: str) -> None:
+        inprogress = self._get_inprogress(request, handler)
+        if inprogress is None:
+            return
+        inprogress.dec()
+
+    def _calculate_durations(
+        self,
+        start_time: float,
+        response_start_time: Optional[float],
+        response_end_time: Optional[float],
+    ) -> Tuple[float, float]:
+        duration_without_streaming = 0.0
+
+        if response_start_time:
+            duration_without_streaming = max(response_start_time - start_time, 0.0)
+
+        # Should only happen if exception is raised before response is fully sent
+        if response_end_time is None:
+            response_end_time = default_timer()
+
+        duration = max(response_end_time - start_time, 0.0)
+
+        if self.should_round_latency_decimals:
+            duration = round(duration, self.round_latency_decimals)
+            duration_without_streaming = round(
+                duration_without_streaming, self.round_latency_decimals
             )
 
-            if not is_excluded:
-                duration = max(default_timer() - start_time, 0.0)
-                duration_without_streaming = 0.0
+        return duration, duration_without_streaming
 
-                if response_start_time:
-                    duration_without_streaming = max(
-                        response_start_time - start_time, 0.0
-                    )
+    async def _record_metrics(
+        self,
+        request: Request,
+        handler: str,
+        status_code: Union[int, HTTPStatus],
+        headers: list,
+        body: bytes,
+        response_start_time: Optional[float],
+        response_end_time: Optional[float],
+        start_time: float,
+    ) -> None:
+        self._inprogress_dec(request, handler)
 
-                if self.should_instrument_requests_inprogress:
-                    inprogress.dec()
+        status = (
+            str(status_code.value)
+            if isinstance(status_code, HTTPStatus)
+            else str(status_code)
+        )
 
-                if self.should_round_latency_decimals:
-                    duration = round(duration, self.round_latency_decimals)
-                    duration_without_streaming = round(
-                        duration_without_streaming, self.round_latency_decimals
-                    )
+        duration, duration_without_streaming = self._calculate_durations(
+            start_time, response_start_time, response_end_time
+        )
 
-                if self.should_group_status_codes:
-                    status = status[0] + "xx"
+        if self.should_group_status_codes:
+            status = status[0] + "xx"
 
-                response = Response(
-                    content=body, headers=Headers(raw=headers), status_code=status_code
-                )
+        response = Response(
+            content=body, headers=Headers(raw=headers), status_code=status_code
+        )
 
-                info = metrics.Info(
-                    request=request,
-                    response=response,
-                    method=request.method,
-                    modified_handler=handler,
-                    modified_status=status,
-                    modified_duration=duration,
-                    modified_duration_without_streaming=duration_without_streaming,
-                )
+        info = metrics.Info(
+            request=request,
+            response=response,
+            method=request.method,
+            modified_handler=handler,
+            modified_status=status,
+            modified_duration=duration,
+            modified_duration_without_streaming=duration_without_streaming,
+        )
 
-                for instrumentation in self.instrumentations:
-                    instrumentation(info)
+        for instrumentation in self.instrumentations:
+            instrumentation(info)
 
-                await asyncio.gather(
-                    *[
-                        instrumentation(info)
-                        for instrumentation in self.async_instrumentations
-                    ]
-                )
+        await asyncio.gather(
+            *[instrumentation(info) for instrumentation in self.async_instrumentations]
+        )
 
     def _get_handler(self, request: Request) -> Tuple[str, bool]:
         """Extracts either template or (if no template) path.
