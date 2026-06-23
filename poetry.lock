@@ -26,14 +26,14 @@ files = [
 
 [[package]]
 name = "anyio"
-version = "4.13.0"
+version = "4.14.0"
 description = "High-level concurrency and networking framework on top of asyncio or Trio"
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "anyio-4.13.0-py3-none-any.whl", hash = "sha256:08b310f9e24a9594186fd75b4f73f4a4152069e3853f1ed8bfbf58369f4ad708"},
-    {file = "anyio-4.13.0.tar.gz", hash = "sha256:334b70e641fd2221c1505b3890c69882fe4a2df910cba14d97019b90b24439dc"},
+    {file = "anyio-4.14.0-py3-none-any.whl", hash = "sha256:dd9b7a2a9799ed6552fde617b2c5df02b7fdd7d88392fc48101e51bae46164d9"},
+    {file = "anyio-4.14.0.tar.gz", hash = "sha256:b47c1f9ccf73e67021df785332508f99379c68fa7d0684e8e3492cb1d4b23f89"},
 ]
 
 [package.dependencies]
@@ -192,14 +192,14 @@ uvloop = ["uvloop (>=0.15.2) ; sys_platform != \"win32\"", "winloop (>=0.5.0) ; 
 
 [[package]]
 name = "certifi"
-version = "2026.5.20"
+version = "2026.6.17"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
 files = [
-    {file = "certifi-2026.5.20-py3-none-any.whl", hash = "sha256:3c52e209ba0a4ad7aebe60436a4ab349c39e1e602e8c134221e546902ad25897"},
-    {file = "certifi-2026.5.20.tar.gz", hash = "sha256:69dea482ab64caa7b9f6aba1c6bf48bb6a5448d1c0f1b17ab42ad8c763a5344d"},
+    {file = "certifi-2026.6.17-py3-none-any.whl", hash = "sha256:2227dcbaafe0d2f59279d1762ddddc37783ed4354594f194ffc31d20f41fc3db"},
+    {file = "certifi-2026.6.17.tar.gz", hash = "sha256:024c88eeec92ca068db80f02b8b07c9cef7b9fe261d1d535abfd5abd6f6af432"},
 ]
 
 [[package]]
@@ -544,14 +544,14 @@ tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipyth
 
 [[package]]
 name = "fastapi"
-version = "0.136.3"
+version = "0.137.2"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "fastapi-0.136.3-py3-none-any.whl", hash = "sha256:3d2a69bdf04b7e9f3afa292c3bc7a98816bbfafa10bc9b45f3f3700d2f761620"},
-    {file = "fastapi-0.136.3.tar.gz", hash = "sha256:e487fae93ad408e6f47641ee4dfe389864fd7bec92e547ea8498fc13f43e83ab"},
+    {file = "fastapi-0.137.2-py3-none-any.whl", hash = "sha256:791d36261e916a98b25ac85ee591bc3db159394070f6d3d096d94fb378f60ce2"},
+    {file = "fastapi-0.137.2.tar.gz", hash = "sha256:b9d893bebc97dcfbdcb1917e88a292d062844ea19445a5fa4f7eb28c4baea9e3"},
 ]
 
 [package.dependencies]
@@ -620,61 +620,62 @@ files = [
 
 [[package]]
 name = "httpcore2"
-version = "2.2.0"
+version = "2.4.0"
 description = "A minimal low-level HTTP client."
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "httpcore2-2.2.0-py3-none-any.whl", hash = "sha256:ce859f268bf8d34fa2d7753e09e4dd5194f557e1b3038439b68a89b2999572fa"},
-    {file = "httpcore2-2.2.0.tar.gz", hash = "sha256:10e0e142f1ecc1c1cb2a9ebbce82e57f16169f61d163ea336abf36799e89294b"},
+    {file = "httpcore2-2.4.0-py3-none-any.whl", hash = "sha256:5218779da5d6e3c2013ac706121abfb3815d450e0613495c0de50264dce58242"},
+    {file = "httpcore2-2.4.0.tar.gz", hash = "sha256:3093a8ab8980d9f910b9cb4351df9186a0ad2350a6284a9107ac9a362a584422"},
 ]
 
 [package.dependencies]
-certifi = "*"
 h11 = ">=0.16"
+truststore = ">=0.10"
 
 [package.extras]
-asyncio = ["anyio (>=4.0,<5.0)"]
+asyncio = ["anyio (>=4.5.0,<5.0)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
 trio = ["trio (>=0.22.0,<1.0)"]
 
 [[package]]
 name = "httpx2"
-version = "2.2.0"
+version = "2.4.0"
 description = "The next generation HTTP client."
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "httpx2-2.2.0-py3-none-any.whl", hash = "sha256:12347ebd2daeaefd50b529359778fff767082a09c5826752c963e71269722ff0"},
-    {file = "httpx2-2.2.0.tar.gz", hash = "sha256:f3428d59b1752b8f5629826277262fb4d65e3a683f48af8a5b16c4d012e0b801"},
+    {file = "httpx2-2.4.0-py3-none-any.whl", hash = "sha256:425acd99297829599decf6701386dd84db3542597d36d3e2e4def930ecd57fd9"},
+    {file = "httpx2-2.4.0.tar.gz", hash = "sha256:32e0734b61eb0824b3f56a9e98d6d92d381a3ef12c0045aa917ee63df6c411ef"},
 ]
 
 [package.dependencies]
 anyio = "*"
-certifi = "*"
-httpcore2 = "2.2.0"
-idna = "*"
+httpcore2 = "2.4.0"
+idna = ">=3.18"
+truststore = ">=0.10"
+typing-extensions = {version = ">=4.5.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
 brotli = ["brotli ; platform_python_implementation == \"CPython\"", "brotlicffi ; platform_python_implementation != \"CPython\""]
-cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<15)"]
+cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<16)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (==1.*)"]
 zstd = ["zstandard (>=0.18.0) ; python_version <= \"3.13\""]
 
 [[package]]
 name = "idna"
-version = "3.17"
+version = "3.18"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "idna-3.17-py3-none-any.whl", hash = "sha256:466e48829084efe2548012b855df21540b96f2e20e51bd124c851536556a592c"},
-    {file = "idna-3.17.tar.gz", hash = "sha256:5eb0cb53bc467c12eadcf6de83163ad8527cec9416f44b9b61b19caedad2b87f"},
+    {file = "idna-3.18-py3-none-any.whl", hash = "sha256:7f952cbe720b688055e3f87de14f5c3e5fdaa8bc3928985c4077ca689de849a2"},
+    {file = "idna-3.18.tar.gz", hash = "sha256:ffb385a7e039654cef1ab9ef32c6fafe283c0c0467bba1d9029738ce4a14a848"},
 ]
 
 [package.extras]
@@ -1174,14 +1175,14 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pytest"
-version = "9.0.3"
+version = "9.1.0"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "pytest-9.0.3-py3-none-any.whl", hash = "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9"},
-    {file = "pytest-9.0.3.tar.gz", hash = "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c"},
+    {file = "pytest-9.1.0-py3-none-any.whl", hash = "sha256:8ebb0e7888bdf2bdfc602ec51f8f62d50200af37356c74e503c79a94f5c81f32"},
+    {file = "pytest-9.1.0.tar.gz", hash = "sha256:41dd9148c08072446394cefd3d79701701335a9f4cae69ba92e39f6c7f5c061c"},
 ]
 
 [package.dependencies]
@@ -1371,14 +1372,14 @@ files = [
 
 [[package]]
 name = "starlette"
-version = "1.2.0"
+version = "1.3.1"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "starlette-1.2.0-py3-none-any.whl", hash = "sha256:36e0c76ac59157e75dc4b3bdeafba97fb04eaf1878045f15dbef666a6f092ed7"},
-    {file = "starlette-1.2.0.tar.gz", hash = "sha256:3c5a6b23fff42492914e93890bb80cbfea72dbf37de268eec06185d62a4ca553"},
+    {file = "starlette-1.3.1-py3-none-any.whl", hash = "sha256:c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6"},
+    {file = "starlette-1.3.1.tar.gz", hash = "sha256:05d0213193f2fbaae60e2ecb593b4add4262ad4e46536b54abe36f11a71724e0"},
 ]
 
 [package.dependencies]
@@ -1386,7 +1387,7 @@ anyio = ">=3.6.2,<5"
 typing-extensions = {version = ">=4.10.0", markers = "python_version < \"3.13\""}
 
 [package.extras]
-full = ["httpx (>=0.27.0,<0.29.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.18)", "pyyaml"]
+full = ["httpx (>=0.27.0,<0.29.0)", "httpx2 (>=2.0.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.18)", "pyyaml"]
 
 [[package]]
 name = "tomli"
@@ -1444,6 +1445,18 @@ files = [
     {file = "tomli-2.4.1-cp314-cp314t-win_arm64.whl", hash = "sha256:eab21f45c7f66c13f2a9e0e1535309cee140182a9cdae1e041d02e47291e8396"},
     {file = "tomli-2.4.1-py3-none-any.whl", hash = "sha256:0d85819802132122da43cb86656f8d1f8c6587d54ae7dcaf30e90533028b49fe"},
     {file = "tomli-2.4.1.tar.gz", hash = "sha256:7c7e1a961a0b2f2472c1ac5b69affa0ae1132c39adcb67aba98568702b9cc23f"},
+]
+
+[[package]]
+name = "truststore"
+version = "0.10.4"
+description = "Verify certificates using native system trust stores"
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "truststore-0.10.4-py3-none-any.whl", hash = "sha256:adaeaecf1cbb5f4de3b1959b42d41f6fab57b2b1666adb59e89cb0b53361d981"},
+    {file = "truststore-0.10.4.tar.gz", hash = "sha256:9d91bd436463ad5e4ee4aba766628dd6cd7010cf3e2461756b3303710eebc301"},
 ]
 
 [[package]]
@@ -1515,4 +1528,4 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "f65255d2105873189ee23672e547ebd29c46178924ec3e5b41984cb5797e21a4"
+content-hash = "000ab903bd8006537b1c1ed6e2b4e2edb0113cc651d8644a46f872ff8a334b3d"

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "prometheus-fastapi-instrumentator"
-version = "8.0.0"
+version = "8.0.1"
 description = "Instrument your FastAPI app with Prometheus metrics"
 authors = [
     {name = "Tim Schwenke", email = "tim@trallnag.com"}
@@ -35,7 +35,7 @@ asgiref = "^3.11.1"
 uvicorn = "^0.48.0"
 gunicorn = "^26.0.0"
 pytest-asyncio = "^1.4.0"
-fastapi = "^0.136.3"
+fastapi = "^0.137.2"
 httpx2 = "^2.2.0"
 
 [tool.black]
