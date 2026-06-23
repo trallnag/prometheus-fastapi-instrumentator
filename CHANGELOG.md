@@ -7,7 +7,11 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Fixed
+
+- Replaced deprecated `asyncio.iscoroutinefunction()` with
+  `inspect.iscoroutinefunction()` in `Instrumentator.add()` to avoid warnings
+  on Python 3.12+.
 
 ## [8.0.1](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v8.0.0...v8.0.1) / 2026-06-22
 
