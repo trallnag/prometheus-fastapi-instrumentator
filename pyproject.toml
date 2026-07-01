@@ -35,7 +35,7 @@ asgiref = "^3.11.1"
 uvicorn = "^0.48.0"
 gunicorn = "^26.0.0"
 pytest-asyncio = "^1.4.0"
-fastapi = "^0.137.2"
+fastapi = "^0.138.2"
 httpx2 = "^2.2.0"
 
 [tool.black]
