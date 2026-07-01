@@ -620,14 +620,14 @@ files = [
 
 [[package]]
 name = "httpcore2"
-version = "2.4.0"
+version = "2.5.0"
 description = "A minimal low-level HTTP client."
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "httpcore2-2.4.0-py3-none-any.whl", hash = "sha256:5218779da5d6e3c2013ac706121abfb3815d450e0613495c0de50264dce58242"},
-    {file = "httpcore2-2.4.0.tar.gz", hash = "sha256:3093a8ab8980d9f910b9cb4351df9186a0ad2350a6284a9107ac9a362a584422"},
+    {file = "httpcore2-2.5.0-py3-none-any.whl", hash = "sha256:5ce35188de461d31e8d000bfb8ef8bf22c6c16587a211e5571deaa5e9bdf842a"},
+    {file = "httpcore2-2.5.0.tar.gz", hash = "sha256:88aa170137c17328d5ac44234f9fd10706466d5fb347f3edac4d39b91137b09d"},
 ]
 
 [package.dependencies]
@@ -642,19 +642,19 @@ trio = ["trio (>=0.22.0,<1.0)"]
 
 [[package]]
 name = "httpx2"
-version = "2.4.0"
+version = "2.5.0"
 description = "The next generation HTTP client."
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "httpx2-2.4.0-py3-none-any.whl", hash = "sha256:425acd99297829599decf6701386dd84db3542597d36d3e2e4def930ecd57fd9"},
-    {file = "httpx2-2.4.0.tar.gz", hash = "sha256:32e0734b61eb0824b3f56a9e98d6d92d381a3ef12c0045aa917ee63df6c411ef"},
+    {file = "httpx2-2.5.0-py3-none-any.whl", hash = "sha256:3d2d4d9cf4b61f1a1f46a95947cfdb47e80cb56a2f91c6256ac8f58e4891df41"},
+    {file = "httpx2-2.5.0.tar.gz", hash = "sha256:e2df9cb4611021527ff8a675b1c320b610a2ec397acc8d6fe6e91df2d9b33c29"},
 ]
 
 [package.dependencies]
 anyio = "*"
-httpcore2 = "2.4.0"
+httpcore2 = "2.5.0"
 idna = ">=3.18"
 truststore = ">=0.10"
 typing-extensions = {version = ">=4.5.0", markers = "python_version < \"3.13\""}
@@ -1528,4 +1528,4 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "000ab903bd8006537b1c1ed6e2b4e2edb0113cc651d8644a46f872ff8a334b3d"
+content-hash = "1ac93317b86e11f3d077058d1bf9efd20cc980ecdd9ce983b8d4816a3ba25ff0"
