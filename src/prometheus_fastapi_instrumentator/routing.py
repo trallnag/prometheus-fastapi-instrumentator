@@ -100,6 +100,39 @@ def _strip_prefix_from_scope(scope: Scope, prefix: str) -> Scope:
     return scope
 
 
+def _strip_root_path_from_scope(scope: Scope, root_path: str) -> Scope:
+    """Return a copy of ``scope`` with ``root_path`` stripped from ``path``.
+
+    FastAPI deployments behind proxies may populate both ``scope["root_path"]``
+    and ``scope["path"]`` with the prefix, while application routes are still
+    registered without that prefix. Matching against the stripped path ensures
+    route resolution keeps working.
+    """
+
+    if not root_path:
+        return scope
+    return _strip_prefix_from_scope(scope, root_path)
+
+
+def _prepend_root_path(route_name: str, scope: Scope, root_path: str) -> str:
+    """Prepend ``root_path`` to a resolved templated ``route_name``."""
+
+    if not root_path:
+        return route_name
+
+    path = scope.get("path", "") or ""
+    if path != root_path and not path.startswith(root_path + "/"):
+        return route_name
+
+    normalized_root = root_path.rstrip("/") or "/"
+    if route_name == normalized_root or route_name.startswith(normalized_root + "/"):
+        return route_name
+
+    if route_name == "/":
+        return normalized_root + "/"
+    return normalized_root + route_name
+
+
 def _get_route_name(
     scope: Scope, routes: List[Route], route_name: Optional[str] = None
 ) -> Optional[str]:
@@ -156,24 +189,29 @@ def get_route_name(request: HTTPConnection) -> Optional[str]:
 
     app = request.app
     scope = request.scope
+    app_root_path = getattr(app, "root_path", "") or ""
+    lookup_scope = _strip_root_path_from_scope(scope, app_root_path)
     routes = app.routes
-    route_name = _get_route_name(scope, routes)
+    route_name = _get_route_name(lookup_scope, routes)
 
     # Starlette magically redirects requests if the path matches a route name
     # with a trailing slash appended or removed. To not spam the transaction
     # names list, we do the same here and put these redirects all in the
     # same "redirect trailing slashes" transaction name.
-    if not route_name and app.router.redirect_slashes and scope["path"] != "/":
-        redirect_scope = dict(scope)
-        if scope["path"].endswith("/"):
-            redirect_scope["path"] = scope["path"][:-1]
+    if not route_name and app.router.redirect_slashes and lookup_scope["path"] != "/":
+        redirect_scope = dict(lookup_scope)
+        if lookup_scope["path"].endswith("/"):
+            redirect_scope["path"] = lookup_scope["path"][:-1]
             trim = True
         else:
-            redirect_scope["path"] = scope["path"] + "/"
+            redirect_scope["path"] = lookup_scope["path"] + "/"
             trim = False
 
         route_name = _get_route_name(redirect_scope, routes)
         if route_name is not None:
             route_name = route_name.rstrip("/")
             route_name = route_name + "/" if trim else route_name
+
+    if route_name is not None:
+        route_name = _prepend_root_path(route_name, scope, app_root_path)
     return route_name
