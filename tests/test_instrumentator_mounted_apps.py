@@ -1,3 +1,5 @@
+import re
+
 from fastapi import FastAPI
 from helpers import utils
 from prometheus_client import Counter
@@ -36,11 +38,17 @@ def test_mounted_app_with_app():
 
     client = TestClient(app)
 
-    for url in ["/subapi/sub", "/subapi", "/app"]:
-        print(f"GET {url} " + client.get(url).content.decode())
+    assert client.get("/subapi/sub").status_code == 200
+
+    assert client.get("/subapi").status_code == 404
+
+    assert client.get("/app").status_code == 200
 
     response = client.get("/metrics").content.decode()
-    print("GET /metrics\n" + response)
+    print(
+        "GET /metrics (filtered)\n"
+        + "\n".join(re.findall(r"^.*test_total.*$", response, flags=re.MULTILINE))
+    )
 
     want = '{handler="http://testserver/subapi/sub",modified_handler="/subapi/sub"} 1.0\n'
     assert want in response
@@ -89,7 +97,10 @@ def test_mounted_app_instrumented_only():
         print(f"GET {url} " + client.get(url).content.decode())
 
     response = client.get("/metrics").content.decode()
-    print("GET /metrics\n" + response)
+    print(
+        "GET /metrics (filtered)\n"
+        + "\n".join(re.findall(r"^.*test_total.*$", response, flags=re.MULTILINE))
+    )
 
     # Note the modified_handler. It is relative to the instrumented subapp.
     want = '{handler="http://testserver/subapi/sub",modified_handler="/sub"} 1.0\n'
