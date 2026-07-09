@@ -37,54 +37,64 @@ is contained in a dedicated module.
 Based on code from [elastic/apm-agent-python](https://github.com/elastic/apm-agent-python/blob/527f62c0c50842f94ef90fda079853372539319a/elasticapm/contrib/starlette/__init__.py).
 """
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from starlette.requests import HTTPConnection
 from starlette.routing import Match, Mount, Route
 from starlette.types import Scope
 
 
-def _resolve_path(route: Route) -> Optional[str]:
-    """Return the request path contributed by ``route``, or ``None`` if the
-    route is a router-like wrapper whose own routes must be traversed.
+def _inspect_route(route: Route) -> Tuple[Optional[str], Optional[List[Route]]]:
+    """Describe how `route` contributes to a resolved route name.
 
-    FastAPI 0.116+ (officially 0.137) wraps routers registered via
-    ``app.include_router`` in an internal ``_IncludedRouter`` class that
-    does not expose a ``path`` attribute. The configured mount path is
-    available on ``include_context.prefix``.
+    Returns a `(path, children)` tuple where `path` is the URL segment the
+    route contributes (or `None` if the route cannot yield a stable label and
+    should be skipped) and `children` are the nested routes to recurse into
+    for router-like routes (or `None` for leaf routes).
+
+    Three route shapes are handled:
+
+    * A plain `Route` leaf exposes `path` and has no children.
+    * A `Mount` exposes `path` and nests `routes`. Its `matches()`
+      already strips the mount prefix from the returned child scope.
+    * FastAPI's `_IncludedRouter` (0.116+, officially 0.137) has no `path`
+      attribute; its prefix lives on `include_context.prefix` and its
+      children on `original_router.routes`. Its `matches()` does not strip
+      the prefix, so the caller must strip it before recursing.
     """
 
+    # Path segment contributed by the route.
     if hasattr(route, "path"):
-        return route.path
-    include_context = getattr(route, "include_context", None)
-    if include_context is not None:
-        # An empty prefix means the wrapper contributes no path segment of
-        # its own (e.g. ``APIRouter(prefix=...)`` registered via
-        # ``include_router`` without an extra ``prefix=`` argument). The
-        # caller must still recurse into nested routes.
-        prefix = getattr(include_context, "prefix", "") or ""
-        return prefix
-    return None
+        path: Optional[str] = route.path
+    else:
+        include_context = getattr(route, "include_context", None)
+        # An empty prefix means the wrapper contributes no path segment of its
+        # own (e.g. `APIRouter(prefix=...)` registered via `include_router`
+        # without an extra `prefix=` argument); the caller still recurses.
+        if include_context is None:
+            path = None
+        else:
+            path = getattr(include_context, "prefix", "") or ""
 
-
-def _child_routes(route: Route) -> Optional[List[Route]]:
-    """Return nested routes for router-like route objects, else ``None``."""
-
+    # Nested routes to recurse into, if this is a router-like route.
     if isinstance(route, Mount):
-        return route.routes or None
-    original_router = getattr(route, "original_router", None)
-    if original_router is not None and hasattr(original_router, "routes"):
-        nested = list(original_router.routes)
-        return nested or None
-    return None
+        children: Optional[List[Route]] = route.routes or None
+    else:
+        original_router = getattr(route, "original_router", None)
+        if original_router is not None and hasattr(original_router, "routes"):
+            children = list(original_router.routes) or None
+        else:
+            children = None
+
+    return path, children
 
 
 def _strip_prefix_from_scope(scope: Scope, prefix: str) -> Scope:
-    """Return a copy of ``scope`` with the mount ``prefix`` removed from
-    ``path``.
+    """Return a copy of `scope` with the mount `prefix` removed from
+    `path`.
 
-    ``starlette.routing.Mount.matches`` returns a child scope with the
-    mount prefix already stripped. FastAPI's ``_IncludedRouter`` does
+    `starlette.routing.Mount.matches` returns a child scope with the
+    mount prefix already stripped. FastAPI's `_IncludedRouter` does
     not, so the recursion into the included router's own routes would
     never match a leaf endpoint. Stripping the prefix here restores the
     behaviour expected by the recursive call.
@@ -117,7 +127,7 @@ def _normalize_root_path(root_path: str) -> str:
 def _effective_root_path(scope: Scope, app_root_path: str) -> str:
     """Resolve which root_path to use for matching and labels.
 
-    For app-level root_path deployments, trust ``scope["root_path"]`` when
+    For app-level root_path deployments, trust `scope["root_path"]` when
     present because servers may normalize it differently (e.g. trailing slash).
     If app has no root_path configured, ignore scope root_path to avoid
     treating mount prefixes as deployment root paths.
@@ -130,23 +140,8 @@ def _effective_root_path(scope: Scope, app_root_path: str) -> str:
     return scope_root_path or app_root_path
 
 
-def _strip_root_path_from_scope(scope: Scope, root_path: str) -> Scope:
-    """Return a copy of ``scope`` with ``root_path`` stripped from ``path``.
-
-    FastAPI deployments behind proxies may populate both ``scope["root_path"]``
-    and ``scope["path"]`` with the prefix, while application routes are still
-    registered without that prefix. Matching against the stripped path ensures
-    route resolution keeps working.
-    """
-
-    root_path = _normalize_root_path(root_path)
-    if not root_path:
-        return scope
-    return _strip_prefix_from_scope(scope, root_path)
-
-
 def _prepend_root_path(route_name: str, scope: Scope, root_path: str) -> str:
-    """Prepend ``root_path`` to a resolved templated ``route_name``."""
+    """Prepend `root_path` to a resolved templated `route_name`."""
 
     root_path = _normalize_root_path(root_path)
     if not root_path:
@@ -170,49 +165,44 @@ def _get_route_name(
 ) -> Optional[str]:
     """Gets route name for given scope taking mounts into account.
 
-    Supports plain ``Route``/``Mount`` objects as well as FastAPI's
-    internal ``_IncludedRouter`` wrapper produced by
-    ``app.include_router(...)``. When a matched route is a router-like
-    object, the function recurses into its nested routes so the final
-    label reflects the leaf endpoint.
+    Supports plain `Route`/`Mount` objects as well as FastAPI's internal
+    `_IncludedRouter` wrapper produced by `app.include_router(...)`. When a
+    matched route is router-like, the function recurses into its nested routes
+    so the final label reflects the leaf endpoint, e.g.
+    `/api/v1/items/{item_id}` rather than just `/{item_id}`.
     """
 
     for route in routes:
         match, child_scope = route.matches(scope)
+
         if match == Match.FULL:
-            resolved = _resolve_path(route)
-            if resolved is None:
-                # Cannot produce a stable label for this route; try the
-                # next candidate. Callers fall back to ``request.url.path``
-                # if no route yields a name.
+            path, children = _inspect_route(route)
+            if path is None:
+                # Cannot produce a stable label for this route; try the next
+                # candidate. Callers fall back to `request.url.path` if no
+                # route yields a name.
                 continue
-            route_name = resolved
+
+            if not children:
+                return path
+
             child_scope = {**scope, **child_scope}
-            children = _child_routes(route)
-            if children:
-                # FastAPI's ``_IncludedRouter`` does not strip the mount
-                # prefix from the scope before matching nested routes,
-                # unlike ``starlette.routing.Mount``. Strip it here so
-                # the leaf endpoint inside the included router can match.
-                if not isinstance(route, Mount):
-                    include_context = getattr(route, "include_context", None)
-                    if include_context is not None:
-                        prefix = getattr(include_context, "prefix", "") or ""
-                        if prefix:
-                            child_scope = _strip_prefix_from_scope(child_scope, prefix)
-                child_route_name = _get_route_name(child_scope, children)
-                if child_route_name is not None:
-                    # Concatenate the leaf path onto the parent path so the
-                    # final label is e.g. ``/api/v1/items/{item_id}`` rather
-                    # than just ``/{item_id}``.
-                    route_name = route_name + child_route_name
-                else:
-                    route_name = None
-            return route_name
-        elif match == Match.PARTIAL and route_name is None:
-            resolved = _resolve_path(route)
-            if resolved is not None:
-                route_name = resolved
+            if not isinstance(route, Mount):
+                # Unlike `Mount`, `_IncludedRouter` does not strip its
+                # prefix from the child scope, so strip it here so the nested
+                # leaf endpoint can match. `path` is that prefix.
+                child_scope = _strip_prefix_from_scope(child_scope, path)
+
+            nested_name = _get_route_name(child_scope, children)
+            if nested_name is None:
+                return None
+            return path + nested_name
+
+        if match == Match.PARTIAL and route_name is None:
+            path, _ = _inspect_route(route)
+            if path is not None:
+                route_name = path
+
     return route_name
 
 
@@ -222,8 +212,10 @@ def get_route_name(request: HTTPConnection) -> Optional[str]:
     app = request.app
     scope = request.scope
     app_root_path = getattr(app, "root_path", "") or ""
+    # `_effective_root_path` already returns a normalized root path, so it can
+    # be stripped from the scope directly for route matching.
     root_path = _effective_root_path(scope, app_root_path)
-    lookup_scope = _strip_root_path_from_scope(scope, root_path)
+    lookup_scope = _strip_prefix_from_scope(scope, root_path)
     routes = app.routes
     route_name = _get_route_name(lookup_scope, routes)
 
