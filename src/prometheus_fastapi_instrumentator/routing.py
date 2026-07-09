@@ -100,6 +100,36 @@ def _strip_prefix_from_scope(scope: Scope, prefix: str) -> Scope:
     return scope
 
 
+def _normalize_root_path(root_path: str) -> str:
+    """Return root_path in canonical form.
+
+    Canonical form is empty string for "no root path", "/" for root,
+    otherwise a leading slash with no trailing slash.
+    """
+
+    if not root_path:
+        return ""
+    if root_path == "/":
+        return "/"
+    return "/" + root_path.strip("/")
+
+
+def _effective_root_path(scope: Scope, app_root_path: str) -> str:
+    """Resolve which root_path to use for matching and labels.
+
+    For app-level root_path deployments, trust ``scope["root_path"]`` when
+    present because servers may normalize it differently (e.g. trailing slash).
+    If app has no root_path configured, ignore scope root_path to avoid
+    treating mount prefixes as deployment root paths.
+    """
+
+    app_root_path = _normalize_root_path(app_root_path)
+    if not app_root_path:
+        return ""
+    scope_root_path = _normalize_root_path((scope.get("root_path", "") or ""))
+    return scope_root_path or app_root_path
+
+
 def _strip_root_path_from_scope(scope: Scope, root_path: str) -> Scope:
     """Return a copy of ``scope`` with ``root_path`` stripped from ``path``.
 
@@ -109,6 +139,7 @@ def _strip_root_path_from_scope(scope: Scope, root_path: str) -> Scope:
     route resolution keeps working.
     """
 
+    root_path = _normalize_root_path(root_path)
     if not root_path:
         return scope
     return _strip_prefix_from_scope(scope, root_path)
@@ -117,6 +148,7 @@ def _strip_root_path_from_scope(scope: Scope, root_path: str) -> Scope:
 def _prepend_root_path(route_name: str, scope: Scope, root_path: str) -> str:
     """Prepend ``root_path`` to a resolved templated ``route_name``."""
 
+    root_path = _normalize_root_path(root_path)
     if not root_path:
         return route_name
 
@@ -124,7 +156,7 @@ def _prepend_root_path(route_name: str, scope: Scope, root_path: str) -> str:
     if path != root_path and not path.startswith(root_path + "/"):
         return route_name
 
-    normalized_root = root_path.rstrip("/") or "/"
+    normalized_root = root_path
     if route_name == normalized_root or route_name.startswith(normalized_root + "/"):
         return route_name
 
@@ -190,7 +222,8 @@ def get_route_name(request: HTTPConnection) -> Optional[str]:
     app = request.app
     scope = request.scope
     app_root_path = getattr(app, "root_path", "") or ""
-    lookup_scope = _strip_root_path_from_scope(scope, app_root_path)
+    root_path = _effective_root_path(scope, app_root_path)
+    lookup_scope = _strip_root_path_from_scope(scope, root_path)
     routes = app.routes
     route_name = _get_route_name(lookup_scope, routes)
 
@@ -213,5 +246,5 @@ def get_route_name(request: HTTPConnection) -> Optional[str]:
             route_name = route_name + "/" if trim else route_name
 
     if route_name is not None:
-        route_name = _prepend_root_path(route_name, scope, app_root_path)
+        route_name = _prepend_root_path(route_name, scope, root_path)
     return route_name
