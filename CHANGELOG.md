@@ -7,7 +7,9 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Fixed
+
+- Fixed resolving route names with root path set in FastAPI app.
 
 ## [8.0.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v8.0.1...v8.0.2) / 2026-06-23
 
