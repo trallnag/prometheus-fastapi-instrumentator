@@ -75,6 +75,36 @@ def _build_app_with_included_router() -> FastAPI:
     return app
 
 
+def _build_app_with_nested_v2_included_router() -> FastAPI:
+    """Build an app that mirrors nested ``include_router`` usage under ``/v2``.
+
+    This reproduces the common pattern where a versioned router includes
+    another router. The nested routes are expected to emit full handler labels
+    (e.g. ``/v2/widgets/{widget_id}``) rather than ``handler="none"``.
+    """
+
+    app = FastAPI()
+    v2_router = APIRouter(prefix="/v2")
+    another_router = APIRouter()
+
+    @another_router.get("/widgets")
+    def list_widgets() -> dict:
+        return {"widgets": []}
+
+    @another_router.get("/widgets/{widget_id}")
+    def get_widget(widget_id: int) -> dict:
+        return {"widget_id": widget_id}
+
+    v2_router.include_router(another_router)
+
+    @v2_router.get("/")
+    async def get_api_root() -> dict[str, str]:
+        return {"status": "ok"}
+
+    app.include_router(v2_router)
+    return app
+
+
 def test_included_router_does_not_crash_request():
     """Requests through an included router must not raise AttributeError."""
 
@@ -205,6 +235,74 @@ def test_nested_include_router_path_is_instrumented():
 
     assert (
         'http_requests_total{handler="/api/v1/ready",method="GET",status="2xx"} 1.0\n'
+        in metrics_payload
+    )
+
+
+def test_nested_include_router_v2_templated_path_is_instrumented():
+    """Nested included-router templated paths under ``/v2`` must keep prefix."""
+
+    _reset_collectors()
+
+    app = _build_app_with_nested_v2_included_router()
+    Instrumentator().instrument(app).expose(app)
+
+    client = TestClient(app)
+
+    response = client.get("/v2/widgets/7")
+    assert response.status_code == 200, response.text
+
+    metrics_response = client.get("/metrics")
+    metrics_payload = metrics_response.content.decode()
+
+    assert (
+        'http_requests_total{handler="/v2/widgets/{widget_id}",method="GET",status="2xx"} 1.0\n'
+        in metrics_payload
+    )
+    assert 'handler="none"' not in metrics_payload
+
+
+def test_nested_include_router_v2_static_path_is_instrumented():
+    """Nested included-router static paths under ``/v2`` must keep prefix."""
+
+    _reset_collectors()
+
+    app = _build_app_with_nested_v2_included_router()
+    Instrumentator().instrument(app).expose(app)
+
+    client = TestClient(app)
+
+    response = client.get("/v2/widgets")
+    assert response.status_code == 200, response.text
+
+    metrics_response = client.get("/metrics")
+    metrics_payload = metrics_response.content.decode()
+
+    assert (
+        'http_requests_total{handler="/v2/widgets",method="GET",status="2xx"} 1.0\n'
+        in metrics_payload
+    )
+    assert 'handler="none"' not in metrics_payload
+
+
+def test_nested_include_router_v2_root_path_is_instrumented():
+    """The direct route on the versioned router remains correctly labeled."""
+
+    _reset_collectors()
+
+    app = _build_app_with_nested_v2_included_router()
+    Instrumentator().instrument(app).expose(app)
+
+    client = TestClient(app)
+
+    response = client.get("/v2/")
+    assert response.status_code == 200, response.text
+
+    metrics_response = client.get("/metrics")
+    metrics_payload = metrics_response.content.decode()
+
+    assert (
+        'http_requests_total{handler="/v2/",method="GET",status="2xx"} 1.0\n'
         in metrics_payload
     )
 
