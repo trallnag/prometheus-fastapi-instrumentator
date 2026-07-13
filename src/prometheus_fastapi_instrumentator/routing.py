@@ -110,6 +110,50 @@ def _strip_prefix_from_scope(scope: Scope, prefix: str) -> Scope:
     return scope
 
 
+def _descend_into_included_router(scope: Scope, prefix: str) -> Scope:
+    """Return a child scope for recursing into an `_IncludedRouter`.
+
+    Unlike `starlette.routing.Mount`, FastAPI's `_IncludedRouter` (0.116+)
+    neither advances `root_path` nor strips its own prefix when it matches,
+    so nested leaf routes would never match on their own.
+
+    Starlette resolves a route against `path` minus `root_path` (see
+    `starlette._utils.get_route_path`). When the included router is reached
+    through a mounted sub-app, a parent `Mount` has already set a non-empty
+    `root_path` while leaving `path` untouched, so stripping `prefix` from
+    `path` directly (as for a top-level included router) silently fails.
+
+    This helper computes the request path relative to the current `root_path`,
+    removes the router `prefix`, and returns a scope whose `path` is that
+    remainder with `root_path` reset, so nested route matching resolves the
+    leaf endpoint regardless of whether the router sits behind a mount.
+    """
+
+    root_path = scope.get("root_path", "") or ""
+    path = scope.get("path", "") or ""
+
+    # Request path relative to the current root_path, mirroring Starlette's
+    # `get_route_path` semantics.
+    if (
+        root_path
+        and path.startswith(root_path)
+        and (path == root_path or path[len(root_path)] == "/")
+    ):
+        route_path = path[len(root_path) :]
+    else:
+        route_path = path
+
+    if prefix:
+        if route_path == prefix:
+            route_path = ""
+        elif route_path.startswith(prefix + "/"):
+            route_path = route_path.removeprefix(prefix)
+        # Otherwise the prefix is not present; leave route_path unchanged as a
+        # safe fallback so the caller can still attempt to match nested routes.
+
+    return {**scope, "path": route_path, "root_path": ""}
+
+
 def _normalize_root_path(root_path: str) -> str:
     """Return root_path in canonical form.
 
@@ -188,10 +232,11 @@ def _get_route_name(
 
             child_scope = {**scope, **child_scope}
             if not isinstance(route, Mount):
-                # Unlike `Mount`, `_IncludedRouter` does not strip its
-                # prefix from the child scope, so strip it here so the nested
-                # leaf endpoint can match. `path` is that prefix.
-                child_scope = _strip_prefix_from_scope(child_scope, path)
+                # Unlike `Mount`, `_IncludedRouter` neither advances
+                # `root_path` nor strips its prefix from the child scope, so
+                # descend into it here so the nested leaf endpoint can match.
+                # `path` is that prefix.
+                child_scope = _descend_into_included_router(child_scope, path)
 
             nested_name = _get_route_name(child_scope, children)
             if nested_name is None:
