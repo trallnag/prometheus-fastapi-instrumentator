@@ -7,6 +7,17 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+### Added
+
+- Added new optional parameter `should_include_root_path` to the
+  `Instrumentator` constructor. When set to `True`, the default exported
+  Prometheus metrics will include the FastAPI app's effective `root_path` in the
+  `handler` label. Defaults to `False` to maintain backwards compatibility.
+  Requested in
+  [#390](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/390)
+  and implemented in
+  [#391](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/391).
+
 ### Fixed
 
 - Fixed resolving route names with root path set in FastAPI app.

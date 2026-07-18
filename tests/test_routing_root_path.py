@@ -1,4 +1,8 @@
-"""Tests for route resolution with FastAPI `root_path`."""
+"""Tests for route resolution with `root_path`.
+
+Also see `test_instrumentator_root_path.py` for tests of the instrumentator's
+handling of `root_path`.
+"""
 
 from fastapi import APIRouter, FastAPI, Request
 

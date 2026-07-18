@@ -1,7 +1,28 @@
 from fastapi import FastAPI, responses, status
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 from prometheus_fastapi_instrumentator import Instrumentator, metrics
+from prometheus_fastapi_instrumentator.middleware import (
+    PrometheusInstrumentatorMiddleware,
+)
+
+
+def _scope(app: FastAPI, path: str, root_path: str = "") -> dict:
+    return {
+        "type": "http",
+        "http_version": "1.1",
+        "method": "GET",
+        "scheme": "http",
+        "path": path,
+        "root_path": root_path,
+        "raw_path": path.encode(),
+        "query_string": b"",
+        "headers": [],
+        "client": ("testclient", 50000),
+        "server": ("testserver", 80),
+        "app": app,
+    }
 
 
 def test_info_body_default():
@@ -28,6 +49,41 @@ def test_info_body_default():
 
     client.get("/")
     assert instrumentation_executed
+
+
+def test_get_handler_respects_root_path_setting():
+    """Tests that handler resolution can include or exclude `root_path`."""
+
+    app = FastAPI(root_path="/proxy")
+
+    @app.get("/items/{item_id}")
+    def get_item(item_id: int) -> dict:
+        return {"item_id": item_id}
+
+    request = Request(_scope(app, "/proxy/items/42", root_path="/proxy"))
+
+    assert PrometheusInstrumentatorMiddleware(
+        app,
+        should_include_root_path=False,
+    )._get_handler(request) == ("/items/{item_id}", True)
+    assert PrometheusInstrumentatorMiddleware(
+        app,
+        should_include_root_path=True,
+    )._get_handler(request) == ("/proxy/items/{item_id}", True)
+
+
+def test_instrumentator_passes_root_path_setting_to_middleware():
+    """Tests that instrumentator forwards `should_include_root_path`."""
+
+    app = FastAPI()
+
+    Instrumentator(should_include_root_path=True).instrument(app)
+
+    assert len(app.user_middleware) == 1
+    middleware = app.user_middleware[0]
+
+    assert middleware.cls is PrometheusInstrumentatorMiddleware
+    assert middleware.kwargs["should_include_root_path"] is True
 
 
 def test_info_body_empty():
