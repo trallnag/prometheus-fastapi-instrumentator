@@ -157,7 +157,7 @@ def test_routing_root_path_with_trailing_root_slash():
     )
 
 
-def test_routing_root_path_with_trailing_root_slash_and_nested_include_router():
+def test_routing_root_path_with_trailing_nested():
     """Tests that nested `include_router` route names use the normalized
     scope `root_path` when app `root_path` includes a trailing slash.
     """
