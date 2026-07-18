@@ -80,7 +80,9 @@ def _get_route_name(scope: Scope, routes: List[BaseRoute]) -> Optional[str]:
     return partial
 
 
-def get_route_name(request: HTTPConnection) -> Optional[str]:
+def get_route_name(
+    request: HTTPConnection, should_include_root_path: bool
+) -> Optional[str]:
     """Gets route name.
 
     Resolves the templated route for the given request, e.g. `/api/items/123`
@@ -91,6 +93,11 @@ def get_route_name(request: HTTPConnection) -> Optional[str]:
     sub-applications and `root_path`. When the application itself is a mounted
     sub-application that is instrumented directly, the resolved name is relative
     to that sub-application.
+
+    Args:
+        request: Connection whose scope should be resolved to a route name.
+        should_include_root_path: Whether the returned route name should be
+            prefixed with the application's effective `root_path`.
     """
 
     scope = request.scope
@@ -102,6 +109,9 @@ def get_route_name(request: HTTPConnection) -> Optional[str]:
     name = _get_route_name(scope, routes)
 
     if name is not None:
+        if not should_include_root_path:
+            return name
+
         # Only the application's own `root_path` is prepended. A `root_path`
         # injected into the scope by a parent mount (i.e. when a mounted
         # sub-application is instrumented directly) is intentionally ignored so

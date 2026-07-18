@@ -16,6 +16,8 @@ from prometheus_fastapi_instrumentator import metrics, routing
 
 
 class PrometheusInstrumentatorMiddleware:
+    """ASGI middleware that records Prometheus metrics for HTTP requests."""
+
     def __init__(
         self,
         app: ASGIApp,
@@ -23,6 +25,7 @@ class PrometheusInstrumentatorMiddleware:
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
+        should_include_root_path: bool = False,
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
@@ -70,6 +73,7 @@ class PrometheusInstrumentatorMiddleware:
         self.should_group_status_codes = should_group_status_codes
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
+        self.should_include_root_path = should_include_root_path
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
         self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
@@ -235,9 +239,12 @@ class PrometheusInstrumentatorMiddleware:
         Returns:
             Tuple[str, bool]: Tuple with two elements. First element is either
                 template or if no template the path. Second element tells you
-                if the path is templated or not.
+                if the path is templated or not. When configured, the template
+                includes the application's effective `root_path`.
         """
-        route_name = routing.get_route_name(request)
+        route_name = routing.get_route_name(
+            request, should_include_root_path=self.should_include_root_path
+        )
         return route_name or request.url.path, True if route_name else False
 
     def _is_handler_excluded(self, handler: str, is_templated: bool) -> bool:

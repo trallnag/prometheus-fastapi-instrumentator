@@ -1,4 +1,4 @@
-"""Tests for correct route resolution with FastAPI `root_path` focus."""
+"""Tests for route resolution with FastAPI `root_path`."""
 
 from fastapi import APIRouter, FastAPI, Request
 
@@ -22,8 +22,21 @@ def _scope(app: FastAPI, path: str, root_path: str = "") -> dict:
     }
 
 
+def _assert_route_names(
+    app: FastAPI,
+    called_path: str,
+    excluded_route_name: str,
+    included_route_name: str,
+    root_path: str = "/proxy",
+) -> None:
+    request = Request(_scope(app, called_path, root_path=root_path))
+
+    assert get_route_name(request, should_include_root_path=False) == excluded_route_name
+    assert get_route_name(request, should_include_root_path=True) == included_route_name
+
+
 def test_routing_root_path_with_path_param():
-    """Tests that path-parameter routes include the effective `root_path`."""
+    """Tests that path-parameter routes resolve with and without `root_path`."""
 
     app = FastAPI(root_path="/proxy")
 
@@ -31,15 +44,16 @@ def test_routing_root_path_with_path_param():
     def get_item(item_id: int) -> dict:
         return {"item_id": item_id}
 
-    path = "/proxy/items/42"
-    assert (
-        get_route_name(Request(_scope(app, path, root_path="/proxy")))
-        == "/proxy/items/{item_id}"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/items/42",
+        excluded_route_name="/items/{item_id}",
+        included_route_name="/proxy/items/{item_id}",
     )
 
 
 def test_routing_root_path_with_slash_only():
-    """Tests that the root route resolves with the effective `root_path`."""
+    """Tests that the root route resolves with and without `root_path`."""
 
     app = FastAPI(root_path="/proxy")
 
@@ -47,12 +61,16 @@ def test_routing_root_path_with_slash_only():
     def index() -> dict:
         return {}
 
-    path = "/proxy/"
-    assert get_route_name(Request(_scope(app, path, root_path="/proxy"))) == "/proxy/"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/",
+        excluded_route_name="/",
+        included_route_name="/proxy/",
+    )
 
 
 def test_routing_root_path_with_include_router():
-    """Tests that included-router routes resolve with the effective `root_path`."""
+    """Tests that included-router routes resolve with and without `root_path`."""
 
     app = FastAPI(root_path="/proxy")
     router = APIRouter(prefix="/api")
@@ -67,21 +85,23 @@ def test_routing_root_path_with_include_router():
 
     app.include_router(router)
 
-    health_path = "/proxy/api/health"
-    assert (
-        get_route_name(Request(_scope(app, health_path, root_path="/proxy")))
-        == "/proxy/api/health"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/api/health",
+        excluded_route_name="/api/health",
+        included_route_name="/proxy/api/health",
     )
 
-    item_path = "/proxy/api/items/7"
-    assert (
-        get_route_name(Request(_scope(app, item_path, root_path="/proxy")))
-        == "/proxy/api/items/{item_id}"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/api/items/7",
+        excluded_route_name="/api/items/{item_id}",
+        included_route_name="/proxy/api/items/{item_id}",
     )
 
 
 def test_routing_root_path_with_nested_include_router():
-    """Tests that nested included-router routes resolve with the effective `root_path`."""
+    """Tests that nested included-router routes resolve with and without `root_path`."""
 
     app = FastAPI(root_path="/proxy")
     api_router = APIRouter(prefix="/api")
@@ -98,21 +118,23 @@ def test_routing_root_path_with_nested_include_router():
     api_router.include_router(v1_router)
     app.include_router(api_router)
 
-    ready_path = "/proxy/api/v1/ready"
-    assert (
-        get_route_name(Request(_scope(app, ready_path, root_path="/proxy")))
-        == "/proxy/api/v1/ready"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/api/v1/ready",
+        excluded_route_name="/api/v1/ready",
+        included_route_name="/proxy/api/v1/ready",
     )
 
-    user_path = "/proxy/api/v1/users/99"
-    assert (
-        get_route_name(Request(_scope(app, user_path, root_path="/proxy")))
-        == "/proxy/api/v1/users/{user_id}"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/api/v1/users/99",
+        excluded_route_name="/api/v1/users/{user_id}",
+        included_route_name="/proxy/api/v1/users/{user_id}",
     )
 
 
 def test_routing_root_path_with_redirect_slash():
-    """Tests that redirect-slash matching preserves the effective `root_path`."""
+    """Tests that redirect-slash matching preserves scope path across modes."""
 
     app = FastAPI(root_path="/proxy")
 
@@ -120,14 +142,16 @@ def test_routing_root_path_with_redirect_slash():
     def list_items() -> list:
         return []
 
-    path = "/proxy/items"
-    assert (
-        get_route_name(Request(_scope(app, path, root_path="/proxy"))) == "/proxy/items"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/items",
+        excluded_route_name="/proxy/items",
+        included_route_name="/proxy/items",
     )
 
 
 def test_routing_root_path_with_no_redirect_slash():
-    """Tests that non-redirect-slash matching preserves the effective `root_path`."""
+    """Tests that non-redirect-slash matching resolves with and without `root_path`."""
 
     app = FastAPI(root_path="/proxy", redirect_slashes=False)
 
@@ -135,14 +159,16 @@ def test_routing_root_path_with_no_redirect_slash():
     def list_items() -> list:
         return []
 
-    path = "/proxy/items/"
-    assert (
-        get_route_name(Request(_scope(app, path, root_path="/proxy"))) == "/proxy/items/"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/items/",
+        excluded_route_name="/items/",
+        included_route_name="/proxy/items/",
     )
 
 
 def test_routing_root_path_with_trailing_root_slash():
-    """Tests that trailing-slash `root_path` values are normalized for path params."""
+    """Tests that trailing-slash `root_path` values are normalized in both modes."""
 
     app = FastAPI(root_path="/proxy/")
 
@@ -150,17 +176,16 @@ def test_routing_root_path_with_trailing_root_slash():
     def get_item(item_id: int) -> dict:
         return {"item_id": item_id}
 
-    path = "/proxy/items/42"
-    assert (
-        get_route_name(Request(_scope(app, path, root_path="/proxy")))
-        == "/proxy/items/{item_id}"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/items/42",
+        excluded_route_name="/items/{item_id}",
+        included_route_name="/proxy/items/{item_id}",
     )
 
 
 def test_routing_root_path_with_trailing_nested():
-    """Tests that nested `include_router` route names use the normalized
-    scope `root_path` when app `root_path` includes a trailing slash.
-    """
+    """Tests that nested `include_router` route names normalize `root_path` in both modes."""
 
     app = FastAPI(root_path="/proxy/")
     api_router = APIRouter(prefix="/api")
@@ -173,8 +198,9 @@ def test_routing_root_path_with_trailing_nested():
     api_router.include_router(v1_router)
     app.include_router(api_router)
 
-    path = "/proxy/api/v1/users/99"
-    assert (
-        get_route_name(Request(_scope(app, path, root_path="/proxy")))
-        == "/proxy/api/v1/users/{user_id}"
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/api/v1/users/99",
+        excluded_route_name="/api/v1/users/{user_id}",
+        included_route_name="/proxy/api/v1/users/{user_id}",
     )

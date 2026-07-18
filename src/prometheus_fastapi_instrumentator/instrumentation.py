@@ -39,6 +39,7 @@ class PrometheusFastApiInstrumentator:
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
+        should_include_root_path: bool = False,
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
@@ -64,6 +65,10 @@ class PrometheusFastApiInstrumentator:
 
             should_group_untemplated (bool): Should requests without a matching
                 template be grouped to handler `none`? Defaults to `True`.
+
+            should_include_root_path (bool): Should resolved handler templates
+                include the application's effective `root_path`? Defaults to
+                `False`.
 
             should_round_latency_decimals: Should recorded latencies be
                 rounded to a certain number of decimals?
@@ -123,6 +128,7 @@ class PrometheusFastApiInstrumentator:
         self.should_group_status_codes = should_group_status_codes
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
+        self.should_include_root_path = should_include_root_path
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
         self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
@@ -217,6 +223,7 @@ class PrometheusFastApiInstrumentator:
             should_group_status_codes=self.should_group_status_codes,
             should_ignore_untemplated=self.should_ignore_untemplated,
             should_group_untemplated=self.should_group_untemplated,
+            should_include_root_path=self.should_include_root_path,
             should_round_latency_decimals=self.should_round_latency_decimals,
             should_respect_env_var=self.should_respect_env_var,
             should_instrument_requests_inprogress=self.should_instrument_requests_inprogress,
