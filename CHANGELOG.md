@@ -20,7 +20,15 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ### Fixed
 
-- Fixed resolving route names with root path set in FastAPI app.
+- Fixed resolving route names with root path set in FastAPI app. Raised in
+  [#387](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/387)
+  and implemented in
+  [#391](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/391).
+- Fixed incorrect handling of nested apps / routes in some corner cases
+  introduced with `8.0.1`. Raised in
+  [#389](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/389)
+  and implemented in
+  [#391](https://github.com/trallnag/prometheus-fastapi-instrumentator/pull/391).
 
 ## [8.0.2](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v8.0.1...v8.0.2) / 2026-06-23
 

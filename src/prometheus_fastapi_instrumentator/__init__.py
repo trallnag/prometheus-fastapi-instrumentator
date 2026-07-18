@@ -1,5 +1,5 @@
 from .instrumentation import PrometheusFastApiInstrumentator
 
-__version__ = "8.0.3.dev1"
+__version__ = "8.0.3.dev2"
 
 Instrumentator = PrometheusFastApiInstrumentator
