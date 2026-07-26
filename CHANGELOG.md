@@ -7,6 +7,10 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
+Nothing.
+
+## [8.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v8.0.2...v8.1.0) / 2026-07-26
+
 ### Added
 
 - Added new optional parameter `should_include_root_path` to the
