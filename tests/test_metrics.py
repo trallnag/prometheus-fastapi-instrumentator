@@ -55,6 +55,10 @@ def create_app() -> FastAPI:
     def read_just_another_endpoint():
         return "Green is my pepper"
 
+    @app.get("/slash_ending_endpoint/")
+    def read_slash_ending_endpoint():
+        return "Use a slash"
+
     @app.post("/items")
     def create_item(item: Dict[Any, Any]):
         return None
@@ -658,7 +662,7 @@ def test_custom_labels():
 # requests
 
 
-def test_requests_all_labels():
+def test_request_all_labels():
     app = create_app()
     Instrumentator().add(metrics.requests()).instrument(app).expose(app)
     client = TestClient(app)
@@ -676,7 +680,7 @@ def test_requests_all_labels():
     )
 
 
-def test_requests_no_labels():
+def test_request_no_labels():
     app = create_app()
     Instrumentator().add(
         metrics.requests(
@@ -714,4 +718,39 @@ def test_request_custom_namespace():
     assert (
         b"namespace_example_http_request_duration_highr_seconds_bucket"
         in response.content
+    )
+
+
+def test_request_mount_redirection_bug():
+    app = create_app()
+
+    async def mounted_asgi_app(scope, receive, send):
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 200,
+                "headers": [(b"content-type", b"text/plain")],
+            }
+        )
+        await send({"type": "http.response.body", "body": b"mounted"})
+
+    app.mount("/mounted_app", mounted_asgi_app)
+
+    Instrumentator().add(metrics.requests(should_include_status=False)).instrument(
+        app
+    ).expose(app)
+    client = TestClient(app)
+
+    # Hitting the Mount without a trailing slash triggers a 307.
+    # The old `route_name[:-1]` chopped the last char, mislabelling the handler as "/mounted_ap".
+    client.get("/mounted_app", follow_redirects=False)
+
+    _ = get_response(client, "/metrics")
+
+    assert (
+        REGISTRY.get_sample_value(
+            "http_requests_total",
+            {"handler": "/mounted_app", "method": "GET"},
+        )
+        == 1
     )

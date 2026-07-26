@@ -1,11 +1,20 @@
-import asyncio
 import gzip
 import importlib.util
+import inspect
 import os
 import re
 import warnings
 from enum import Enum
-from typing import Any, Awaitable, Callable, List, Optional, Sequence, Union, cast
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    List,
+    Optional,
+    Sequence,
+    Union,
+    cast,
+)
 
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
@@ -30,6 +39,7 @@ class PrometheusFastApiInstrumentator:
         should_group_status_codes: bool = True,
         should_ignore_untemplated: bool = False,
         should_group_untemplated: bool = True,
+        should_include_root_path: bool = False,
         should_round_latency_decimals: bool = False,
         should_respect_env_var: bool = False,
         should_instrument_requests_inprogress: bool = False,
@@ -55,6 +65,10 @@ class PrometheusFastApiInstrumentator:
 
             should_group_untemplated (bool): Should requests without a matching
                 template be grouped to handler `none`? Defaults to `True`.
+
+            should_include_root_path (bool): Should resolved handler templates
+                include the application's effective `root_path`? Defaults to
+                `False`.
 
             should_round_latency_decimals: Should recorded latencies be
                 rounded to a certain number of decimals?
@@ -114,6 +128,7 @@ class PrometheusFastApiInstrumentator:
         self.should_group_status_codes = should_group_status_codes
         self.should_ignore_untemplated = should_ignore_untemplated
         self.should_group_untemplated = should_group_untemplated
+        self.should_include_root_path = should_include_root_path
         self.should_round_latency_decimals = should_round_latency_decimals
         self.should_respect_env_var = should_respect_env_var
         self.should_instrument_requests_inprogress = should_instrument_requests_inprogress
@@ -208,6 +223,7 @@ class PrometheusFastApiInstrumentator:
             should_group_status_codes=self.should_group_status_codes,
             should_ignore_untemplated=self.should_ignore_untemplated,
             should_group_untemplated=self.should_group_untemplated,
+            should_include_root_path=self.should_include_root_path,
             should_round_latency_decimals=self.should_round_latency_decimals,
             should_respect_env_var=self.should_respect_env_var,
             should_instrument_requests_inprogress=self.should_instrument_requests_inprogress,
@@ -218,8 +234,8 @@ class PrometheusFastApiInstrumentator:
             inprogress_labels=self.inprogress_labels,
             instrumentations=self.instrumentations,
             async_instrumentations=self.async_instrumentations,
-            excluded_handlers=self.excluded_handlers,
-            body_handlers=self.body_handlers,
+            excluded_handlers=self.excluded_handlers,  # type: ignore
+            body_handlers=self.body_handlers,  # type: ignore
             metric_namespace=metric_namespace,
             metric_subsystem=metric_subsystem,
             should_only_respect_2xx_for_highr=should_only_respect_2xx_for_highr,
@@ -324,7 +340,7 @@ class PrometheusFastApiInstrumentator:
 
         for func in instrumentation_function:
             if func:
-                if asyncio.iscoroutinefunction(func):
+                if inspect.iscoroutinefunction(func):
                     self.async_instrumentations.append(
                         cast(
                             Callable[[metrics.Info], Awaitable[None]],

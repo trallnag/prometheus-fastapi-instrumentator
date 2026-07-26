@@ -1,5 +1,6 @@
 import asyncio
 import os
+import warnings
 from http import HTTPStatus
 from typing import Any, Dict, Optional
 
@@ -582,3 +583,19 @@ def test_custom_async_instrumentation():
     )
 
     assert result_sync > 0
+
+
+def test_add_sync_instrumentation_does_not_warn_deprecated_coroutine_check():
+    def sync_function(_):
+        return None
+
+    instrumentator = Instrumentator()
+
+    with warnings.catch_warnings(record=True) as captured_warnings:
+        warnings.simplefilter("always", DeprecationWarning)
+        instrumentator.add(sync_function)
+
+    assert all(
+        "asyncio.iscoroutinefunction" not in str(item.message)
+        for item in captured_warnings
+    )
