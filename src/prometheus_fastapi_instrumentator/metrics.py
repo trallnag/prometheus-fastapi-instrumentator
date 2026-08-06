@@ -598,7 +598,7 @@ def requests(
     return None
 
 
-def _map_label_name_value(label_name: tuple) -> list[str]:
+def _map_label_name_value(label_name: Tuple) -> List[str]:
     attribute_names = []
     mapping = {
         "handler": "modified_handler",
