@@ -108,28 +108,32 @@ def get_route_name(
 
     name = _get_route_name(scope, routes)
 
-    if name is not None:
-        if not should_include_root_path:
-            return name
-
-        # Only the application's own `root_path` is prepended. A `root_path`
-        # injected into the scope by a parent mount (i.e. when a mounted
-        # sub-application is instrumented directly) is intentionally ignored so
-        # the resolved name stays relative to that sub-application.
-        root_path = getattr(app, "root_path", "") or ""
-        if root_path:
-            return root_path.rstrip("/") + name
-        return name
-
     # No route matched. If the router redirects on trailing slashes, a request
     # like `/items` against a route `/items/` (or vice versa) does not match
-    # directly but would be redirected. Report the requested path in that case.
-    router = getattr(app, "router", None)
-    if router is not None and getattr(router, "redirect_slashes", False):
-        path = scope.get("path", "")
-        toggled = path[:-1] if path.endswith("/") else path + "/"
-        if toggled and toggled != path:
-            if _get_route_name({**scope, "path": toggled}, routes) is not None:
-                return path
+    # directly but would be redirected. Report the template of the route it is
+    # redirected to, with the trailing slash as requested. The raw path must not
+    # be used, as it contains path parameter values (e.g. `/items/123/`).
+    if name is None:
+        router = getattr(app, "router", None)
+        if router is not None and getattr(router, "redirect_slashes", False):
+            path = scope.get("path", "")
+            toggled = path[:-1] if path.endswith("/") else path + "/"
+            if toggled and toggled != path:
+                name = _get_route_name({**scope, "path": toggled}, routes)
+                if name is not None:
+                    name = name.rstrip("/") + ("/" if path.endswith("/") else "")
 
-    return None
+    if name is None:
+        return None
+
+    if not should_include_root_path:
+        return name
+
+    # Only the application's own `root_path` is prepended. A `root_path`
+    # injected into the scope by a parent mount (i.e. when a mounted
+    # sub-application is instrumented directly) is intentionally ignored so
+    # the resolved name stays relative to that sub-application.
+    root_path = getattr(app, "root_path", "") or ""
+    if root_path:
+        return root_path.rstrip("/") + name
+    return name

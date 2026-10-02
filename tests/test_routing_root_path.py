@@ -138,7 +138,7 @@ def test_routing_root_path_with_nested_include_router():
 
 
 def test_routing_root_path_with_redirect_slash():
-    """Tests that redirect-slash matching preserves scope path across modes."""
+    """Tests that redirect-slash matching preserves template with root_path across modes."""
 
     app = FastAPI(root_path="/proxy")
 
@@ -149,8 +149,25 @@ def test_routing_root_path_with_redirect_slash():
     _assert_route_names(
         app=app,
         called_path="/proxy/items",
-        excluded_route_name="/proxy/items",
+        excluded_route_name="/items",
         included_route_name="/proxy/items",
+    )
+
+
+def test_routing_redirect_slash_with_path_param():
+    """Tests that redirect-slash routes with path parameters report the template, not raw path."""
+
+    app = FastAPI(root_path="/proxy")
+
+    @app.get("/users/{user_id}")
+    def get_user(user_id: str) -> dict:
+        return {"user_id": user_id}
+
+    _assert_route_names(
+        app=app,
+        called_path="/proxy/users/alice/",
+        excluded_route_name="/users/{user_id}/",
+        included_route_name="/proxy/users/{user_id}/",
     )
 
 
