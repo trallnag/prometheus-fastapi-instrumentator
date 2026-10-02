@@ -754,3 +754,53 @@ def test_request_mount_redirection_bug():
         )
         == 1
     )
+
+
+def test_trailing_slash_redirect_preserves_template_with_path_params():
+    app = create_app()
+
+    Instrumentator(should_ignore_untemplated=True).add(
+        metrics.requests(should_include_status=False)
+    ).instrument(app).expose(app)
+    client = TestClient(app)
+
+    # Trailing slash on non-slash route: triggers 307 redirect
+    client.get("/items/1/", follow_redirects=False)
+    client.get("/items/2/", follow_redirects=False)
+
+    # Missing slash on slash-ending route: triggers 307 redirect
+    client.get("/slash_ending_endpoint", follow_redirects=False)
+
+    _ = get_response(client, "/metrics")
+
+    # The redirect requests must be labeled with the template, not raw paths
+    assert (
+        REGISTRY.get_sample_value(
+            "http_requests_total",
+            {"handler": "/items/{item_id}/", "method": "GET"},
+        )
+        == 2
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_requests_total",
+            {"handler": "/items/1/", "method": "GET"},
+        )
+        is None
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_requests_total",
+            {"handler": "/items/2/", "method": "GET"},
+        )
+        is None
+    )
+    assert (
+        REGISTRY.get_sample_value(
+            "http_requests_total",
+            {"handler": "/slash_ending_endpoint", "method": "GET"},
+        )
+        == 1
+    )
+
+
