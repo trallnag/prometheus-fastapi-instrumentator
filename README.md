@@ -20,15 +20,23 @@ Instrument your app with default metrics and expose the metrics:
 Instrumentator().instrument(app).expose(app)
 ```
 
-Depending on your code you might have to use the following instead:
+Depending on your code you might have to expose the metrics endpoint from a
+[lifespan](https://fastapi.tiangolo.com/advanced/events/) handler instead:
 
 ```python
-instrumentator = Instrumentator().instrument(app)
+from contextlib import asynccontextmanager
 
-@app.on_event("startup")
-async def _startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     instrumentator.expose(app)
+    yield
+
+app = FastAPI(lifespan=lifespan)
+instrumentator = Instrumentator().instrument(app)
 ```
+
+Create the instrumentator and call `instrument()` outside of the lifespan
+handler. Middleware cannot be added after the application has started.
 
 With this, your FastAPI is instrumented and metrics are ready to be scraped. The
 defaults give you:
@@ -311,7 +319,7 @@ default. Beware that network bandwith is often cheaper than CPU cycles.
 instrumentator.expose(app, include_in_schema=False, should_gzip=True)
 ```
 
-Notice that this will to nothing if `should_respect_env_var` has been set during
+Notice that this will do nothing if `should_respect_env_var` has been set during
 construction of the instrumentator object and the respective env var is not
 found.
 
