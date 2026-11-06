@@ -225,6 +225,64 @@ def test_request_size_no_cl():
 
 
 # ------------------------------------------------------------------------------
+# Malformed Content-Length
+
+
+SIZE_INSTRUMENTATIONS = [
+    metrics.request_size,
+    metrics.response_size,
+    metrics.combined_size,
+    metrics.default,
+]
+
+
+def test_parse_content_length():
+    assert metrics._parse_content_length("123") == 123
+    assert metrics._parse_content_length(0) == 0
+    assert metrics._parse_content_length("abc") == 0
+    assert metrics._parse_content_length("") == 0
+
+
+@pytest.mark.parametrize("instrumentation", SIZE_INSTRUMENTATIONS)
+def test_malformed_request_content_length(instrumentation):
+    app = create_app()
+    Instrumentator().add(instrumentation()).instrument(app)
+    client = TestClient(app)
+
+    response = client.get("/", headers={"Content-Length": "abc"})
+
+    assert response.status_code == 200
+
+
+@pytest.mark.parametrize("instrumentation", SIZE_INSTRUMENTATIONS)
+def test_malformed_response_content_length(instrumentation):
+    app = create_app()
+
+    @app.get("/malformed_content_length")
+    def read_malformed_content_length():
+        return responses.Response(headers={"Content-Length": "abc"})
+
+    Instrumentator().add(instrumentation()).instrument(app)
+    client = TestClient(app)
+
+    response = client.get("/malformed_content_length")
+
+    assert response.status_code == 200
+
+
+def test_malformed_request_content_length_observes_zero():
+    app = create_app()
+    Instrumentator().add(metrics.request_size()).instrument(app)
+    client = TestClient(app)
+
+    client.get("/", headers={"Content-Length": "abc"})
+
+    labels = {"handler": "/", "method": "GET", "status": "2xx"}
+    assert REGISTRY.get_sample_value("http_request_size_bytes_count", labels) == 1
+    assert REGISTRY.get_sample_value("http_request_size_bytes_sum", labels) == 0
+
+
+# ------------------------------------------------------------------------------
 # response_size
 
 

@@ -7,7 +7,12 @@ and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0).
 
 ## Unreleased
 
-Nothing.
+### Fixed
+
+- Fixed uncaught `ValueError` in the size metrics when a request or response has
+  a `Content-Length` header that is not a valid integer. The size is now
+  observed as `0`. Raised in
+  [#404](https://github.com/trallnag/prometheus-fastapi-instrumentator/issues/404).
 
 ## [8.1.0](https://github.com/trallnag/prometheus-fastapi-instrumentator/compare/v8.0.2...v8.1.0) / 2026-07-26
 

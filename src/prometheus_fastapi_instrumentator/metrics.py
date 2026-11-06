@@ -56,6 +56,25 @@ class Info:
         self.modified_duration_without_streaming = modified_duration_without_streaming
 
 
+def _parse_content_length(value: Union[str, int]) -> int:
+    """Converts a `Content-Length` header value to an integer.
+
+    The value comes from the client or the application, so it is not guaranteed
+    to be a valid integer.
+
+    Args:
+        value (str or int): Value of the header, or the default if it is absent.
+
+    Returns:
+        int: Parsed value, or `0` if the value is not a valid integer.
+    """
+
+    try:
+        return int(value)
+    except ValueError:
+        return 0
+
+
 def _build_label_attribute_names(
     should_include_handler: bool,
     should_include_method: bool,
@@ -289,16 +308,18 @@ def request_size(
             )
 
         def instrumentation(info: Info) -> None:
-            content_length = info.request.headers.get("Content-Length", 0)
+            content_length = _parse_content_length(
+                info.request.headers.get("Content-Length", 0)
+            )
             if label_names:
                 label_values = [
                     getattr(info, attribute_name)
                     for attribute_name in info_attribute_names
                 ]
 
-                METRIC.labels(*label_values).observe(int(content_length))
+                METRIC.labels(*label_values).observe(content_length)
             else:
-                METRIC.observe(int(content_length))
+                METRIC.observe(content_length)
 
         return instrumentation
     except ValueError as e:
@@ -384,7 +405,9 @@ def response_size(
 
         def instrumentation(info: Info) -> None:
             if info.response and hasattr(info.response, "headers"):
-                content_length = info.response.headers.get("Content-Length", 0)
+                content_length = _parse_content_length(
+                    info.response.headers.get("Content-Length", 0)
+                )
             else:
                 content_length = 0
 
@@ -394,9 +417,9 @@ def response_size(
                     for attribute_name in info_attribute_names
                 ]
 
-                METRIC.labels(*label_values).observe(int(content_length))
+                METRIC.labels(*label_values).observe(content_length)
             else:
-                METRIC.observe(int(content_length))
+                METRIC.observe(content_length)
 
         return instrumentation
     except ValueError as e:
@@ -487,7 +510,9 @@ def combined_size(
             else:
                 response_cl = 0
 
-            content_length = int(request_cl) + int(response_cl)
+            content_length = _parse_content_length(request_cl) + _parse_content_length(
+                response_cl
+            )
 
             if label_names:
                 label_values = [
@@ -495,9 +520,9 @@ def combined_size(
                     for attribute_name in info_attribute_names
                 ]
 
-                METRIC.labels(*label_values).observe(int(content_length))
+                METRIC.labels(*label_values).observe(content_length)
             else:
-                METRIC.observe(int(content_length))
+                METRIC.observe(content_length)
 
         return instrumentation
     except ValueError as e:
@@ -794,7 +819,7 @@ def default(
                 for attribute_name in _map_label_name_value(in_size_names)
             ] + list(custom_labels.values())
             IN_SIZE.labels(*label_values).observe(
-                int(info.request.headers.get("Content-Length", 0))
+                _parse_content_length(info.request.headers.get("Content-Length", 0))
             )
 
             label_values = [
@@ -803,7 +828,7 @@ def default(
             ] + list(custom_labels.values())
             if info.response and hasattr(info.response, "headers"):
                 OUT_SIZE.labels(*label_values).observe(
-                    int(info.response.headers.get("Content-Length", 0))
+                    _parse_content_length(info.response.headers.get("Content-Length", 0))
                 )
             else:
                 OUT_SIZE.labels(*label_values).observe(0)
